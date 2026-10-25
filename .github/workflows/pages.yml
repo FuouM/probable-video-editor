@@ -34,12 +34,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
-      # packages/core depends on `link:lyricsync` (the sibling repository Lyric-Sync). The site build never imports it,
-      # and bun on Linux fails the install when the link target is missing: give the link an empty target.
+      # packages/core depends on `link:lyricsync`: a package registered with `bun link` (AGENTS.md, Setup), which is the
+      # sibling repository Lyric-Sync on a developer machine. The site build never imports it, and bun on Linux fails the
+      # install when the link is not registered: register an empty package with that name.
       - name: Install
         run: |
-          mkdir -p packages/core/lyricsync
-          echo '{ "name": "lyricsync", "private": true }' > packages/core/lyricsync/package.json
+          mkdir "$RUNNER_TEMP/lyricsync"
+          echo '{ "name": "lyricsync", "version": "0.0.0", "private": true }' > "$RUNNER_TEMP/lyricsync/package.json"
+          (cd "$RUNNER_TEMP/lyricsync" && bun link)
           bun install --frozen-lockfile
       - name: Download the audio
         env:
