@@ -3,6 +3,10 @@
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "scripts": {
+    "site:build": "bunx --bun vite build -c vite.site.config.ts",
+    "site:preview": "bunx --bun vite preview -c vite.site.config.ts --port 4173"
+  },
   "devDependencies": {
     "@types/bun": "latest",
     "@types/opentype.js": "^1.3.10",

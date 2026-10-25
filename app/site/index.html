@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>breaked</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="breaked: a music video that is code. It is drawn live in your browser, frame by frame, to the song." />
+<link rel="icon" href="data:," />
+<link rel="stylesheet" href="../src/ui/daw.css" />
+<link rel="stylesheet" href="./player.css" />
+</head>
+<body>
+<div class="nle-app">
+  <header class="nle-menubar">
+    <div class="nle-brand">
+      <span>PVE</span>
+      <span class="nle-brand-badge">PLAYER</span>
+    </div>
+    <a class="nle-menu-item" href="https://github.com/FuouM/probable-video-editor" target="_blank" rel="noopener">Source code</a>
+    <div class="nle-menubar-right">
+      <button class="nle-menu-item" id="menu-fullscreen" title="Toggle fullscreen (F)">Fullscreen (F)</button>
+    </div>
+  </header>
+
+  <div class="group-box pl-monitor">
+    <div class="group-box-title">
+      <span id="title">breaked</span>
+      <strong style="color:var(--sys-accent)" id="mon-res"></strong>
+      <span class="nle-title-sep">&middot;</span>
+      <span id="mon-fps" style="color:#4ade80"></span>
+      <span class="nle-title-sep">&middot;</span>
+      <span id="mon-ms" style="color:var(--sys-text-muted)"></span>
+    </div>
+
+    <div class="pl-frame" id="frame">
+      <div class="pl-view">
+        <canvas id="c"></canvas>
+        <div class="pl-dialog-wrap" id="splash">
+          <div class="pl-dialog" role="dialog" aria-labelledby="dlg-title">
+            <div class="pl-dialog-title" id="dlg-title">breaked</div>
+            <div class="pl-dialog-body">
+              <p>A music video that is code. Your browser draws every frame live, in time with the song. This is not a video file.</p>
+              <p class="pl-muted">Needs WebGL2. A desktop GPU is best. Pick a lower resolution below if it stutters.</p>
+              <p class="pl-status" id="splash-status">Loading the song and the scenes</p>
+            </div>
+            <div class="pl-dialog-foot">
+              <button class="pl-btn pl-btn-default" id="splash-play" disabled>Loading</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pl-controls" id="controls">
+        <div class="pl-seek" id="seek" role="slider" aria-label="Seek" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0">
+          <div class="pl-seek-fill" id="seek-fill"></div>
+          <div class="pl-seek-ticks" id="seek-ticks"></div>
+          <div class="pl-seek-tip" id="seek-tip"></div>
+        </div>
+        <div class="daw-transport pl-bar">
+          <div class="daw-transport-group">
+            <button class="daw-tbtn" id="btn-start" title="Go to start (Home)" aria-label="Go to start"></button>
+            <button class="daw-tbtn" id="btn-prev" title="Previous section (PageUp)" aria-label="Previous section"></button>
+            <button class="daw-tbtn daw-tbtn-play" id="btn-play" title="Play / pause (Space)" aria-label="Play"></button>
+            <button class="daw-tbtn" id="btn-next" title="Next section (PageDown)" aria-label="Next section"></button>
+            <button class="daw-tbtn" id="btn-loop" title="Loop (L)" aria-label="Loop" aria-pressed="false"></button>
+          </div>
+          <div class="pl-time"><span id="time-now">0:00</span> <span class="pl-muted">/</span> <span id="time-total">0:00</span></div>
+          <div class="nle-chip" id="chip-section" title="Current section"><span class="pl-muted">SECTION:</span> <strong id="section">&mdash;</strong></div>
+          <div class="daw-transport-spacer"></div>
+          <div class="daw-transport-group">
+            <button class="daw-tbtn" id="btn-mute" title="Mute (M)" aria-label="Mute"></button>
+            <input class="pl-vol" id="vol" type="range" min="0" max="1" step="0.05" value="1" aria-label="Volume" title="Volume (Up / Down)" />
+          </div>
+          <label class="pl-field" title="Output resolution (reloads the player at the same time)">
+            <span class="pl-muted">RES:</span>
+            <select class="nle-select pl-select" id="res" aria-label="Resolution"></select>
+          </label>
+          <div class="daw-transport-group">
+            <button class="daw-tbtn" id="btn-full" title="Fullscreen (F)" aria-label="Fullscreen"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="module" src="./boot.ts"></script>
+</body>
+</html>

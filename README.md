@@ -12,6 +12,7 @@ This repository contains two code-rendered music videos:
 - **Track**: 200 BPM Neurofunk Drum & Bass (194.261 s duration).
 - **Architecture**: 13 clips and 36 scene modules. Features hybrid GPU torus cellular automata, discrete CPU Conway boards, 3D Voronoi mirror shard fracture geometry, 2D sandstorm displacement particles, Droste recursion, and ASCII DOOM terminal rendering.
 - **Making Of**: Read the comprehensive post-mortem paper in [`docs/BREAKED_NEURO_MAKING_OF.md`](docs/BREAKED_NEURO_MAKING_OF.md).
+- **Web player**: plays in real time in the browser, with no video file. See [`docs/SITE.md`](docs/SITE.md).
 
 ### 2. `pdoom_original` - mexicat
 - **Track**: "I'm Upping My P(doom)" (156.650 s duration).

@@ -10,7 +10,10 @@
     "determinism": "bun scripts/determinism.ts",
     "bench": "bun packages/cli/src/main.ts bench -p pdoom_original",
     "verify-export": "bun scripts/verify-full-export.ts",
-    "test": "bun test"
+    "test": "bun test",
+    "site:data": "bun app/scripts/site-data.ts breaked_neuro",
+    "site:build": "bun run --cwd app site:build",
+    "site:preview": "bun run --cwd app site:preview"
   },
   "dependencies": {
     "@pve/engine": "workspace:*",

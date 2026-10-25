@@ -1,0 +1,62 @@
+/* Player-only rules. The look (tokens, menu bar, group box, transport buttons, select, chip) is the NLE's: ../src/ui/daw.css. */
+:root { --sys-field: #1a1a1a; }
+[hidden] { display: none !important; }
+a.nle-menu-item { text-decoration: none; }
+
+.pl-muted { color: var(--sys-text-muted); }
+.pl-monitor { flex: 1 1 auto; min-height: 160px; display: flex; margin-bottom: 6px; }
+
+/* ---- the frame: picture on top, transport underneath. Fullscreen takes the frame. */
+.pl-frame { flex: 1 1 auto; min-width: 0; min-height: 0; display: flex; flex-direction: column; background: var(--sys-panel); }
+.pl-view { position: relative; flex: 1 1 auto; min-height: 0; background: #000; }
+.pl-view canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; }
+
+.pl-controls { flex: none; background: var(--sys-panel); border-top: 1px solid var(--sys-border); }
+.pl-bar { border-top: 0; border-bottom: 0; flex-wrap: wrap; row-gap: 4px; height: auto; min-height: 38px; padding-top: 5px; padding-bottom: 5px; }
+.pl-time { font: 12px var(--sys-mono); color: var(--sys-text); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pl-field { display: inline-flex; align-items: center; gap: 6px; font: 11px var(--sys-mono); }
+.pl-select { width: auto; height: 26px; }
+
+/* fullscreen: the picture fills the screen, the transport floats over it and hides when idle */
+.pl-frame:fullscreen { background: #000; }
+.pl-frame:fullscreen .pl-view { flex: 1 1 100%; }
+.pl-frame:fullscreen .pl-controls { position: absolute; left: 0; right: 0; bottom: 0; opacity: 0.96; transition: opacity 0.15s; }
+.pl-frame.idle:fullscreen { cursor: none; }
+.pl-frame.idle:fullscreen .pl-controls { opacity: 0; pointer-events: none; }
+
+/* ---- seek bar: a flat WinForms track with a blue fill and a tick at each section start */
+.pl-seek { position: relative; height: 14px; margin: 6px 8px 0; background: #111; border: 1px solid var(--sys-border); cursor: pointer; touch-action: none; }
+.pl-seek:hover { border-color: var(--sys-border-light); }
+.pl-seek-fill { height: 100%; width: 0; background: var(--sys-accent); }
+.pl-seek-ticks i { position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(0, 0, 0, 0.8); }
+.pl-seek-tip { position: absolute; bottom: 18px; transform: translateX(-50%); padding: 2px 6px; background: var(--sys-raised); border: 1px solid var(--sys-border-light); font: 11px var(--sys-mono); white-space: nowrap; pointer-events: none; opacity: 0; }
+.pl-seek:hover .pl-seek-tip { opacity: 1; }
+
+/* ---- volume: flat track, square thumb */
+.pl-vol { -webkit-appearance: none; appearance: none; width: 80px; height: 26px; margin: 0 4px; background: transparent; cursor: pointer; }
+.pl-vol::-webkit-slider-runnable-track { height: 6px; background: #111; border: 1px solid var(--sys-border); }
+.pl-vol::-moz-range-track { height: 4px; background: #111; border: 1px solid var(--sys-border); }
+.pl-vol::-webkit-slider-thumb { -webkit-appearance: none; width: 8px; height: 16px; margin-top: -6px; background: var(--sys-raised-hover); border: 1px solid var(--sys-border-light); border-radius: 0; }
+.pl-vol::-moz-range-thumb { width: 6px; height: 14px; background: var(--sys-raised-hover); border: 1px solid var(--sys-border-light); border-radius: 0; }
+
+/* ---- start dialog: a WinForms message box over the picture */
+.pl-dialog-wrap { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0, 0, 0, 0.6); padding: 12px; }
+.pl-dialog { width: min(420px, 100%); background: var(--sys-panel); border: 1px solid var(--sys-border-light); }
+.pl-dialog-title { height: 24px; line-height: 22px; padding: 0 8px; background: var(--sys-panel-alt); border-bottom: 1px solid var(--sys-border); font-weight: 600; }
+.pl-dialog-body { padding: 12px 14px 4px; }
+.pl-dialog-body p { margin: 0 0 10px; }
+.pl-status { min-height: 1.3em; color: var(--sys-text-muted); font-family: var(--sys-mono); font-size: 11px; }
+.pl-status.error { color: #f87171; }
+.pl-dialog-foot { display: flex; justify-content: flex-end; padding: 8px 14px 12px; background: var(--sys-panel); }
+.pl-btn { min-width: 84px; height: 26px; padding: 0 14px; border: 1px solid var(--sys-border); border-radius: 0; background: var(--sys-raised); color: var(--sys-text); font: 12px var(--sys-font); cursor: pointer; }
+.pl-btn:hover:not(:disabled) { background: var(--sys-raised-hover); border-color: var(--sys-border-light); }
+.pl-btn:active:not(:disabled) { background: var(--sys-raised-active); border-color: #005a9e; color: #fff; }
+.pl-btn:disabled { color: var(--sys-text-dim); cursor: default; }
+.pl-btn-default { border-color: var(--sys-accent); }
+
+button:focus-visible, select:focus-visible, .pl-vol:focus-visible { outline: 1px solid #00e5ff; outline-offset: 1px; }
+
+@media (max-width: 720px) {
+  #chip-section, .pl-field span { display: none; }
+  .pl-vol { width: 56px; }
+}

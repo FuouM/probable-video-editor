@@ -58,3 +58,6 @@ The engine guide and drawing APIs are in [`docs/ENGINE.md`](docs/ENGINE.md). The
 | `bun run verify-export -- --project <id>` | Check a full render: decode, duration, video size and fps, AAC. |
 | `cd app && bunx --bun vite` | Preview at http://localhost:5173/?project=pdoom_original (`&t=40` starts at 40 s). |
 | `bun projects/pdoom_original/video/make-plates.ts` | Render the plate stills of the outro's rewind montage into `video/assets/plates/`. |
+| `bun run site:data` | Write the web player snapshot `projects/breaked_neuro/site/` (inputs, manifest, local MP3). Needs Lyric-Sync and ffmpeg. Run it after a source file of the project changes. See `docs/SITE.md`. |
+| `bun run site:build` | Build the web player into `out/site/`. Fails if the snapshot is older than its sources. |
+| `bun run site:preview` | Serve `out/site/` at http://localhost:4173. |

@@ -5,49 +5,9 @@ import { execSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { TimingData, resolveVideo, type VideoJson } from '@pve/core';
-import { loadSong, type Song } from '@pve/core/load';
-import type { LyricsInputLine } from '@pve/engine/lyrics';
+import { loadSong } from '@pve/core/load';
 import { PROJECTS, REPO, projectDir } from './scripts/project';
-
-/**
- * Replacements of engine defaults in video/assets/: palette.json (colours by key) and the files in fonts/
- * (same path as in the engine's fonts/, e.g. fonts/src/IBMPlexMono-Regular.ttf).
- */
-function projectAssets(id: string, dir: string) {
-  const assets = path.join(dir, 'video/assets');
-  const paletteFile = path.join(assets, 'palette.json');
-  const palette = existsSync(paletteFile) ? (JSON.parse(readFileSync(paletteFile, 'utf8')) as Record<string, unknown>) : null;
-  const fontDir = path.join(assets, 'fonts');
-  const fonts: Record<string, string> = {};
-  if (existsSync(fontDir)) {
-    for (const e of readdirSync(fontDir, { recursive: true, withFileTypes: true })) {
-      if (!e.isFile()) continue;
-      const rel = normalizePath(path.relative(fontDir, path.join(e.parentPath, e.name)));
-      fonts[rel] = `/projects/${id}/video/assets/fonts/${rel}`;
-    }
-  }
-  return { palette, fonts };
-}
-
-/**
- * Calibrated lyric lines in the engine's input shape (LyricsInputLine). A one-syllable word gets no `syl`:
- * scenes test `syl` for a real syllable split.
- */
-function engineLines(lines: Song['lyrics']['lines']): LyricsInputLine[] {
-  return lines.map((l) => ({
-    i: l.i,
-    text: l.text,
-    start: l.start,
-    end: l.end,
-    words: l.words.map((w) => ({
-      w: w.w,
-      start: w.start,
-      end: w.end,
-      ...(typeof w.conf === 'number' ? { conf: w.conf } : {}),
-      ...(w.syl.length > 1 ? { syl: w.syl, sylText: w.sylText } : {}),
-    })),
-  }));
-}
+import { projectInputs } from './scripts/inputs';
 
 /** Query git status for modified/untracked scene files in a project. */
 function getProjectStatus(id: string) {
@@ -549,16 +509,10 @@ function projects(): Plugin {
           const id = decodeURIComponent(m[1] ?? '') || process.env.PVE_PROJECT || '';
           if (!id) throw new Error('no project: open the page with ?project=<id> or set PVE_PROJECT');
           const dir = projectDir(id);
-          const song = await loadSong(dir);
-          const body = {
-            id,
-            video: JSON.parse(readFileSync(path.join(dir, 'video/video.json'), 'utf8')) as unknown,
-            timing: song.timing,
-            features: song.features,
-            lines: engineLines(song.lyrics.lines),
-            mix: `/projects/${id}/${normalizePath(path.relative(dir, song.prompt.mixPath)).split('/').map(encodeURIComponent).join('/')}`,
-            assets: projectAssets(id, dir),
-          };
+          const body = await projectInputs(id, dir, {
+            mix: (song) => `/projects/${id}/${normalizePath(path.relative(dir, song.prompt.mixPath)).split('/').map(encodeURIComponent).join('/')}`,
+            font: (rel) => `/projects/${id}/video/assets/fonts/${rel}`,
+          });
           res.setHeader('content-type', 'application/json');
           res.end(JSON.stringify(body));
         } catch (e) {

@@ -13,6 +13,8 @@ export class StudioAudioEngine {
   private buffer: AudioBuffer | null = null;
   private source: AudioBufferSourceNode | null = null;
   private gainNode: GainNode | null = null;
+  private master: GainNode | null = null;
+  private volume = 1;
 
   // HTML5 Audio fallback for immediate playback while buffer decodes
   private fallbackAudio: HTMLAudioElement;
@@ -52,8 +54,11 @@ export class StudioAudioEngine {
       const AudioCtx = window.AudioContext ?? window.webkitAudioContext;
       if (!AudioCtx) return;
       this.ctx = new AudioCtx();
+      this.master = this.ctx.createGain();
+      this.master.gain.value = this.volume;
+      this.master.connect(this.ctx.destination);
       this.gainNode = this.ctx.createGain();
-      this.gainNode.connect(this.ctx.destination);
+      this.gainNode.connect(this.master);
 
       const res = await fetch(this.url);
       const arrayBuf = await res.arrayBuffer();
@@ -140,6 +145,13 @@ export class StudioAudioEngine {
   setLoop(range: [number, number] | null) {
     this.loopRange = range;
   }
+
+  /** Master volume 0..1 (a muted player is volume 0). */
+  setVolume(v: number) {
+    this.volume = Math.max(0, Math.min(1, v));
+    if (this.master) this.master.gain.value = this.volume;
+    this.fallbackAudio.volume = this.volume;
+  }
   async play() {
     if (this.isPlaying) return;
     const dur = this.duration;
@@ -219,7 +231,7 @@ export class StudioAudioEngine {
 
     // Create fresh gain node for the new source to ramp in
     this.gainNode = this.ctx.createGain();
-    this.gainNode.connect(this.ctx.destination);
+    this.gainNode.connect(this.master ?? this.ctx.destination);
     const now = this.ctx.currentTime;
     this.gainNode.gain.setValueAtTime(0, now);
     this.gainNode.gain.linearRampToValueAtTime(1, now + 0.003);

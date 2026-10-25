@@ -1,0 +1,16 @@
+{
+  "project": "breaked_neuro",
+  "sources": {
+    "generated/features.json": "4265ff01dd06c947130fd3a8edbd2ca0bc7f084fd3e386fb04a73f041832fc51",
+    "generated/timing.ai.json": "e36e025dfa6dc036777074d99452cace454058574b6ee22514d3c0b1b81247a9",
+    "user_input/lyrics.calibrated.json": "983c918a40566907fbf681897fe93719161d7ab6c31c7d54643b4a7c5e8ff504",
+    "video/assets/palette.json": "f903fe50b90b2d2ad28330f6c4e0b049938204cde4141296fd36ea4a719b5816",
+    "video/video.json": "1a3a70f4fe92411160e0033de51119837a6dcd2ece17221988cf8434c27939bd"
+  },
+  "audio": {
+    "file": "breaked_neuro.mp3",
+    "duration": 194.261,
+    "sha256": "d71a16e3f3937c2027e364f52038cc2b2a8901af8bc0284c17768aa71c208c51",
+    "release": "site-audio"
+  }
+}

@@ -1,0 +1,62 @@
+# Deploys the real-time player (app/site) to GitHub Pages. Nothing is rendered: the page runs the engine in
+# the visitor's browser, so a build is `vite build` (a few seconds), not a video render.
+# It runs only when something the page is made of changes (see `paths`).
+# The audio is the asset of the release `site-audio`, not a file in git (app/scripts/site-data.ts).
+name: Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - app/**
+      - packages/engine/**
+      - packages/core/**
+      - projects/*/video/**
+      - projects/*/site/**
+      - package.json
+      - bun.lock
+      - .github/workflows/pages.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# a newer push replaces a deploy that is still running
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      # `link:lyricsync` in packages/core stays a dangling link: the site build never imports Lyric-Sync
+      - run: bun install --frozen-lockfile
+      - name: Download the audio
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          file=$(bun -e "console.log(JSON.parse(require('fs').readFileSync('projects/breaked_neuro/site/manifest.json','utf8')).audio.file)")
+          tag=$(bun -e "console.log(JSON.parse(require('fs').readFileSync('projects/breaked_neuro/site/manifest.json','utf8')).audio.release)")
+          gh release download "$tag" --pattern "$file" --dir "$RUNNER_TEMP/audio"
+          echo "PVE_SITE_AUDIO=$RUNNER_TEMP/audio/$file" >> "$GITHUB_ENV"
+      # fails when the snapshot is older than video.json, the lyrics or the timing, or the audio is not the snapshot's
+      - run: bun run site:build
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: out/site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

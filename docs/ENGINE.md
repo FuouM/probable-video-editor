@@ -87,6 +87,7 @@ Rules:
 - GLSL (`GLSL_COMMON`): `gl_FragCoord`, `fwidth` and `dFdx` are physical. Use `FRAG_PX` (the fragment position in logical px) instead of `gl_FragCoord.xy` whenever it is combined with logical sizes, and `PX_SCALE` to convert. A line whose width comes from `fwidth` ("a 1.2 px hairline": `1.0 - smoothstep(a, b, d / fwidth(u))`) gets thinner and fainter at 4K: write it as `pxLine(d, a, b)`, which is identical at 1× and keeps the 1× ink with sharper edges at 4K (`rampLine` does the same for the linear-ramp idiom). `hatch`, `engrave` and `aaStroke` already do this. LOD thresholds and supersampling offsets expressed in pixels should be logical (`fwidth(u) * PX_SCALE`, offsets `/ PX_SCALE`).
 - Offscreen canvases used as textures (atlases, text planes) keep their own size: make them `SCALE`× larger (with `ctx.scale(SCALE, SCALE)`) if they are shown large, or they look soft at 4K.
 - Post (bloom, halation, CA, grain, vignette) and the HUD scale automatically. The bloom pyramid stays at the logical resolution.
+- Half scale: `?scale=0.5` renders 960×540 (the web player offers it for slow GPUs, see `docs/SITE.md`). It is for viewing only: `still`, `look` and `render` take whole numbers. `SCALE` is 0.5 or a whole number from 1 to 4. The `SCALE === 1` shader branches are the 1× look, so every other value takes the physical-footprint branches. A line thinner than one physical px keeps its ink but gets fainter.
 
 ## Motion blur and sampling
 
