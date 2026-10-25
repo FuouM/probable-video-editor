@@ -6,6 +6,9 @@ The agent workflow is in [`skills/pve/SKILL.md`](skills/pve/SKILL.md).
 
 **[Watch `breaked_neuro` live in your browser](https://fuoum.github.io/probable-video-editor/)**
 
+**[Watch `breaked_neuro` on YouTube in 4K](https://www.youtube.com/watch?v=Tzy9nyStei8)**
+
+
 ## Projects
 
 This repository contains two code-rendered music videos:
