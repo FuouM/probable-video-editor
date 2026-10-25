@@ -4,15 +4,18 @@ pve is an engine and studio for code-rendered music videos. Every frame is a det
 
 The agent workflow is in [`skills/pve/SKILL.md`](skills/pve/SKILL.md).
 
+**[Watch `breaked_neuro` live in your browser](https://fuoum.github.io/probable-video-editor/)**
+
 ## Projects
 
 This repository contains two code-rendered music videos:
 
 ### 1. `breaked_neuro`
+- **Watch**: [**Play it in your browser**](https://fuoum.github.io/probable-video-editor/). Your browser draws every frame live to the song, so it is not a video file. It needs WebGL2, and a desktop GPU is best. A resolution list (0.5x, 1x, 2x) and fullscreen are in the player.
 - **Track**: 200 BPM Neurofunk Drum & Bass (194.261 s duration).
 - **Architecture**: 13 clips and 36 scene modules. Features hybrid GPU torus cellular automata, discrete CPU Conway boards, 3D Voronoi mirror shard fracture geometry, 2D sandstorm displacement particles, Droste recursion, and ASCII DOOM terminal rendering.
 - **Making Of**: Read the comprehensive post-mortem paper in [`docs/BREAKED_NEURO_MAKING_OF.md`](docs/BREAKED_NEURO_MAKING_OF.md).
-- **Web player**: plays in real time in the browser, with no video file. See [`docs/SITE.md`](docs/SITE.md).
+- **Web player**: how it is built and deployed is in [`docs/SITE.md`](docs/SITE.md).
 
 ### 2. `pdoom_original` - mexicat
 - **Track**: "I'm Upping My P(doom)" (156.650 s duration).
