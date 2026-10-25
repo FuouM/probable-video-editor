@@ -1,0 +1,21 @@
+{
+  "v": 1,
+  "id": "breaked_neuro",
+  "engine": "0.1",
+  "fps": 60,
+  "output": {
+    "size": [
+      1920,
+      1080
+    ],
+    "fit": "contain"
+  },
+  "assets": {
+    "song": {
+      "kind": "audio",
+      "src": "user_input/[full] Breaked.wav"
+    }
+  },
+  "markers": {},
+  "tracks": []
+}

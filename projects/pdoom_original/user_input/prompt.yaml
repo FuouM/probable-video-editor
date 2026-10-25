@@ -1,0 +1,7 @@
+# pdoom original: written by scripts/convert-pdoom-original.ts. The beats are the hand-fitted grid of data/audio.json.
+project_code: pdoom_original
+song_name: "I'm Upping My P(doom)"
+nearest_bpm: 132.007
+first_downbeat_s: 0.238
+files:
+  song: "pdoom.mp3"

@@ -1,0 +1,24 @@
+{
+  "name": "pve",
+  "private": true,
+  "type": "module",
+  "workspaces": ["packages/*", "app"],
+  "scripts": {
+    "typecheck": "tsc -p packages/engine && tsc -p packages/core && tsc -p packages/cli && tsc -p app && tsc -p app/tsconfig.scripts.json && tsc -p .",
+    "pve": "bun packages/cli/src/main.ts",
+    "golden": "bun scripts/golden.ts",
+    "determinism": "bun scripts/determinism.ts",
+    "bench": "bun packages/cli/src/main.ts bench -p pdoom_original",
+    "verify-export": "bun scripts/verify-full-export.ts",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@pve/engine": "workspace:*",
+    "three": "^0.186.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/three": "^0.186.0",
+    "typescript": "^7.0.2"
+  }
+}

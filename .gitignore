@@ -5,10 +5,17 @@ node_modules/
 # renders
 out/
 
-# analysis: Python env, model weights, stems and intermediates (regenerable, large)
-analysis/.venv/
-analysis/.cache/
-analysis/__pycache__/
-analysis/stems/
-analysis/work/
-analysis/qa/
+# projects: Lyric-Sync caches and song audio (stems) are local. pdoom_original keeps its audio in git.
+projects/*/lyricsync/
+projects/*/user_input/**/*.wav
+projects/*/user_input/**/*.mp3
+projects/*/user_input/**/*.flac
+projects/*/user_input/**/*.ogg
+projects/*/user_input/**/*.m4a
+projects/*/user_input/**/*.aac
+projects/*/user_input/**/*.opus
+!projects/pdoom_original/user_input/**
+
+# notes & post-mortems
+.lessons/
+projects/*/video/notes/

@@ -1,0 +1,20 @@
+project_code: breaked_neuro
+song_name: "breaked_neuro"
+timing_mode: ai
+nearest_bpm: 200
+first_downbeat_s: 0.296
+files:
+  song: "[full] Breaked.wav"
+  lyrics: lyrics.txt
+  stems:
+    folder: stems
+    vocal: "[stem] [vocal] Breaked.wav"
+    drums:
+      - "[stem] [drums] Breaked (Kick).wav"
+      - "[stem] [drums] Breaked (Snare).wav"
+      - "[stem] [drums] Breaked (Hh).wav"
+      - "[stem] [drums] Breaked (Toms).wav"
+      - "[stem] [drums] Breaked (Ride).wav"
+      - "[stem] [drums] Breaked (Crash).wav"
+    bass: "[stem] [instrument] Breaked (Bass).wav"
+    other: "[stem] [instrument] Breaked (Other).wav"

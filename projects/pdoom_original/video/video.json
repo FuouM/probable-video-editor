@@ -1,0 +1,230 @@
+{
+  "v": 2,
+  "title": "I'm Upping My P(doom)",
+  "fps": 60,
+  "size": [1920, 1080],
+  "markers": {
+    "loss": {
+      "at": "lyric:There was a sudden drop @beat<="
+    },
+    "pre1": {
+      "at": "lyric:ChatGPT, please @beat<="
+    },
+    "hook1": {
+      "at": "lyric:I'm upping#0 @beat<="
+    },
+    "room": {
+      "at": "lyric:'cause the future goes FOOM @beat<="
+    },
+    "shog": {
+      "at": "lyric:See through the shoggoth @beat<="
+    },
+    "space": {
+      "at": "lyric:We had a stable @beat<="
+    },
+    "pre2": {
+      "at": "lyric:Sydney @beat<="
+    },
+    "hook2": {
+      "at": "lyric:I'm upping#1 @beat<="
+    },
+    "ascent": {
+      "at": "lyric:I hear the basilisk @beat<="
+    },
+    "bureau": {
+      "at": "lyric:That was safe enough @beat<="
+    },
+    "left": {
+      "at": "lyric:Sharp left turn @beat<="
+    },
+    "pre3": {
+      "at": "lyric:Gato @beat<="
+    },
+    "hook3": {
+      "at": "lyric:I'm upping#2 @beat<="
+    },
+    "clips": {
+      "at": "lyric:as paperclips @beat<="
+    },
+    "fuse": {
+      "at": "lyric:Too late now @beat<="
+    },
+    "stack": {
+      "at": "lyric:transformers all the way @beat<="
+    },
+    "dense": {
+      "at": "lyric:Post-Chinchilla:tol=0.05 @beat<="
+    },
+    "hook4": {
+      "at": "lyric:I'm upping#3 @beat<="
+    },
+    "loom": {
+      "at": "lyric:Just as foretold @beat<="
+    },
+    "ilya": {
+      "at": "lyric:What did Ilya @beat<="
+    },
+    "outro": {
+      "at": "section:outro || lyric:Was it all for show.end @downbeat~"
+    }
+  },
+  "overlay": "hud",
+  "clips": [
+    {
+      "id": "open",
+      "scene": "open",
+      "at": 0,
+      "to": "@loss"
+    },
+    {
+      "id": "loss",
+      "scene": "loss",
+      "at": "@loss",
+      "to": "@pre1"
+    },
+    {
+      "id": "prompt1",
+      "scene": "prompt",
+      "at": "@pre1",
+      "to": "@hook1",
+      "params": {
+        "variant": "chatgpt"
+      }
+    },
+    {
+      "id": "hook1",
+      "scene": "hook",
+      "at": "@hook1",
+      "to": "@room",
+      "params": {
+        "n": 1
+      }
+    },
+    {
+      "id": "room",
+      "scene": "room",
+      "at": "@room",
+      "to": "@shog"
+    },
+    {
+      "id": "shoggoth",
+      "scene": "shoggoth",
+      "at": "@shog",
+      "to": "@space",
+      "samples": {
+        "max": 108
+      }
+    },
+    {
+      "id": "spacetime",
+      "scene": "spacetime",
+      "at": "@space",
+      "to": "@pre2"
+    },
+    {
+      "id": "prompt2",
+      "scene": "prompt",
+      "at": "@pre2",
+      "to": "@hook2",
+      "params": {
+        "variant": "sydney"
+      }
+    },
+    {
+      "id": "hook2",
+      "scene": "hook",
+      "at": "@hook2",
+      "to": "@ascent",
+      "params": {
+        "n": 2
+      }
+    },
+    {
+      "id": "ascent",
+      "scene": "ascent",
+      "at": "@ascent",
+      "to": "@bureau"
+    },
+    {
+      "id": "bureau",
+      "scene": "bureau",
+      "at": "@bureau",
+      "to": "@left"
+    },
+    {
+      "id": "leftturn",
+      "scene": "leftturn",
+      "at": "@left",
+      "to": "@pre3"
+    },
+    {
+      "id": "prompt3",
+      "scene": "prompt",
+      "at": "@pre3",
+      "to": "@hook3",
+      "params": {
+        "variant": "gato"
+      }
+    },
+    {
+      "id": "hook3",
+      "scene": "hook",
+      "at": "@hook3",
+      "to": "@clips",
+      "params": {
+        "n": 3
+      }
+    },
+    {
+      "id": "paperclips",
+      "scene": "paperclips",
+      "at": "@clips",
+      "to": "@fuse"
+    },
+    {
+      "id": "fuse",
+      "scene": "fuse",
+      "at": "@fuse",
+      "to": "@stack"
+    },
+    {
+      "id": "stack",
+      "scene": "stack",
+      "at": "@stack",
+      "to": "@dense"
+    },
+    {
+      "id": "dense",
+      "scene": "dense",
+      "at": "@dense",
+      "to": "@hook4"
+    },
+    {
+      "id": "hook4",
+      "scene": "hook",
+      "at": "@hook4",
+      "to": "@loom",
+      "params": {
+        "n": 4
+      }
+    },
+    {
+      "id": "loom",
+      "scene": "loom",
+      "at": "@loom",
+      "to": "@ilya"
+    },
+    {
+      "id": "ilya",
+      "scene": "ilya",
+      "at": "@ilya",
+      "to": "@outro"
+    },
+    {
+      "id": "outro",
+      "scene": "outro",
+      "at": "@outro",
+      "to": "end"
+    }
+  ]
+}

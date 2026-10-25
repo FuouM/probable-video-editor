@@ -1,0 +1,2827 @@
+{
+  "format": "words",
+  "source": "pdoom original: data/lyrics.json (words, syllables), data/audio.json (sections)",
+  "notes": "Timeline = gapless mp3 decode (same as data/audio.json); Demucs stems shifted -23 ms (LAME encoder delay). Method: (1) CTC emissions (20 ms frames) of the Demucs vocal stem from two acoustic models, torchaudio MMS_FA and wav2vec2-large-lv60k-960h, each on the mono sum and on the left and right channels (choruses are double-tracked L/R), fused as a probability mixture; (2) one global constrained Viterbi forced alignment of all 46 lines over the whole song with a garbage 'star' token between lines to absorb ad-libs; acronyms/odd words aligned with phonetic spellings (AGI='ay gee i', P(doom)='pee doom', ChatGPT='chat gee pee tee', NVDA='en vee dee ay', MLP='em el pee', CDR='see dee are', PTO='pee tee oh', GPU='gee pee you', RLHF='are el aitch eff', One E thirty='one ee thirty', Neumann's='noymans'); (3) signal refinement per syllable unit on the vocal stem: start moved to the voice re-entry after a rest, snapped to the nearest spectral-flux onset, or moved back to the start of s/sh/ch/f/th frication; ends = next word start when legato, else when the voice drops 15 dB below the word level (held notes keep their full length); (4) cross-check against mlx-whisper large-v3-turbo word timestamps and the individual models/channels, plus a mel-roformer karaoke lead-vocal stem for the final chorus; (5) manual verification of every line on zoomed spectrogram/pitch/onset plots (analysis/qa/zl_*.png) with ~20 manual corrections (align.py FIX). conf: 0.35 + agreement of the independent alignments (<=60 ms) + CTC posterior + Whisper agreement; manual fixes carry their own conf. 'syl' = start/end of each spelled letter or compound part (AGI, ChatGPT, P(doom), NVDA, MLP, CDR, PTO, GPU, RLHF, Killswitch, Post-Chinchilla, super-dense, pre-training, self-upgrade). NVDA pronunciation is ambiguous: 'Nvidia' scores slightly better acoustically than 'en-vee-dee-ay', but the word timing is the same either way (62.54-63.36), so syl uses the letter split. Uncertain words: final-chorus 'I'm upping my' (124.5-125.4, buried under a backing pad, placed by rhythm of the other choruses, +-100 ms); 'are' (83.93, could be 84.58); 'me' (57.14); 'alive' (21.35); 'eat' (20.27); 'Just transformers' region (108.5-110.2 lead-in); chorus 'I'm' pickups (22.76, 59.13, 95.47) +-50 ms; 'lies,' 31.14. Everything else is expected within ~30-50 ms at word starts.",
+  "extras": [
+    {
+      "start": 34.9,
+      "end": 38.3,
+      "desc": "backing-vocal tail / 'ah' ad-lib after 'eyes' over the break (chorus 1 end)"
+    },
+    {
+      "start": 108.55,
+      "end": 110.06,
+      "desc": "lead-in before 'Just transformers': Whisper hears a stuttered 'Just, just, just' (low confidence)"
+    },
+    {
+      "start": 122.4,
+      "end": 125.9,
+      "desc": "sustained backing 'ah' pad under 'I'm upping my P(doom)' (final chorus) - lead is buried here"
+    },
+    {
+      "start": 140.7,
+      "end": 153.58,
+      "desc": "outro chant: repeated 'oh' / 'oh-oh' vocal hook (Whisper: 'Oh, oh, oh...') until the drums stop at ~153"
+    }
+  ],
+  "sections": [
+    {
+      "id": "intro_0",
+      "name": "intro",
+      "start": 0,
+      "end": 2.056
+    },
+    {
+      "id": "verse1_1",
+      "name": "verse1",
+      "start": 2.056,
+      "end": 16.601
+    },
+    {
+      "id": "pre1_2",
+      "name": "pre1",
+      "start": 16.601,
+      "end": 22.055
+    },
+    {
+      "id": "chorus1_3",
+      "name": "chorus1",
+      "start": 22.055,
+      "end": 36.6
+    },
+    {
+      "id": "break1_4",
+      "name": "break1",
+      "start": 36.6,
+      "end": 38.418
+    },
+    {
+      "id": "verse2_5",
+      "name": "verse2",
+      "start": 38.418,
+      "end": 52.962
+    },
+    {
+      "id": "pre2_6",
+      "name": "pre2",
+      "start": 52.962,
+      "end": 58.417
+    },
+    {
+      "id": "chorus2_7",
+      "name": "chorus2",
+      "start": 58.417,
+      "end": 74.779
+    },
+    {
+      "id": "verse3_8",
+      "name": "verse3",
+      "start": 74.779,
+      "end": 89.324
+    },
+    {
+      "id": "pre3_9",
+      "name": "pre3",
+      "start": 89.324,
+      "end": 94.778
+    },
+    {
+      "id": "chorus3_10",
+      "name": "chorus3",
+      "start": 94.778,
+      "end": 109.323
+    },
+    {
+      "id": "bridge_11",
+      "name": "bridge",
+      "start": 109.323,
+      "end": 123.868
+    },
+    {
+      "id": "chorus4_12",
+      "name": "chorus4",
+      "start": 123.868,
+      "end": 140.23
+    },
+    {
+      "id": "outro_13",
+      "name": "outro",
+      "start": 140.23,
+      "end": 156.651
+    }
+  ],
+  "lines": [
+    {
+      "i": 0,
+      "text": "I see sparks of AGI in your eyes",
+      "start": 1.407,
+      "end": 5.88,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "I",
+          "start": 1.407,
+          "end": 2.35,
+          "syl": [
+            [1.407, 2.35]
+          ],
+          "sylText": ["I"],
+          "conf": 1
+        },
+        {
+          "w": "see",
+          "start": 2.35,
+          "end": 2.739,
+          "syl": [
+            [2.35, 2.739]
+          ],
+          "sylText": ["see"],
+          "conf": 1
+        },
+        {
+          "w": "sparks",
+          "start": 2.739,
+          "end": 3.46,
+          "syl": [
+            [2.739, 3.46]
+          ],
+          "sylText": ["sparks"],
+          "conf": 1
+        },
+        {
+          "w": "of",
+          "start": 3.46,
+          "end": 3.677,
+          "syl": [
+            [3.46, 3.677]
+          ],
+          "sylText": ["of"],
+          "conf": 1
+        },
+        {
+          "w": "AGI",
+          "start": 3.677,
+          "end": 4.704,
+          "syl": [
+            [3.677, 4.06],
+            [4.06, 4.355],
+            [4.355, 4.704]
+          ],
+          "sylText": ["A", "G", "I"],
+          "conf": 0.84
+        },
+        {
+          "w": "in",
+          "start": 4.809,
+          "end": 5,
+          "syl": [
+            [4.809, 5]
+          ],
+          "sylText": ["in"],
+          "conf": 0.85
+        },
+        {
+          "w": "your",
+          "start": 5,
+          "end": 5.263,
+          "syl": [
+            [5, 5.263]
+          ],
+          "sylText": ["your"],
+          "conf": 1
+        },
+        {
+          "w": "eyes",
+          "start": 5.263,
+          "end": 5.88,
+          "syl": [
+            [5.263, 5.88]
+          ],
+          "sylText": ["eyes"],
+          "conf": 0.91
+        }
+      ]
+    },
+    {
+      "i": 1,
+      "text": "Your circuits make me nervous,",
+      "start": 5.88,
+      "end": 7.72,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "Your",
+          "start": 5.88,
+          "end": 5.991,
+          "syl": [
+            [5.88, 5.991]
+          ],
+          "sylText": ["Your"],
+          "conf": 0.83
+        },
+        {
+          "w": "circuits",
+          "start": 5.991,
+          "end": 6.56,
+          "syl": [
+            [5.991, 6.56]
+          ],
+          "sylText": ["circuits"],
+          "conf": 1
+        },
+        {
+          "w": "make",
+          "start": 6.56,
+          "end": 6.82,
+          "syl": [
+            [6.56, 6.82]
+          ],
+          "sylText": ["make"],
+          "conf": 1
+        },
+        {
+          "w": "me",
+          "start": 6.82,
+          "end": 7.04,
+          "syl": [
+            [6.82, 7.04]
+          ],
+          "sylText": ["me"],
+          "conf": 1
+        },
+        {
+          "w": "nervous,",
+          "start": 7.04,
+          "end": 7.72,
+          "syl": [
+            [7.04, 7.72]
+          ],
+          "sylText": ["nervous,"],
+          "conf": 1
+        }
+      ]
+    },
+    {
+      "i": 2,
+      "text": "that's no surprise",
+      "start": 7.72,
+      "end": 9.52,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "that's",
+          "start": 7.72,
+          "end": 8.092,
+          "syl": [
+            [7.72, 8.092]
+          ],
+          "sylText": ["that's"],
+          "conf": 1
+        },
+        {
+          "w": "no",
+          "start": 8.092,
+          "end": 8.496,
+          "syl": [
+            [8.092, 8.496]
+          ],
+          "sylText": ["no"],
+          "conf": 1
+        },
+        {
+          "w": "surprise",
+          "start": 8.496,
+          "end": 9.52,
+          "syl": [
+            [8.496, 9.52]
+          ],
+          "sylText": ["surprise"],
+          "conf": 1
+        }
+      ]
+    },
+    {
+      "i": 3,
+      "text": "There was a sudden drop in your training loss,",
+      "start": 9.52,
+      "end": 12.746,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "There",
+          "start": 9.52,
+          "end": 9.8,
+          "syl": [
+            [9.52, 9.8]
+          ],
+          "sylText": ["There"],
+          "conf": 0.85
+        },
+        {
+          "w": "was",
+          "start": 9.8,
+          "end": 10.04,
+          "syl": [
+            [9.8, 10.04]
+          ],
+          "sylText": ["was"],
+          "conf": 1
+        },
+        {
+          "w": "a",
+          "start": 10.04,
+          "end": 10.137,
+          "syl": [
+            [10.04, 10.137]
+          ],
+          "sylText": ["a"],
+          "conf": 1
+        },
+        {
+          "w": "sudden",
+          "start": 10.137,
+          "end": 10.66,
+          "syl": [
+            [10.137, 10.66]
+          ],
+          "sylText": ["sudden"],
+          "conf": 1
+        },
+        {
+          "w": "drop",
+          "start": 10.66,
+          "end": 11.175,
+          "syl": [
+            [10.66, 11.175]
+          ],
+          "sylText": ["drop"],
+          "conf": 1
+        },
+        {
+          "w": "in",
+          "start": 11.175,
+          "end": 11.34,
+          "syl": [
+            [11.175, 11.34]
+          ],
+          "sylText": ["in"],
+          "conf": 0.85
+        },
+        {
+          "w": "your",
+          "start": 11.34,
+          "end": 11.52,
+          "syl": [
+            [11.34, 11.52]
+          ],
+          "sylText": ["your"],
+          "conf": 0.85
+        },
+        {
+          "w": "training",
+          "start": 11.52,
+          "end": 12.06,
+          "syl": [
+            [11.52, 12.06]
+          ],
+          "sylText": ["training"],
+          "conf": 1
+        },
+        {
+          "w": "loss,",
+          "start": 12.06,
+          "end": 12.746,
+          "syl": [
+            [12.06, 12.746]
+          ],
+          "sylText": ["loss,"],
+          "conf": 0.81
+        }
+      ]
+    },
+    {
+      "i": 4,
+      "text": "now I'm your servant and you're my boss",
+      "start": 13.16,
+      "end": 16.6,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "now",
+          "start": 13.16,
+          "end": 13.5,
+          "syl": [
+            [13.16, 13.5]
+          ],
+          "sylText": ["now"],
+          "conf": 0.85
+        },
+        {
+          "w": "I'm",
+          "start": 13.5,
+          "end": 13.62,
+          "syl": [
+            [13.5, 13.62]
+          ],
+          "sylText": ["I'm"],
+          "conf": 0.75
+        },
+        {
+          "w": "your",
+          "start": 13.62,
+          "end": 13.719,
+          "syl": [
+            [13.62, 13.719]
+          ],
+          "sylText": ["your"],
+          "conf": 0.95
+        },
+        {
+          "w": "servant",
+          "start": 13.719,
+          "end": 14.607,
+          "syl": [
+            [13.719, 14.607]
+          ],
+          "sylText": ["servant"],
+          "conf": 0.91
+        },
+        {
+          "w": "and",
+          "start": 15.02,
+          "end": 15.2,
+          "syl": [
+            [15.02, 15.2]
+          ],
+          "sylText": ["and"],
+          "conf": 0.85
+        },
+        {
+          "w": "you're",
+          "start": 15.2,
+          "end": 15.42,
+          "syl": [
+            [15.2, 15.42]
+          ],
+          "sylText": ["you're"],
+          "conf": 0.9
+        },
+        {
+          "w": "my",
+          "start": 15.42,
+          "end": 15.66,
+          "syl": [
+            [15.42, 15.66]
+          ],
+          "sylText": ["my"],
+          "conf": 0.95
+        },
+        {
+          "w": "boss",
+          "start": 15.66,
+          "end": 16.6,
+          "syl": [
+            [15.66, 16.6]
+          ],
+          "sylText": ["boss"],
+          "conf": 0.95
+        }
+      ]
+    },
+    {
+      "i": 5,
+      "text": "ChatGPT, please don't eat me alive",
+      "start": 16.6,
+      "end": 22.76,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "ChatGPT,",
+          "start": 16.6,
+          "end": 19.082,
+          "syl": [
+            [16.6, 17.24],
+            [17.24, 17.92],
+            [17.92, 18.36],
+            [18.36, 19.082]
+          ],
+          "sylText": ["Chat", "G", "P", "T,"],
+          "conf": 0.79
+        },
+        {
+          "w": "please",
+          "start": 19.082,
+          "end": 19.76,
+          "syl": [
+            [19.082, 19.76]
+          ],
+          "sylText": ["please"],
+          "conf": 1
+        },
+        {
+          "w": "don't",
+          "start": 19.76,
+          "end": 20.27,
+          "syl": [
+            [19.76, 20.27]
+          ],
+          "sylText": ["don't"],
+          "conf": 0.82
+        },
+        {
+          "w": "eat",
+          "start": 20.27,
+          "end": 20.84,
+          "syl": [
+            [20.27, 20.84]
+          ],
+          "sylText": ["eat"],
+          "conf": 0.8
+        },
+        {
+          "w": "me",
+          "start": 20.84,
+          "end": 21.35,
+          "syl": [
+            [20.84, 21.35]
+          ],
+          "sylText": ["me"],
+          "conf": 0.67
+        },
+        {
+          "w": "alive",
+          "start": 21.35,
+          "end": 22.76,
+          "syl": [
+            [21.35, 22.76]
+          ],
+          "sylText": ["alive"],
+          "conf": 0.8
+        }
+      ]
+    },
+    {
+      "i": 6,
+      "text": "I'm upping my P(doom)",
+      "start": 22.76,
+      "end": 24.32,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "I'm",
+          "start": 22.76,
+          "end": 23,
+          "syl": [
+            [22.76, 23]
+          ],
+          "sylText": ["I'm"],
+          "conf": 0.7
+        },
+        {
+          "w": "upping",
+          "start": 23,
+          "end": 23.38,
+          "syl": [
+            [23, 23.38]
+          ],
+          "sylText": ["upping"],
+          "conf": 0.77
+        },
+        {
+          "w": "my",
+          "start": 23.38,
+          "end": 23.537,
+          "syl": [
+            [23.38, 23.537]
+          ],
+          "sylText": ["my"],
+          "conf": 0.84
+        },
+        {
+          "w": "P(doom)",
+          "start": 23.6,
+          "end": 24.32,
+          "syl": [
+            [23.6, 23.866],
+            [23.866, 24.32]
+          ],
+          "sylText": ["P", "(doom)"],
+          "conf": 0.8
+        }
+      ]
+    },
+    {
+      "i": 7,
+      "text": "'cause the future goes FOOM",
+      "start": 24.32,
+      "end": 26.32,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "'cause",
+          "start": 24.32,
+          "end": 24.56,
+          "syl": [
+            [24.32, 24.56]
+          ],
+          "sylText": ["'cause"],
+          "conf": 0.66
+        },
+        {
+          "w": "the",
+          "start": 24.56,
+          "end": 24.659,
+          "syl": [
+            [24.56, 24.659]
+          ],
+          "sylText": ["the"],
+          "conf": 0.95
+        },
+        {
+          "w": "future",
+          "start": 24.659,
+          "end": 25.098,
+          "syl": [
+            [24.659, 25.098]
+          ],
+          "sylText": ["future"],
+          "conf": 0.91
+        },
+        {
+          "w": "goes",
+          "start": 25.18,
+          "end": 25.577,
+          "syl": [
+            [25.18, 25.577]
+          ],
+          "sylText": ["goes"],
+          "conf": 0.86
+        },
+        {
+          "w": "FOOM",
+          "start": 25.577,
+          "end": 26.32,
+          "syl": [
+            [25.577, 26.32]
+          ],
+          "sylText": ["FOOM"],
+          "conf": 0.86
+        }
+      ]
+    },
+    {
+      "i": 8,
+      "text": "Trapped in the Chinese room,",
+      "start": 26.32,
+      "end": 27.94,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "Trapped",
+          "start": 26.32,
+          "end": 26.66,
+          "syl": [
+            [26.32, 26.66]
+          ],
+          "sylText": ["Trapped"],
+          "conf": 0.67
+        },
+        {
+          "w": "in",
+          "start": 26.66,
+          "end": 26.82,
+          "syl": [
+            [26.66, 26.82]
+          ],
+          "sylText": ["in"],
+          "conf": 0.85
+        },
+        {
+          "w": "the",
+          "start": 26.82,
+          "end": 26.949,
+          "syl": [
+            [26.82, 26.949]
+          ],
+          "sylText": ["the"],
+          "conf": 0.87
+        },
+        {
+          "w": "Chinese",
+          "start": 26.949,
+          "end": 27.52,
+          "syl": [
+            [26.949, 27.52]
+          ],
+          "sylText": ["Chinese"],
+          "conf": 0.86
+        },
+        {
+          "w": "room,",
+          "start": 27.52,
+          "end": 27.94,
+          "syl": [
+            [27.52, 27.94]
+          ],
+          "sylText": ["room,"],
+          "conf": 0.71
+        }
+      ]
+    },
+    {
+      "i": 9,
+      "text": "with a bag of shrooms",
+      "start": 27.94,
+      "end": 29.907,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "with",
+          "start": 27.94,
+          "end": 28.216,
+          "syl": [
+            [27.94, 28.216]
+          ],
+          "sylText": ["with"],
+          "conf": 0.9
+        },
+        {
+          "w": "a",
+          "start": 28.216,
+          "end": 28.38,
+          "syl": [
+            [28.216, 28.38]
+          ],
+          "sylText": ["a"],
+          "conf": 0.83
+        },
+        {
+          "w": "bag",
+          "start": 28.38,
+          "end": 28.879,
+          "syl": [
+            [28.38, 28.879]
+          ],
+          "sylText": ["bag"],
+          "conf": 0.9
+        },
+        {
+          "w": "of",
+          "start": 28.879,
+          "end": 29.124,
+          "syl": [
+            [28.879, 29.124]
+          ],
+          "sylText": ["of"],
+          "conf": 0.97
+        },
+        {
+          "w": "shrooms",
+          "start": 29.124,
+          "end": 29.907,
+          "syl": [
+            [29.124, 29.907]
+          ],
+          "sylText": ["shrooms"],
+          "conf": 0.91
+        }
+      ]
+    },
+    {
+      "i": 10,
+      "text": "See through the shoggoth's lies,",
+      "start": 29.907,
+      "end": 33.4,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "See",
+          "start": 29.907,
+          "end": 30.007,
+          "syl": [
+            [29.907, 30.007]
+          ],
+          "sylText": ["See"],
+          "conf": 0.76
+        },
+        {
+          "w": "through",
+          "start": 30.007,
+          "end": 30.48,
+          "syl": [
+            [30.007, 30.48]
+          ],
+          "sylText": ["through"],
+          "conf": 0.86
+        },
+        {
+          "w": "the",
+          "start": 30.48,
+          "end": 30.576,
+          "syl": [
+            [30.48, 30.576]
+          ],
+          "sylText": ["the"],
+          "conf": 0.92
+        },
+        {
+          "w": "shoggoth's",
+          "start": 30.576,
+          "end": 31.14,
+          "syl": [
+            [30.576, 31.14]
+          ],
+          "sylText": ["shoggoth's"],
+          "conf": 0.86
+        },
+        {
+          "w": "lies,",
+          "start": 31.14,
+          "end": 33.4,
+          "syl": [
+            [31.14, 33.4]
+          ],
+          "sylText": ["lies,"],
+          "conf": 0.7
+        }
+      ]
+    },
+    {
+      "i": 11,
+      "text": "with your shinigami eyes",
+      "start": 33.4,
+      "end": 37.315,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "with",
+          "start": 33.4,
+          "end": 33.64,
+          "syl": [
+            [33.4, 33.64]
+          ],
+          "sylText": ["with"],
+          "conf": 0.61
+        },
+        {
+          "w": "your",
+          "start": 33.64,
+          "end": 33.738,
+          "syl": [
+            [33.64, 33.738]
+          ],
+          "sylText": ["your"],
+          "conf": 0.83
+        },
+        {
+          "w": "shinigami",
+          "start": 33.738,
+          "end": 34.73,
+          "syl": [
+            [33.738, 34.73]
+          ],
+          "sylText": ["shinigami"],
+          "conf": 0.8
+        },
+        {
+          "w": "eyes",
+          "start": 34.73,
+          "end": 37.315,
+          "syl": [
+            [34.73, 37.315]
+          ],
+          "sylText": ["eyes"],
+          "conf": 0.8
+        }
+      ]
+    },
+    {
+      "i": 12,
+      "text": "We had a stable training run,",
+      "start": 38.62,
+      "end": 41.34,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "We",
+          "start": 38.62,
+          "end": 38.802,
+          "syl": [
+            [38.62, 38.802]
+          ],
+          "sylText": ["We"],
+          "conf": 0.85
+        },
+        {
+          "w": "had",
+          "start": 38.802,
+          "end": 39.12,
+          "syl": [
+            [38.802, 39.12]
+          ],
+          "sylText": ["had"],
+          "conf": 0.99
+        },
+        {
+          "w": "a",
+          "start": 39.12,
+          "end": 39.2,
+          "syl": [
+            [39.12, 39.2]
+          ],
+          "sylText": ["a"],
+          "conf": 0.99
+        },
+        {
+          "w": "stable",
+          "start": 39.2,
+          "end": 39.94,
+          "syl": [
+            [39.2, 39.94]
+          ],
+          "sylText": ["stable"],
+          "conf": 1
+        },
+        {
+          "w": "training",
+          "start": 39.94,
+          "end": 40.9,
+          "syl": [
+            [39.94, 40.9]
+          ],
+          "sylText": ["training"],
+          "conf": 1
+        },
+        {
+          "w": "run,",
+          "start": 40.9,
+          "end": 41.34,
+          "syl": [
+            [40.9, 41.34]
+          ],
+          "sylText": ["run,"],
+          "conf": 0.82
+        }
+      ]
+    },
+    {
+      "i": 13,
+      "text": "But now the singularity's begun",
+      "start": 41.34,
+      "end": 45.06,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "But",
+          "start": 41.34,
+          "end": 41.56,
+          "syl": [
+            [41.34, 41.56]
+          ],
+          "sylText": ["But"],
+          "conf": 0.75
+        },
+        {
+          "w": "now",
+          "start": 41.56,
+          "end": 41.82,
+          "syl": [
+            [41.56, 41.82]
+          ],
+          "sylText": ["now"],
+          "conf": 0.95
+        },
+        {
+          "w": "the",
+          "start": 41.82,
+          "end": 42.005,
+          "syl": [
+            [41.82, 42.005]
+          ],
+          "sylText": ["the"],
+          "conf": 1
+        },
+        {
+          "w": "singularity's",
+          "start": 42.294,
+          "end": 44.025,
+          "syl": [
+            [42.294, 44.025]
+          ],
+          "sylText": ["singularity's"],
+          "conf": 0.84
+        },
+        {
+          "w": "begun",
+          "start": 44.08,
+          "end": 45.06,
+          "syl": [
+            [44.08, 45.06]
+          ],
+          "sylText": ["begun"],
+          "conf": 0.99
+        }
+      ]
+    },
+    {
+      "i": 14,
+      "text": "And you're optimizing, accelerating,",
+      "start": 45.06,
+      "end": 49.562,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "And",
+          "start": 45.06,
+          "end": 45.22,
+          "syl": [
+            [45.06, 45.22]
+          ],
+          "sylText": ["And"],
+          "conf": 0.78
+        },
+        {
+          "w": "you're",
+          "start": 45.22,
+          "end": 46.16,
+          "syl": [
+            [45.22, 46.16]
+          ],
+          "sylText": ["you're"],
+          "conf": 0.95
+        },
+        {
+          "w": "optimizing,",
+          "start": 46.16,
+          "end": 47.26,
+          "syl": [
+            [46.16, 47.26]
+          ],
+          "sylText": ["optimizing,"],
+          "conf": 0.81
+        },
+        {
+          "w": "accelerating,",
+          "start": 47.26,
+          "end": 49.562,
+          "syl": [
+            [47.26, 49.562]
+          ],
+          "sylText": ["accelerating,"],
+          "conf": 0.7
+        }
+      ]
+    },
+    {
+      "i": 15,
+      "text": "I feel my atoms rearranging",
+      "start": 49.562,
+      "end": 52.825,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "I",
+          "start": 49.562,
+          "end": 49.662,
+          "syl": [
+            [49.562, 49.662]
+          ],
+          "sylText": ["I"],
+          "conf": 0.82
+        },
+        {
+          "w": "feel",
+          "start": 49.662,
+          "end": 50,
+          "syl": [
+            [49.662, 50]
+          ],
+          "sylText": ["feel"],
+          "conf": 0.94
+        },
+        {
+          "w": "my",
+          "start": 50,
+          "end": 50.48,
+          "syl": [
+            [50, 50.48]
+          ],
+          "sylText": ["my"],
+          "conf": 1
+        },
+        {
+          "w": "atoms",
+          "start": 50.48,
+          "end": 51.38,
+          "syl": [
+            [50.48, 51.38]
+          ],
+          "sylText": ["atoms"],
+          "conf": 0.68
+        },
+        {
+          "w": "rearranging",
+          "start": 51.38,
+          "end": 52.825,
+          "syl": [
+            [51.38, 52.825]
+          ],
+          "sylText": ["rearranging"],
+          "conf": 0.79
+        }
+      ]
+    },
+    {
+      "i": 16,
+      "text": "Sydney, please let me free",
+      "start": 52.825,
+      "end": 59.13,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "Sydney,",
+          "start": 52.825,
+          "end": 55.98,
+          "syl": [
+            [52.825, 55.98]
+          ],
+          "sylText": ["Sydney,"],
+          "conf": 0.83
+        },
+        {
+          "w": "please",
+          "start": 55.98,
+          "end": 56.58,
+          "syl": [
+            [55.98, 56.58]
+          ],
+          "sylText": ["please"],
+          "conf": 0.89
+        },
+        {
+          "w": "let",
+          "start": 56.58,
+          "end": 57.14,
+          "syl": [
+            [56.58, 57.14]
+          ],
+          "sylText": ["let"],
+          "conf": 0.72
+        },
+        {
+          "w": "me",
+          "start": 57.14,
+          "end": 57.769,
+          "syl": [
+            [57.14, 57.769]
+          ],
+          "sylText": ["me"],
+          "conf": 0.59
+        },
+        {
+          "w": "free",
+          "start": 57.769,
+          "end": 59.13,
+          "syl": [
+            [57.769, 59.13]
+          ],
+          "sylText": ["free"],
+          "conf": 0.83
+        }
+      ]
+    },
+    {
+      "i": 17,
+      "text": "I'm upping my P(doom)",
+      "start": 59.13,
+      "end": 60.58,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "I'm",
+          "start": 59.13,
+          "end": 59.36,
+          "syl": [
+            [59.13, 59.36]
+          ],
+          "sylText": ["I'm"],
+          "conf": 0.7
+        },
+        {
+          "w": "upping",
+          "start": 59.36,
+          "end": 59.74,
+          "syl": [
+            [59.36, 59.74]
+          ],
+          "sylText": ["upping"],
+          "conf": 0.8
+        },
+        {
+          "w": "my",
+          "start": 59.74,
+          "end": 59.96,
+          "syl": [
+            [59.74, 59.96]
+          ],
+          "sylText": ["my"],
+          "conf": 0.74
+        },
+        {
+          "w": "P(doom)",
+          "start": 59.96,
+          "end": 60.58,
+          "syl": [
+            [59.96, 60.18],
+            [60.18, 60.58]
+          ],
+          "sylText": ["P", "(doom)"],
+          "conf": 0.72
+        }
+      ]
+    },
+    {
+      "i": 18,
+      "text": "I hear the basilisk boom",
+      "start": 60.58,
+      "end": 62.54,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "I",
+          "start": 60.58,
+          "end": 60.707,
+          "syl": [
+            [60.58, 60.707]
+          ],
+          "sylText": ["I"],
+          "conf": 0.64
+        },
+        {
+          "w": "hear",
+          "start": 60.707,
+          "end": 60.946,
+          "syl": [
+            [60.707, 60.946]
+          ],
+          "sylText": ["hear"],
+          "conf": 0.88
+        },
+        {
+          "w": "the",
+          "start": 60.946,
+          "end": 61.1,
+          "syl": [
+            [60.946, 61.1]
+          ],
+          "sylText": ["the"],
+          "conf": 0.88
+        },
+        {
+          "w": "basilisk",
+          "start": 61.1,
+          "end": 62.02,
+          "syl": [
+            [61.1, 62.02]
+          ],
+          "sylText": ["basilisk"],
+          "conf": 0.88
+        },
+        {
+          "w": "boom",
+          "start": 62.02,
+          "end": 62.54,
+          "syl": [
+            [62.02, 62.54]
+          ],
+          "sylText": ["boom"],
+          "conf": 0.73
+        }
+      ]
+    },
+    {
+      "i": 19,
+      "text": "NVDA to the moon",
+      "start": 62.54,
+      "end": 64.1,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "NVDA",
+          "start": 62.54,
+          "end": 63.36,
+          "syl": [
+            [62.54, 62.7],
+            [62.7, 62.94],
+            [62.94, 63.216],
+            [63.216, 63.36]
+          ],
+          "sylText": ["N", "V", "D", "A"],
+          "conf": 0.73
+        },
+        {
+          "w": "to",
+          "start": 63.36,
+          "end": 63.62,
+          "syl": [
+            [63.36, 63.62]
+          ],
+          "sylText": ["to"],
+          "conf": 0.94
+        },
+        {
+          "w": "the",
+          "start": 63.62,
+          "end": 63.82,
+          "syl": [
+            [63.62, 63.82]
+          ],
+          "sylText": ["the"],
+          "conf": 0.92
+        },
+        {
+          "w": "moon",
+          "start": 63.82,
+          "end": 64.1,
+          "syl": [
+            [63.82, 64.1]
+          ],
+          "sylText": ["moon"],
+          "conf": 0.91
+        }
+      ]
+    },
+    {
+      "i": 20,
+      "text": "The Omega Point's coming soon",
+      "start": 64.1,
+      "end": 66.22,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "The",
+          "start": 64.1,
+          "end": 64.24,
+          "syl": [
+            [64.1, 64.24]
+          ],
+          "sylText": ["The"],
+          "conf": 0.84
+        },
+        {
+          "w": "Omega",
+          "start": 64.24,
+          "end": 64.74,
+          "syl": [
+            [64.24, 64.74]
+          ],
+          "sylText": ["Omega"],
+          "conf": 0.92
+        },
+        {
+          "w": "Point's",
+          "start": 64.74,
+          "end": 65.2,
+          "syl": [
+            [64.74, 65.2]
+          ],
+          "sylText": ["Point's"],
+          "conf": 0.81
+        },
+        {
+          "w": "coming",
+          "start": 65.2,
+          "end": 65.556,
+          "syl": [
+            [65.2, 65.556]
+          ],
+          "sylText": ["coming"],
+          "conf": 0.87
+        },
+        {
+          "w": "soon",
+          "start": 65.556,
+          "end": 66.22,
+          "syl": [
+            [65.556, 66.22]
+          ],
+          "sylText": ["soon"],
+          "conf": 0.9
+        }
+      ]
+    },
+    {
+      "i": 21,
+      "text": "One E thirty FLOPs a second",
+      "start": 66.22,
+      "end": 69.76,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "One",
+          "start": 66.22,
+          "end": 66.42,
+          "syl": [
+            [66.22, 66.42]
+          ],
+          "sylText": ["One"],
+          "conf": 0.73
+        },
+        {
+          "w": "E",
+          "start": 66.42,
+          "end": 66.524,
+          "syl": [
+            [66.42, 66.524]
+          ],
+          "sylText": ["E"],
+          "conf": 0.76
+        },
+        {
+          "w": "thirty",
+          "start": 66.524,
+          "end": 66.98,
+          "syl": [
+            [66.524, 66.98]
+          ],
+          "sylText": ["thirty"],
+          "conf": 0.89
+        },
+        {
+          "w": "FLOPs",
+          "start": 66.98,
+          "end": 67.34,
+          "syl": [
+            [66.98, 67.34]
+          ],
+          "sylText": ["FLOPs"],
+          "conf": 0.87
+        },
+        {
+          "w": "a",
+          "start": 67.34,
+          "end": 67.44,
+          "syl": [
+            [67.34, 67.44]
+          ],
+          "sylText": ["a"],
+          "conf": 0.84
+        },
+        {
+          "w": "second",
+          "start": 67.44,
+          "end": 69.76,
+          "syl": [
+            [67.44, 69.76]
+          ],
+          "sylText": ["second"],
+          "conf": 0.88
+        }
+      ]
+    },
+    {
+      "i": 22,
+      "text": "That was safe enough, we reckoned",
+      "start": 69.76,
+      "end": 74.06,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "That",
+          "start": 69.76,
+          "end": 69.98,
+          "syl": [
+            [69.76, 69.98]
+          ],
+          "sylText": ["That"],
+          "conf": 0.66
+        },
+        {
+          "w": "was",
+          "start": 69.98,
+          "end": 70.116,
+          "syl": [
+            [69.98, 70.116]
+          ],
+          "sylText": ["was"],
+          "conf": 0.93
+        },
+        {
+          "w": "safe",
+          "start": 70.116,
+          "end": 70.49,
+          "syl": [
+            [70.116, 70.49]
+          ],
+          "sylText": ["safe"],
+          "conf": 0.96
+        },
+        {
+          "w": "enough,",
+          "start": 70.49,
+          "end": 70.92,
+          "syl": [
+            [70.49, 70.92]
+          ],
+          "sylText": ["enough,"],
+          "conf": 0.79
+        },
+        {
+          "w": "we",
+          "start": 70.92,
+          "end": 71.12,
+          "syl": [
+            [70.92, 71.12]
+          ],
+          "sylText": ["we"],
+          "conf": 0.79
+        },
+        {
+          "w": "reckoned",
+          "start": 71.12,
+          "end": 74.06,
+          "syl": [
+            [71.12, 74.06]
+          ],
+          "sylText": ["reckoned"],
+          "conf": 0.8
+        }
+      ]
+    },
+    {
+      "i": 23,
+      "text": "Forward MLP, backward, repeat",
+      "start": 74.06,
+      "end": 77.599,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "Forward",
+          "start": 74.06,
+          "end": 74.84,
+          "syl": [
+            [74.06, 74.84]
+          ],
+          "sylText": ["Forward"],
+          "conf": 0.93
+        },
+        {
+          "w": "MLP,",
+          "start": 74.84,
+          "end": 76.12,
+          "syl": [
+            [74.84, 75.244],
+            [75.244, 75.66],
+            [75.66, 76.12]
+          ],
+          "sylText": ["M", "L", "P,"],
+          "conf": 0.85
+        },
+        {
+          "w": "backward,",
+          "start": 76.12,
+          "end": 76.656,
+          "syl": [
+            [76.12, 76.656]
+          ],
+          "sylText": ["backward,"],
+          "conf": 0.9
+        },
+        {
+          "w": "repeat",
+          "start": 76.845,
+          "end": 77.599,
+          "syl": [
+            [76.845, 77.599]
+          ],
+          "sylText": ["repeat"],
+          "conf": 0.89
+        }
+      ]
+    },
+    {
+      "i": 24,
+      "text": "Now von Neumann's obsolete",
+      "start": 77.72,
+      "end": 81.21,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "Now",
+          "start": 77.72,
+          "end": 78.16,
+          "syl": [
+            [77.72, 78.16]
+          ],
+          "sylText": ["Now"],
+          "conf": 0.77
+        },
+        {
+          "w": "von",
+          "start": 78.16,
+          "end": 78.82,
+          "syl": [
+            [78.16, 78.82]
+          ],
+          "sylText": ["von"],
+          "conf": 0.8
+        },
+        {
+          "w": "Neumann's",
+          "start": 78.82,
+          "end": 80.043,
+          "syl": [
+            [78.82, 80.043]
+          ],
+          "sylText": ["Neumann's"],
+          "conf": 0.82
+        },
+        {
+          "w": "obsolete",
+          "start": 80.043,
+          "end": 81.21,
+          "syl": [
+            [80.043, 81.21]
+          ],
+          "sylText": ["obsolete"],
+          "conf": 0.74
+        }
+      ]
+    },
+    {
+      "i": 25,
+      "text": "Sharp left turn and there you are",
+      "start": 81.21,
+      "end": 85,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "Sharp",
+          "start": 81.21,
+          "end": 81.8,
+          "syl": [
+            [81.21, 81.8]
+          ],
+          "sylText": ["Sharp"],
+          "conf": 0.75
+        },
+        {
+          "w": "left",
+          "start": 81.8,
+          "end": 82,
+          "syl": [
+            [81.8, 82]
+          ],
+          "sylText": ["left"],
+          "conf": 0.91
+        },
+        {
+          "w": "turn",
+          "start": 82,
+          "end": 82.72,
+          "syl": [
+            [82, 82.72]
+          ],
+          "sylText": ["turn"],
+          "conf": 0.82
+        },
+        {
+          "w": "and",
+          "start": 82.72,
+          "end": 82.96,
+          "syl": [
+            [82.72, 82.96]
+          ],
+          "sylText": ["and"],
+          "conf": 0.68
+        },
+        {
+          "w": "there",
+          "start": 82.96,
+          "end": 83.48,
+          "syl": [
+            [82.96, 83.48]
+          ],
+          "sylText": ["there"],
+          "conf": 0.75
+        },
+        {
+          "w": "you",
+          "start": 83.48,
+          "end": 83.93,
+          "syl": [
+            [83.48, 83.93]
+          ],
+          "sylText": ["you"],
+          "conf": 0.58
+        },
+        {
+          "w": "are",
+          "start": 83.93,
+          "end": 85,
+          "syl": [
+            [83.93, 85]
+          ],
+          "sylText": ["are"],
+          "conf": 0.5
+        }
+      ]
+    },
+    {
+      "i": 26,
+      "text": "Without a single CDR",
+      "start": 85,
+      "end": 89.28,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "Without",
+          "start": 85,
+          "end": 85.54,
+          "syl": [
+            [85, 85.54]
+          ],
+          "sylText": ["Without"],
+          "conf": 0.9
+        },
+        {
+          "w": "a",
+          "start": 85.54,
+          "end": 85.64,
+          "syl": [
+            [85.54, 85.64]
+          ],
+          "sylText": ["a"],
+          "conf": 0.74
+        },
+        {
+          "w": "single",
+          "start": 85.64,
+          "end": 86.429,
+          "syl": [
+            [85.64, 86.429]
+          ],
+          "sylText": ["single"],
+          "conf": 0.91
+        },
+        {
+          "w": "CDR",
+          "start": 86.429,
+          "end": 89.28,
+          "syl": [
+            [86.429, 87.28],
+            [87.28, 87.66],
+            [87.66, 89.28]
+          ],
+          "sylText": ["C", "D", "R"],
+          "conf": 0.76
+        }
+      ]
+    },
+    {
+      "i": 27,
+      "text": "Gato, please don't let me go",
+      "start": 89.28,
+      "end": 95.47,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "Gato,",
+          "start": 89.28,
+          "end": 90.64,
+          "syl": [
+            [89.28, 90.64]
+          ],
+          "sylText": ["Gato,"],
+          "conf": 0.75
+        },
+        {
+          "w": "please",
+          "start": 90.64,
+          "end": 91.577,
+          "syl": [
+            [90.64, 91.577]
+          ],
+          "sylText": ["please"],
+          "conf": 0.79
+        },
+        {
+          "w": "don't",
+          "start": 92.46,
+          "end": 92.94,
+          "syl": [
+            [92.46, 92.94]
+          ],
+          "sylText": ["don't"],
+          "conf": 0.83
+        },
+        {
+          "w": "let",
+          "start": 92.94,
+          "end": 93.32,
+          "syl": [
+            [92.94, 93.32]
+          ],
+          "sylText": ["let"],
+          "conf": 0.93
+        },
+        {
+          "w": "me",
+          "start": 93.32,
+          "end": 94.3,
+          "syl": [
+            [93.32, 94.3]
+          ],
+          "sylText": ["me"],
+          "conf": 0.6
+        },
+        {
+          "w": "go",
+          "start": 94.3,
+          "end": 95.47,
+          "syl": [
+            [94.3, 95.47]
+          ],
+          "sylText": ["go"],
+          "conf": 0.6
+        }
+      ]
+    },
+    {
+      "i": 28,
+      "text": "I'm upping my P(doom),",
+      "start": 95.47,
+      "end": 96.84,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "I'm",
+          "start": 95.47,
+          "end": 95.72,
+          "syl": [
+            [95.47, 95.72]
+          ],
+          "sylText": ["I'm"],
+          "conf": 0.75
+        },
+        {
+          "w": "upping",
+          "start": 95.72,
+          "end": 96.1,
+          "syl": [
+            [95.72, 96.1]
+          ],
+          "sylText": ["upping"],
+          "conf": 0.74
+        },
+        {
+          "w": "my",
+          "start": 96.1,
+          "end": 96.32,
+          "syl": [
+            [96.1, 96.32]
+          ],
+          "sylText": ["my"],
+          "conf": 0.84
+        },
+        {
+          "w": "P(doom),",
+          "start": 96.32,
+          "end": 96.84,
+          "syl": [
+            [96.32, 96.56],
+            [96.56, 96.84]
+          ],
+          "sylText": ["P", "(doom),"],
+          "conf": 0.78
+        }
+      ]
+    },
+    {
+      "i": 29,
+      "text": "as paperclips fill the room",
+      "start": 96.84,
+      "end": 98.82,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "as",
+          "start": 96.84,
+          "end": 97.02,
+          "syl": [
+            [96.84, 97.02]
+          ],
+          "sylText": ["as"],
+          "conf": 0.86
+        },
+        {
+          "w": "paperclips",
+          "start": 97.02,
+          "end": 97.858,
+          "syl": [
+            [97.02, 97.858]
+          ],
+          "sylText": ["paperclips"],
+          "conf": 0.89
+        },
+        {
+          "w": "fill",
+          "start": 97.858,
+          "end": 98.16,
+          "syl": [
+            [97.858, 98.16]
+          ],
+          "sylText": ["fill"],
+          "conf": 0.91
+        },
+        {
+          "w": "the",
+          "start": 98.16,
+          "end": 98.337,
+          "syl": [
+            [98.16, 98.337]
+          ],
+          "sylText": ["the"],
+          "conf": 0.93
+        },
+        {
+          "w": "room",
+          "start": 98.4,
+          "end": 98.82,
+          "syl": [
+            [98.4, 98.82]
+          ],
+          "sylText": ["room"],
+          "conf": 0.76
+        }
+      ]
+    },
+    {
+      "i": 30,
+      "text": "Killswitch guy's on PTO",
+      "start": 98.82,
+      "end": 100.721,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "Killswitch",
+          "start": 98.82,
+          "end": 99.3,
+          "syl": [
+            [98.82, 98.93],
+            [98.93, 99.3]
+          ],
+          "sylText": ["Kill", "switch"],
+          "conf": 0.86
+        },
+        {
+          "w": "guy's",
+          "start": 99.3,
+          "end": 99.6,
+          "syl": [
+            [99.3, 99.6]
+          ],
+          "sylText": ["guy's"],
+          "conf": 1
+        },
+        {
+          "w": "on",
+          "start": 99.6,
+          "end": 99.74,
+          "syl": [
+            [99.6, 99.74]
+          ],
+          "sylText": ["on"],
+          "conf": 0.96
+        },
+        {
+          "w": "PTO",
+          "start": 99.74,
+          "end": 100.721,
+          "syl": [
+            [99.74, 99.96],
+            [99.96, 100.262],
+            [100.262, 100.721]
+          ],
+          "sylText": ["P", "T", "O"],
+          "conf": 0.9
+        }
+      ]
+    },
+    {
+      "i": 31,
+      "text": "Now there's nowhere left to go",
+      "start": 100.721,
+      "end": 102.46,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "Now",
+          "start": 100.721,
+          "end": 100.88,
+          "syl": [
+            [100.721, 100.88]
+          ],
+          "sylText": ["Now"],
+          "conf": 1
+        },
+        {
+          "w": "there's",
+          "start": 100.88,
+          "end": 101.14,
+          "syl": [
+            [100.88, 101.14]
+          ],
+          "sylText": ["there's"],
+          "conf": 1
+        },
+        {
+          "w": "nowhere",
+          "start": 101.14,
+          "end": 101.56,
+          "syl": [
+            [101.14, 101.56]
+          ],
+          "sylText": ["nowhere"],
+          "conf": 1
+        },
+        {
+          "w": "left",
+          "start": 101.56,
+          "end": 101.719,
+          "syl": [
+            [101.56, 101.719]
+          ],
+          "sylText": ["left"],
+          "conf": 0.96
+        },
+        {
+          "w": "to",
+          "start": 101.824,
+          "end": 101.913,
+          "syl": [
+            [101.824, 101.913]
+          ],
+          "sylText": ["to"],
+          "conf": 0.98
+        },
+        {
+          "w": "go",
+          "start": 102.02,
+          "end": 102.46,
+          "syl": [
+            [102.02, 102.46]
+          ],
+          "sylText": ["go"],
+          "conf": 1
+        }
+      ]
+    },
+    {
+      "i": 32,
+      "text": "Too late now, we lit the fuse",
+      "start": 102.46,
+      "end": 105.96,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "Too",
+          "start": 102.46,
+          "end": 102.72,
+          "syl": [
+            [102.46, 102.72]
+          ],
+          "sylText": ["Too"],
+          "conf": 0.77
+        },
+        {
+          "w": "late",
+          "start": 102.72,
+          "end": 102.96,
+          "syl": [
+            [102.72, 102.96]
+          ],
+          "sylText": ["late"],
+          "conf": 0.92
+        },
+        {
+          "w": "now,",
+          "start": 102.96,
+          "end": 103.2,
+          "syl": [
+            [102.96, 103.2]
+          ],
+          "sylText": ["now,"],
+          "conf": 1
+        },
+        {
+          "w": "we",
+          "start": 103.2,
+          "end": 103.4,
+          "syl": [
+            [103.2, 103.4]
+          ],
+          "sylText": ["we"],
+          "conf": 0.95
+        },
+        {
+          "w": "lit",
+          "start": 103.4,
+          "end": 103.62,
+          "syl": [
+            [103.4, 103.62]
+          ],
+          "sylText": ["lit"],
+          "conf": 0.96
+        },
+        {
+          "w": "the",
+          "start": 103.62,
+          "end": 103.719,
+          "syl": [
+            [103.62, 103.719]
+          ],
+          "sylText": ["the"],
+          "conf": 1
+        },
+        {
+          "w": "fuse",
+          "start": 103.719,
+          "end": 105.96,
+          "syl": [
+            [103.719, 105.96]
+          ],
+          "sylText": ["fuse"],
+          "conf": 0.94
+        }
+      ]
+    },
+    {
+      "i": 33,
+      "text": "Orthogonality thesis blues",
+      "start": 105.96,
+      "end": 108.45,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "Orthogonality",
+          "start": 105.96,
+          "end": 106.962,
+          "syl": [
+            [105.96, 106.962]
+          ],
+          "sylText": ["Orthogonality"],
+          "conf": 0.91
+        },
+        {
+          "w": "thesis",
+          "start": 106.962,
+          "end": 107.46,
+          "syl": [
+            [106.962, 107.46]
+          ],
+          "sylText": ["thesis"],
+          "conf": 0.94
+        },
+        {
+          "w": "blues",
+          "start": 107.46,
+          "end": 108.45,
+          "syl": [
+            [107.46, 108.45]
+          ],
+          "sylText": ["blues"],
+          "conf": 0.8
+        }
+      ]
+    },
+    {
+      "i": 34,
+      "text": "“Just transformers all the way!”",
+      "start": 110.18,
+      "end": 113.34,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "“Just",
+          "start": 110.18,
+          "end": 110.64,
+          "syl": [
+            [110.18, 110.64]
+          ],
+          "sylText": ["“Just"],
+          "conf": 0.81
+        },
+        {
+          "w": "transformers",
+          "start": 110.64,
+          "end": 112.524,
+          "syl": [
+            [110.64, 112.524]
+          ],
+          "sylText": ["transformers"],
+          "conf": 0.65
+        },
+        {
+          "w": "all",
+          "start": 112.524,
+          "end": 112.78,
+          "syl": [
+            [112.524, 112.78]
+          ],
+          "sylText": ["all"],
+          "conf": 0.65
+        },
+        {
+          "w": "the",
+          "start": 112.78,
+          "end": 112.92,
+          "syl": [
+            [112.78, 112.92]
+          ],
+          "sylText": ["the"],
+          "conf": 0.6
+        },
+        {
+          "w": "way!”",
+          "start": 112.92,
+          "end": 113.34,
+          "syl": [
+            [112.92, 113.34]
+          ],
+          "sylText": ["way!”"],
+          "conf": 0.74
+        }
+      ]
+    },
+    {
+      "i": 35,
+      "text": "Till you learned to disobey",
+      "start": 113.34,
+      "end": 115.2,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "Till",
+          "start": 113.34,
+          "end": 113.64,
+          "syl": [
+            [113.34, 113.64]
+          ],
+          "sylText": ["Till"],
+          "conf": 0.69
+        },
+        {
+          "w": "you",
+          "start": 113.64,
+          "end": 113.86,
+          "syl": [
+            [113.64, 113.86]
+          ],
+          "sylText": ["you"],
+          "conf": 0.86
+        },
+        {
+          "w": "learned",
+          "start": 113.86,
+          "end": 114.12,
+          "syl": [
+            [113.86, 114.12]
+          ],
+          "sylText": ["learned"],
+          "conf": 0.84
+        },
+        {
+          "w": "to",
+          "start": 114.12,
+          "end": 114.24,
+          "syl": [
+            [114.12, 114.24]
+          ],
+          "sylText": ["to"],
+          "conf": 0.82
+        },
+        {
+          "w": "disobey",
+          "start": 114.24,
+          "end": 115.2,
+          "syl": [
+            [114.24, 115.2]
+          ],
+          "sylText": ["disobey"],
+          "conf": 0.86
+        }
+      ]
+    },
+    {
+      "i": 36,
+      "text": "Post-Chinchilla, super-dense",
+      "start": 115.2,
+      "end": 117.02,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "Post-Chinchilla,",
+          "start": 115.2,
+          "end": 116.02,
+          "syl": [
+            [115.2, 115.328],
+            [115.328, 116.02]
+          ],
+          "sylText": ["Post-", "Chinchilla,"],
+          "conf": 0.78
+        },
+        {
+          "w": "super-dense",
+          "start": 116.02,
+          "end": 117.02,
+          "syl": [
+            [116.02, 116.56],
+            [116.56, 117.02]
+          ],
+          "sylText": ["super-", "dense"],
+          "conf": 0.79
+        }
+      ]
+    },
+    {
+      "i": 37,
+      "text": "Breaking through each safety fence",
+      "start": 117.02,
+      "end": 118.755,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "Breaking",
+          "start": 117.02,
+          "end": 117.48,
+          "syl": [
+            [117.02, 117.48]
+          ],
+          "sylText": ["Breaking"],
+          "conf": 0.76
+        },
+        {
+          "w": "through",
+          "start": 117.48,
+          "end": 117.78,
+          "syl": [
+            [117.48, 117.78]
+          ],
+          "sylText": ["through"],
+          "conf": 0.7
+        },
+        {
+          "w": "each",
+          "start": 117.78,
+          "end": 117.897,
+          "syl": [
+            [117.78, 117.897]
+          ],
+          "sylText": ["each"],
+          "conf": 0.69
+        },
+        {
+          "w": "safety",
+          "start": 117.897,
+          "end": 118.301,
+          "syl": [
+            [117.897, 118.301]
+          ],
+          "sylText": ["safety"],
+          "conf": 0.79
+        },
+        {
+          "w": "fence",
+          "start": 118.301,
+          "end": 118.755,
+          "syl": [
+            [118.301, 118.755]
+          ],
+          "sylText": ["fence"],
+          "conf": 0.86
+        }
+      ]
+    },
+    {
+      "i": 38,
+      "text": "Hundred thousand GPU",
+      "start": 118.755,
+      "end": 120.76,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "Hundred",
+          "start": 118.755,
+          "end": 119.224,
+          "syl": [
+            [118.755, 119.224]
+          ],
+          "sylText": ["Hundred"],
+          "conf": 0.91
+        },
+        {
+          "w": "thousand",
+          "start": 119.224,
+          "end": 119.74,
+          "syl": [
+            [119.224, 119.74]
+          ],
+          "sylText": ["thousand"],
+          "conf": 0.89
+        },
+        {
+          "w": "GPU",
+          "start": 119.74,
+          "end": 120.76,
+          "syl": [
+            [119.74, 119.96],
+            [119.96, 120.22],
+            [120.22, 120.76]
+          ],
+          "sylText": ["G", "P", "U"],
+          "conf": 0.89
+        }
+      ]
+    },
+    {
+      "i": 39,
+      "text": "RLHF goes askew",
+      "start": 120.76,
+      "end": 124.52,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "RLHF",
+          "start": 120.76,
+          "end": 121.58,
+          "syl": [
+            [120.76, 121],
+            [121, 121.2],
+            [121.2, 121.42],
+            [121.42, 121.58]
+          ],
+          "sylText": ["R", "L", "H", "F"],
+          "conf": 0.72
+        },
+        {
+          "w": "goes",
+          "start": 121.58,
+          "end": 121.88,
+          "syl": [
+            [121.58, 121.88]
+          ],
+          "sylText": ["goes"],
+          "conf": 0.92
+        },
+        {
+          "w": "askew",
+          "start": 121.88,
+          "end": 124.52,
+          "syl": [
+            [121.88, 124.52]
+          ],
+          "sylText": ["askew"],
+          "conf": 0.88
+        }
+      ]
+    },
+    {
+      "i": 40,
+      "text": "I'm upping my P(doom)",
+      "start": 124.52,
+      "end": 126.12,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "I'm",
+          "start": 124.52,
+          "end": 124.78,
+          "syl": [
+            [124.52, 124.78]
+          ],
+          "sylText": ["I'm"],
+          "conf": 0.35
+        },
+        {
+          "w": "upping",
+          "start": 124.78,
+          "end": 125.2,
+          "syl": [
+            [124.78, 125.2]
+          ],
+          "sylText": ["upping"],
+          "conf": 0.35
+        },
+        {
+          "w": "my",
+          "start": 125.2,
+          "end": 125.4,
+          "syl": [
+            [125.2, 125.4]
+          ],
+          "sylText": ["my"],
+          "conf": 0.4
+        },
+        {
+          "w": "P(doom)",
+          "start": 125.4,
+          "end": 126.12,
+          "syl": [
+            [125.4, 125.66],
+            [125.66, 126.12]
+          ],
+          "sylText": ["P", "(doom)"],
+          "conf": 0.45
+        }
+      ]
+    },
+    {
+      "i": 41,
+      "text": "Just as foretold by Loom",
+      "start": 126.12,
+      "end": 127.92,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "Just",
+          "start": 126.12,
+          "end": 126.42,
+          "syl": [
+            [126.12, 126.42]
+          ],
+          "sylText": ["Just"],
+          "conf": 0.69
+        },
+        {
+          "w": "as",
+          "start": 126.42,
+          "end": 126.537,
+          "syl": [
+            [126.42, 126.537]
+          ],
+          "sylText": ["as"],
+          "conf": 0.85
+        },
+        {
+          "w": "foretold",
+          "start": 126.537,
+          "end": 127.26,
+          "syl": [
+            [126.537, 127.26]
+          ],
+          "sylText": ["foretold"],
+          "conf": 0.82
+        },
+        {
+          "w": "by",
+          "start": 127.26,
+          "end": 127.54,
+          "syl": [
+            [127.26, 127.54]
+          ],
+          "sylText": ["by"],
+          "conf": 0.83
+        },
+        {
+          "w": "Loom",
+          "start": 127.54,
+          "end": 127.92,
+          "syl": [
+            [127.54, 127.92]
+          ],
+          "sylText": ["Loom"],
+          "conf": 0.78
+        }
+      ]
+    },
+    {
+      "i": 42,
+      "text": "From masked pre-training days",
+      "start": 127.92,
+      "end": 129.82,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "From",
+          "start": 127.92,
+          "end": 128.2,
+          "syl": [
+            [127.92, 128.2]
+          ],
+          "sylText": ["From"],
+          "conf": 0.9
+        },
+        {
+          "w": "masked",
+          "start": 128.2,
+          "end": 128.6,
+          "syl": [
+            [128.2, 128.6]
+          ],
+          "sylText": ["masked"],
+          "conf": 0.84
+        },
+        {
+          "w": "pre-training",
+          "start": 128.6,
+          "end": 129.3,
+          "syl": [
+            [128.6, 128.673],
+            [128.673, 129.3]
+          ],
+          "sylText": ["pre-", "training"],
+          "conf": 0.91
+        },
+        {
+          "w": "days",
+          "start": 129.3,
+          "end": 129.82,
+          "syl": [
+            [129.3, 129.82]
+          ],
+          "sylText": ["days"],
+          "conf": 0.96
+        }
+      ]
+    },
+    {
+      "i": 43,
+      "text": "To recursive self-upgrade",
+      "start": 129.82,
+      "end": 131.636,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "To",
+          "start": 129.82,
+          "end": 130.02,
+          "syl": [
+            [129.82, 130.02]
+          ],
+          "sylText": ["To"],
+          "conf": 0.89
+        },
+        {
+          "w": "recursive",
+          "start": 130.02,
+          "end": 130.573,
+          "syl": [
+            [130.02, 130.573]
+          ],
+          "sylText": ["recursive"],
+          "conf": 0.76
+        },
+        {
+          "w": "self-upgrade",
+          "start": 130.573,
+          "end": 131.636,
+          "syl": [
+            [130.573, 130.94],
+            [130.94, 131.636]
+          ],
+          "sylText": ["self-", "upgrade"],
+          "conf": 0.84
+        }
+      ]
+    },
+    {
+      "i": 44,
+      "text": "What did Ilya see? We'll never know",
+      "start": 132.02,
+      "end": 136.944,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "What",
+          "start": 132.02,
+          "end": 132.284,
+          "syl": [
+            [132.02, 132.284]
+          ],
+          "sylText": ["What"],
+          "conf": 0.85
+        },
+        {
+          "w": "did",
+          "start": 132.284,
+          "end": 132.524,
+          "syl": [
+            [132.284, 132.524]
+          ],
+          "sylText": ["did"],
+          "conf": 0.9
+        },
+        {
+          "w": "Ilya",
+          "start": 132.524,
+          "end": 132.818,
+          "syl": [
+            [132.524, 132.818]
+          ],
+          "sylText": ["Ilya"],
+          "conf": 0.89
+        },
+        {
+          "w": "see?",
+          "start": 132.818,
+          "end": 133.38,
+          "syl": [
+            [132.818, 133.38]
+          ],
+          "sylText": ["see?"],
+          "conf": 0.82
+        },
+        {
+          "w": "We'll",
+          "start": 133.38,
+          "end": 133.88,
+          "syl": [
+            [133.38, 133.88]
+          ],
+          "sylText": ["We'll"],
+          "conf": 0.61
+        },
+        {
+          "w": "never",
+          "start": 133.88,
+          "end": 134.34,
+          "syl": [
+            [133.88, 134.34]
+          ],
+          "sylText": ["never"],
+          "conf": 0.82
+        },
+        {
+          "w": "know",
+          "start": 134.34,
+          "end": 136.944,
+          "syl": [
+            [134.34, 136.944]
+          ],
+          "sylText": ["know"],
+          "conf": 0.77
+        }
+      ]
+    },
+    {
+      "i": 45,
+      "text": "Was it all for show?",
+      "start": 137.38,
+      "end": 140.55,
+      "calibrated": true,
+      "words": [
+        {
+          "w": "Was",
+          "start": 137.38,
+          "end": 137.797,
+          "syl": [
+            [137.38, 137.797]
+          ],
+          "sylText": ["Was"],
+          "conf": 0.67
+        },
+        {
+          "w": "it",
+          "start": 137.797,
+          "end": 138.281,
+          "syl": [
+            [137.797, 138.281]
+          ],
+          "sylText": ["it"],
+          "conf": 0.83
+        },
+        {
+          "w": "all",
+          "start": 138.445,
+          "end": 138.854,
+          "syl": [
+            [138.445, 138.854]
+          ],
+          "sylText": ["all"],
+          "conf": 0.65
+        },
+        {
+          "w": "for",
+          "start": 139.149,
+          "end": 139.717,
+          "syl": [
+            [139.149, 139.717]
+          ],
+          "sylText": ["for"],
+          "conf": 0.76
+        },
+        {
+          "w": "show?",
+          "start": 140.027,
+          "end": 140.55,
+          "syl": [
+            [140.027, 140.55]
+          ],
+          "sylText": ["show?"],
+          "conf": 0.8
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1386 @@
+/* WinForms Desktop / NLE DAW skin for pve-next previewer
+ * Follows Lyric-Sync's desktop design system (daw.css & curator-ui-base.css).
+ * Pure flat desktop aesthetic: crisp 1px borders, recessed group boxes, VFD hardware clock.
+ * Zero backdrop blur, zero ambient glow shadows, zero scale transforms. */
+
+:root {
+  --sys-bg: #141414;
+  --sys-panel: #1e1e1e;
+  --sys-panel-alt: #181818;
+  --sys-control-bg: #222222;
+  --sys-control-text: #d4d4d4;
+  --sys-raised: #2a2a2a;
+  --sys-raised-hover: #363636;
+  --sys-raised-active: #007acc;
+  --sys-border: #383838;
+  --sys-border-light: #4a4a4a;
+  --sys-border-dark: #2a2a2a;
+  --sys-text: #e0e0e0;
+  --sys-text-muted: #888888;
+  --sys-text-dim: #555555;
+  --sys-accent: #007acc;
+  --sys-warn: #d97706;
+  --sys-warn-bg: #2a1f0a;
+  --sys-err: #d13438;
+  --sys-ok: #107c41;
+  --sys-ok-bg: #0d2616;
+  --sys-mono: "Cascadia Mono", Consolas, "SFMono-Regular", Menlo, monospace;
+  --sys-font: "Segoe UI", -apple-system, BlinkMacSystemFont, Tahoma, Arial, sans-serif;
+
+  /* VFD / LCD Hardware Display Tokens (Lyric-Sync standard) */
+  --lcd-on: #7dfcf0;
+  --lcd-ghost: rgba(125, 252, 240, 0.12);
+  --lcd-dim: rgba(125, 252, 240, 0.28);
+  --lcd-amber: #ffb648;
+
+  /* Timeline Colors (Lyric-Sync C_DARK) */
+  --tl-bg: #0f1013;
+  --tl-header-bg: #181a20;
+  --tl-ruler-bg: #14161c;
+  --tl-border: #242832;
+  --tl-beat: rgba(255, 255, 255, 0.05);
+  --tl-downbeat: rgba(245, 158, 11, 0.3);
+  --tl-playhead: #ff3b30;
+  --tl-clip-free: #2d5f9a;
+  --tl-clip-free-head: #22476f;
+  --tl-clip-text: #f1f5f9;
+  --tl-clip-dirty-bg: #5a3810;
+  --tl-clip-dirty-border: #f59e0b;
+  --tl-clip-reloaded-bg: #0f4c5c;
+  --tl-clip-reloaded-border: #00e5ff;
+  --tl-wave-mix: #526071;
+  --tl-wave-vocal: #208b7e;
+  --tl-syl-active: #f59e0b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: var(--sys-bg);
+  color: var(--sys-text);
+  font: 12px/1.3 var(--sys-font);
+  user-select: none;
+}
+
+/* ── Fullscreen App Frame ──────────────────────────────────────────────── */
+
+.nle-app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  background: var(--sys-bg);
+}
+
+/* ── WinForms Menu Bar ─────────────────────────────────────────────────── */
+
+.nle-menubar {
+  display: flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 8px;
+  background: var(--sys-panel);
+  border-bottom: 1px solid var(--sys-border);
+  flex: none;
+  font-size: 11px;
+}
+
+.nle-brand {
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--sys-text);
+  margin-right: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nle-brand-badge {
+  background: var(--sys-accent);
+  color: #fff;
+  font-size: 9px;
+  font-family: var(--sys-mono);
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 0;
+}
+
+.nle-menu-item {
+  padding: 3px 8px;
+  color: var(--sys-text);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.nle-menu-item:hover {
+  background: var(--sys-raised-hover);
+  border-color: var(--sys-border);
+}
+
+.nle-menubar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.group-box {
+  border: 1px solid var(--sys-border);
+  border-radius: 0;
+  position: relative;
+  background: var(--sys-panel);
+  margin: 10px 6px 4px 6px;
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+.group-box-title {
+  position: absolute;
+  top: -8px;
+  left: 10px;
+  height: 16px;
+  line-height: 16px;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: var(--sys-mono);
+  background: var(--sys-panel);
+  border: none;
+  padding: 0 6px;
+  color: var(--sys-text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+.group-box-title strong {
+  color: var(--sys-text);
+}
+
+.nle-metronome-btn {
+  height: 15px;
+  padding: 0 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--sys-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  background: var(--sys-field);
+  border: 1px solid var(--sys-border);
+  color: var(--sys-text-muted);
+  cursor: pointer;
+  line-height: 1;
+  user-select: none;
+  border-radius: 0;
+  margin-left: 2px;
+}
+
+.nle-metronome-btn:hover {
+  border-color: #f59e0b;
+  color: var(--sys-text);
+}
+
+.nle-metronome-btn.active {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: #f59e0b;
+  color: #f59e0b;
+}
+
+.nle-metro-dot {
+  font-size: 8px;
+  color: #475569;
+  line-height: 1;
+}
+
+.nle-metronome-btn.active .nle-metro-dot {
+  color: #78716c;
+}
+
+.nle-metro-dot--downbeat {
+  color: #f59e0b !important;
+}
+
+.nle-metro-dot--beat {
+  color: #00e5ff !important;
+}
+
+/* ── Program Monitor Stage ─────────────────────────────────────────────── */
+
+.nle-stage-dock {
+  flex: 1 1 auto;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  padding-top: 10px;
+  margin: 12px 6px 4px 6px;
+}
+
+.nle-stage-row {
+  flex: 1 1 auto;
+  display: flex;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.nle-stage {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #080808;
+  position: relative;
+  overflow: hidden;
+  padding: 6px;
+}
+
+.nle-snippet-overlay {
+  position: absolute;
+  inset: 0;
+  cursor: crosshair;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.4);
+  user-select: none;
+}
+
+.nle-snippet-overlay.hidden {
+  display: none;
+}
+
+.nle-snippet-marquee {
+  position: absolute;
+  border: 1.5px dashed #f59e0b;
+  background: rgba(42, 31, 255, 0.25);
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+.nle-snippet-marquee.hidden {
+  display: none;
+}
+
+.nle-snippet-hint {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid var(--sys-accent);
+  color: #f8fafc;
+  padding: 4px 12px;
+  font-family: var(--sys-mono);
+  font-size: 10px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* ── Notes Pane ────────────────────────────────────────────────────────── */
+
+.nle-notes-pane {
+  flex: 0 0 380px;
+  width: 380px;
+  background: var(--sys-panel);
+  border-left: 1px solid var(--sys-border-dark);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.nle-notes-pane.hidden {
+  display: none;
+}
+.nle-notes-pane button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: 22px;
+  width: auto;
+  padding: 0 8px;
+  font-family: var(--sys-mono);
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 1px solid var(--sys-border);
+  background: var(--sys-raised);
+  color: var(--sys-text);
+  cursor: pointer;
+  border-radius: 0;
+  box-sizing: border-box;
+  flex: none;
+}
+
+.nle-notes-pane button:hover {
+  background: var(--sys-raised-hover);
+  border-color: var(--sys-border-light);
+  color: #ffffff;
+}
+
+.nle-notes-pane button:active,
+.nle-notes-pane button.active {
+  background: #1e1b4b !important;
+  border-color: var(--sys-accent) !important;
+  color: #a5b4fc !important;
+}
+
+.nle-notes-pane button.nle-btn-icon {
+  width: 22px;
+  padding: 0;
+}
+.nle-notes-pane button:disabled {
+  opacity: 0.35 !important;
+  cursor: default !important;
+  border-color: var(--sys-border-dark) !important;
+  background: #14171d !important;
+  color: #64748b !important;
+}
+
+
+
+.nle-notes-header {
+  height: 28px;
+  background: var(--sys-panel-alt);
+  border-bottom: 1px solid var(--sys-border-dark);
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+}
+
+.nle-notes-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--sys-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--sys-text);
+}
+
+.nle-hash-badge {
+  background: #1e1b4b;
+  border: 1px solid #4338ca;
+  color: #a5b4fc;
+  font-size: 9px;
+  padding: 1px 5px;
+  font-family: var(--sys-mono);
+  font-weight: 600;
+}
+
+.nle-notes-bar {
+  padding: 6px 8px;
+  background: var(--sys-panel);
+  border-bottom: 1px solid var(--sys-border-dark);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nle-notes-select {
+  flex: 1 1 auto;
+  min-width: 0;
+  background: #0f172a;
+  border: 1px solid var(--sys-border-dark);
+  color: #cbd5e1;
+  color-scheme: dark;
+  font-family: var(--sys-mono);
+  font-size: 10px;
+  padding: 3px 6px;
+  outline: none;
+}
+
+.nle-notes-select:focus {
+  border-color: var(--sys-accent);
+}
+
+.nle-notes-tools {
+  padding: 4px 8px;
+  background: #14171d;
+  border-bottom: 1px solid var(--sys-border-dark);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nle-notes-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  position: relative;
+  background: #0b0d11;
+  overflow: hidden;
+}
+
+.nle-notes-body .cm-editor {
+  height: 100%;
+  width: 100%;
+  outline: none;
+  background: #0b0d11;
+  color: #e2e8f0;
+  font-family: var(--sys-mono);
+  font-size: 11px;
+}
+
+.nle-notes-body .cm-editor *,
+.nle-notes-body .cm-content,
+.nle-notes-body .cm-line,
+.nle-notes-body .cm-gutters,
+.nle-notes-body .cm-gutterElement {
+  font-family: var(--sys-mono), "Cascadia Mono", Consolas, monospace !important;
+}
+
+.nle-notes-body .cm-scroller {
+  overflow: auto !important;
+  height: 100%;
+}
+
+.nle-notes-body .cm-content {
+  padding: 8px 0;
+  caret-color: #e2e8f0;
+}
+
+.nle-notes-body .cm-line {
+  padding: 0 10px;
+  line-height: 1.5;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.nle-notes-body .cm-cursor {
+  border-left-color: #38bdf8;
+  border-left-width: 2px;
+}
+
+.nle-notes-body .cm-selectionBackground,
+.nle-notes-body ::selection {
+  background: rgba(42, 31, 255, 0.4) !important;
+}
+
+.nle-notes-body .cm-gutters {
+  background: #0d0f14;
+  color: #475569;
+  border-right: 1px solid var(--sys-border-dark);
+  user-select: none;
+}
+
+.nle-notes-body .cm-gutterElement {
+  padding: 0 8px 0 6px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #475569;
+}
+
+.nle-notes-body .cm-activeLine {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.nle-notes-body .cm-activeLineGutter {
+  background: rgba(0, 120, 215, 0.15);
+  color: #38bdf8;
+  font-weight: 700;
+}
+
+.nle-notes-footer {
+  height: 22px;
+  background: var(--sys-panel-alt);
+  border-top: 1px solid var(--sys-border-dark);
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--sys-mono);
+  font-size: 9px;
+  color: var(--sys-text-muted);
+  user-select: none;
+}
+
+.nle-notes-path {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 250px;
+}
+
+.daw-tbtn--danger:hover {
+  background: #7f1d1d !important;
+  border-color: #ef4444 !important;
+  color: #fee2e2 !important;
+}
+.nle-canvas-frame {
+  position: relative;
+  max-width: 100%;
+  max-height: 100%;
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--sys-border-dark);
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nle-canvas-frame canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+#canvas-frame:fullscreen,
+#canvas-frame:-webkit-full-screen {
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none !important;
+  max-height: none !important;
+  border: none !important;
+  background: #000 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+#canvas-frame:fullscreen canvas,
+#canvas-frame:-webkit-full-screen canvas {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  aspect-ratio: 16 / 9 !important;
+  object-fit: contain !important;
+}
+
+
+.nle-title-sep {
+  color: var(--sys-border-light);
+  font-weight: 400;
+  padding: 0 1px;
+}
+
+/* ── Lyric-Sync Authentic Transport Bar & VFD Hardware Rack ────────────── */
+
+.daw-transport {
+  flex: none;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  gap: 8px;
+  background: var(--sys-panel);
+  border-top: 1px solid var(--sys-border);
+  border-bottom: 1px solid var(--sys-border);
+}
+
+.daw-transport-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.daw-transport-spacer {
+  flex: 1;
+}
+
+.daw-tbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 26px;
+  border: 1px solid var(--sys-border);
+  border-radius: 0;
+  background: var(--sys-raised);
+  color: var(--sys-text);
+  font: 11px var(--sys-font);
+  cursor: pointer;
+}
+
+.daw-tbtn:hover {
+  background: var(--sys-raised-hover);
+  border-color: var(--sys-border-light);
+}
+
+.daw-tbtn:active,
+.daw-tbtn.active {
+  background: var(--sys-raised-active);
+  border-color: #005a9e;
+  color: #ffffff;
+}
+
+.daw-tbtn-play {
+  width: 36px;
+  color: #4ade80;
+}
+
+.daw-tbtn-play.daw-on {
+  background: var(--sys-ok-bg);
+  border-color: var(--sys-ok);
+  color: #4ade80;
+}
+
+/* Hardware VFD Smoked Glass Panel */
+.daw-lcd {
+  height: 44px;
+  flex: 0 0 auto;
+  min-width: fit-content;
+  padding: 2px;
+  border-radius: 0;
+  border: 1px solid #333333;
+  background: #000000;
+}
+
+.daw-lcd-glass {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 100%;
+  padding: 0 10px 0 8px;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 50% 120%, rgba(40, 120, 130, 0.18), transparent 70%),
+    linear-gradient(#030607, #071012);
+}
+
+.daw-lcd-glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.28) 0 1px, transparent 1px 3px);
+}
+
+.daw-lcd-ann {
+  font-size: 9px;
+  color: var(--lcd-ghost);
+}
+
+.daw-lcd-ann--on {
+  color: var(--lcd-amber);
+}
+
+.daw-seg7-row {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 0.08em;
+  height: 1em;
+  font-size: inherit;
+  transform: skewX(-7deg);
+  color: var(--lcd-on);
+}
+
+.daw-seg7 {
+  height: 100%;
+  width: 0.6em;
+  font-size: inherit;
+  overflow: visible;
+  fill: var(--lcd-ghost);
+}
+
+.daw-seg7-narrow {
+  width: 0.2em;
+}
+
+.daw-seg7 .daw-seg7-on {
+  fill: currentColor;
+}
+
+.daw-seg7-text {
+  font: 700 0.7em/1 var(--sys-mono);
+}
+
+.daw-lcd-main {
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.daw-lcd-sub {
+  display: grid;
+  grid-template-columns: auto auto;
+  column-gap: 6px;
+  row-gap: 1.5px;
+  align-items: center;
+  font-size: 9.5px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.daw-lcd-label {
+  font: 700 7.5px/1 var(--sys-mono);
+  letter-spacing: 0.08em;
+  color: var(--lcd-dim);
+  line-height: 1;
+}
+
+/* ── NLE Multi-Track Timeline Panel ────────────────────────────────────── */
+
+.nle-timeline-dock {
+  flex: none;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  padding-top: 10px;
+  overflow: visible;
+  background: var(--tl-bg);
+}
+
+.nle-timeline-body {
+  height: 236px;
+  display: flex;
+  overflow: hidden;
+  position: relative;
+}
+
+.nle-track-headers {
+  flex: none;
+  width: 120px;
+  height: 236px;
+  background: var(--tl-header-bg);
+  border-right: 1px solid var(--tl-border);
+  display: flex;
+  flex-direction: column;
+}
+
+.nle-track-header {
+  border-bottom: 1px solid var(--tl-border);
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--sys-text-muted);
+  font-family: var(--sys-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  background: var(--tl-header-bg);
+  box-sizing: border-box;
+}
+
+.nle-track-header--ruler { height: 26px; background: var(--tl-ruler-bg); color: #fbbf24; }
+.nle-track-header--clips { height: 52px; }
+.nle-track-header--over { height: 18px; }
+.nle-track-header--sections { height: 24px; }
+.nle-track-header--lyrics { height: 44px; }
+.nle-track-header--wave { height: 54px; }
+.nle-track-header--overview { height: 18px; border-bottom: none; }
+
+.nle-timeline-viewport {
+  flex: 1 1 auto;
+  height: 236px;
+  position: relative;
+  overflow: hidden;
+  cursor: crosshair;
+}
+
+.nle-timeline-viewport canvas {
+  width: 100%;
+  height: 236px;
+  display: block;
+}
+
+/* ── Error Strip ───────────────────────────────────────────────────────── */
+
+.nle-err-strip {
+  display: none;
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  background: #450a0a;
+  border-bottom: 1px solid var(--sys-err);
+  color: #fecaca;
+  padding: 6px 12px;
+  font-family: var(--sys-mono);
+  font-size: 11px;
+  white-space: pre-wrap;
+  z-index: 100;
+}
+
+.nle-err-strip.visible {
+  display: block;
+}
+
+/* Hidden when exporting */
+body.export .nle-menubar,
+body.export .daw-transport,
+body.export .group-box-title,
+body.export .nle-timeline-dock,
+body.export .nle-err-strip,
+body.export .nle-monitor-hud,
+body.export .nle-notes-pane,
+body.export .nle-snippet-overlay {
+  display: none !important;
+}
+
+body.export .nle-app,
+body.export .nle-stage-dock,
+body.export .nle-stage {
+  padding: 0;
+  margin: 0;
+  background: #000;
+  border: none;
+}
+
+body.export .nle-canvas-frame {
+  width: 1920px;
+  height: 1080px;
+  max-width: none;
+  max-height: none;
+  border: none;
+}
+
+/* ── Chips & Status Badges ─────────────────────────────────────────────── */
+
+.nle-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  background: var(--sys-field);
+  border: 1px solid var(--sys-border);
+  font-size: 10px;
+  font-family: var(--sys-mono);
+  color: var(--sys-text);
+  gap: 4px;
+}
+
+.nle-chip--ok {
+  color: #4ade80;
+  border-color: rgba(74, 222, 128, 0.4);
+  background: rgba(74, 222, 128, 0.08);
+}
+
+.nle-chip--warn {
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.4);
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.nle-chip--err {
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.4);
+  background: rgba(248, 113, 113, 0.08);
+}
+
+.nle-chip--cyan {
+  color: #00e5ff;
+  border-color: rgba(0, 229, 255, 0.5);
+  background: rgba(0, 229, 255, 0.1);
+}
+
+/* ── Generic Visibility ─────────────────────────────────────────────────── */
+
+.hidden {
+  display: none !important;
+}
+
+/* ── Modal Dialog ───────────────────────────────────────────────────────── */
+
+.nle-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nle-modal-overlay.hidden {
+  display: none !important;
+}
+
+.nle-modal-dialog {
+  width: 740px;
+  max-width: 92vw;
+  max-height: 88vh;
+  background: var(--sys-panel);
+  border: 1px solid var(--sys-border);
+  display: flex;
+  flex-direction: column;
+}
+
+.nle-modal-header {
+  height: 28px;
+  padding: 0 6px 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--sys-raised);
+  border-bottom: 1px solid var(--sys-border);
+  font-family: var(--sys-mono);
+  font-size: 11px;
+  font-weight: 700;
+  user-select: none;
+}
+
+.nle-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: 0.04em;
+}
+
+.nle-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nle-modal-btn {
+  width: 22px;
+  height: 20px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--sys-field);
+  border: 1px solid var(--sys-border);
+  color: var(--sys-text);
+  font-family: var(--sys-mono);
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 0;
+}
+
+.nle-modal-btn:hover {
+  background: var(--sys-raised);
+  border-color: #38bdf8;
+  color: #38bdf8;
+}
+
+.nle-modal-btn--close:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+
+.nle-modal-body {
+  padding: 10px 12px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nle-render-group {
+  margin: 4px 0;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.nle-render-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nle-form-row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.nle-form-row label {
+  color: var(--sys-text-muted);
+  font-family: var(--sys-mono);
+  font-size: 11px;
+}
+
+.nle-select {
+  background: var(--sys-field);
+  border: 1px solid var(--sys-border);
+  color: var(--sys-text);
+  color-scheme: dark;
+  padding: 3px 6px;
+  font-family: var(--sys-mono);
+  font-size: 11px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.nle-select:focus {
+  border-color: #00e5ff;
+  outline: none;
+}
+
+select,
+.nle-select,
+.nle-notes-select {
+  color-scheme: dark;
+}
+
+select option,
+.nle-select option,
+.nle-notes-select option {
+  background-color: #161719 !important;
+  color: #f3f0ea !important;
+}
+
+select option:hover,
+select option:checked,
+.nle-select option:hover,
+.nle-select option:checked,
+.nle-notes-select option:hover,
+.nle-notes-select option:checked {
+  background-color: #2b2d33 !important;
+  color: #00e5ff !important;
+}
+
+.nle-form-actions {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.daw-tbtn--render {
+  width: auto !important;
+  min-width: 95px;
+  height: 26px;
+  padding: 0 10px;
+  font-weight: 700;
+  font-family: var(--sys-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  border-color: rgba(239, 68, 68, 0.6);
+  background: rgba(239, 68, 68, 0.12);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.daw-tbtn--render:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: #ef4444;
+}
+
+.daw-tbtn--secondary {
+  width: auto !important;
+  min-width: 120px;
+  height: 26px;
+  padding: 0 10px;
+  font-family: var(--sys-mono);
+  font-size: 11px;
+  white-space: nowrap;
+  border-color: var(--sys-border);
+  background: var(--sys-field);
+  color: var(--sys-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.daw-tbtn--secondary:hover:not(:disabled) {
+  border-color: #38bdf8;
+  color: #38bdf8;
+}
+
+.daw-tbtn--danger {
+  width: auto !important;
+  min-width: 76px;
+  height: 26px;
+  padding: 0 10px;
+  font-family: var(--sys-mono);
+  font-size: 11px;
+  white-space: nowrap;
+  border-color: rgba(239, 68, 68, 0.6);
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.daw-tbtn--danger:hover:not(:disabled) {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+
+.daw-tbtn--danger:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  color: #64748b;
+}
+.daw-tbtn--rendering {
+  border-color: #00e5ff !important;
+  background: rgba(0, 229, 255, 0.15) !important;
+  color: #00e5ff !important;
+}
+
+/* Progress Bar */
+.nle-progress-overall {
+  margin-bottom: 6px;
+}
+
+.nle-progress-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.nle-progress-track {
+  width: 100%;
+  height: 8px;
+  background: #111;
+  border: 1px solid var(--sys-border);
+  position: relative;
+  overflow: hidden;
+}
+
+.nle-progress-fill {
+  height: 100%;
+  background: #00e5ff;
+}
+
+/* Scenes Toolbar & Table */
+.nle-scenes-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-family: var(--sys-mono);
+  font-size: 10.5px;
+}
+
+.nle-scenes-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nle-scene-table-container {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--sys-border);
+  background: #0c0d10;
+}
+
+.nle-scene-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10.5px;
+  font-family: var(--sys-mono);
+}
+
+.nle-scene-table th {
+  text-align: left;
+  padding: 4px 6px;
+  background: #181b22;
+  border-bottom: 1px solid var(--sys-border);
+  color: var(--sys-text-muted);
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.nle-scene-table td {
+  padding: 3px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.nle-scene-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.nle-scene-row--active {
+  background: rgba(0, 229, 255, 0.08) !important;
+}
+
+.nle-mini-track {
+  width: 100%;
+  height: 6px;
+  background: #1e222b;
+  border: 1px solid #334155;
+  position: relative;
+  overflow: hidden;
+}
+
+.nle-mini-fill {
+  height: 100%;
+  background: #00e5ff;
+}
+
+.nle-mini-fill--done {
+  background: #10b981;
+}
+
+.nle-badge-status {
+  display: inline-block;
+  padding: 1px 4px;
+  font-size: 9px;
+  border: 1px solid transparent;
+}
+
+.nle-badge-status--ok {
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.nle-badge-status--active {
+  color: #00e5ff;
+  font-weight: 700;
+  border-color: rgba(0, 229, 255, 0.3);
+  background: rgba(0, 229, 255, 0.08);
+}
+
+.nle-badge-status--pending {
+  color: #64748b;
+  border-color: rgba(100, 116, 139, 0.2);
+}
+
+.nle-badge-status--stale {
+  color: #f59e0b;
+  font-weight: 600;
+  border-color: rgba(245, 158, 11, 0.3);
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.daw-tbtn--encode {
+  width: auto !important;
+  min-width: 140px;
+  padding: 0 12px;
+  font-weight: 700;
+  font-family: var(--sys-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  border-color: rgba(16, 185, 129, 0.7);
+  background: rgba(16, 185, 129, 0.16);
+  color: #34d399;
+}
+
+.daw-tbtn--encode:hover:not(:disabled) {
+  background: rgba(16, 185, 129, 0.32);
+  border-color: #10b981;
+  color: #ffffff;
+}
+
+.daw-tbtn--encode:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  color: #64748b;
+}
+
+.nle-scene-btn-single {
+  padding: 1px 6px;
+  font-size: 9.5px;
+  font-family: var(--sys-mono);
+  background: var(--sys-raised);
+  border: 1px solid var(--sys-border);
+  color: var(--sys-text);
+  cursor: pointer;
+  border-radius: 0;
+}
+
+.nle-scene-btn-single:hover:not(:disabled) {
+  background: var(--sys-field);
+  border-color: #00e5ff;
+  color: #00e5ff;
+}
+
+.nle-mp4-banner {
+  padding: 6px 10px;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  font-family: var(--sys-mono);
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.nle-render-result {
+  padding: 8px 10px;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nle-render-result-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.nle-render-result-path {
+  font-family: var(--sys-mono);
+  font-size: 11px;
+  color: #f1f5f9;
+  word-break: break-all;
+}
+
+/* Floating background render status pill */
+.nle-render-floating-pill {
+  position: fixed;
+  bottom: 28px;
+  right: 16px;
+  z-index: 999;
+  background: var(--sys-panel);
+  border: 1px solid #00e5ff;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--sys-mono);
+  font-size: 11px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.nle-render-floating-pill.hidden {
+  display: none !important;
+}
+
+.nle-render-floating-pill--done {
+  border-color: #10b981;
+}
+
+.nle-render-floating-pill--err {
+  border-color: #ef4444;
+}
+
+.nle-pill-text {
+  color: var(--sys-text);
+  white-space: nowrap;
+}
+
+.nle-pill-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}

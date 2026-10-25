@@ -1,0 +1,12 @@
+project_code: song
+song_name: Loader fixture
+nearest_bpm: 120
+first_downbeat_s: 0.5
+files:
+  song: mix.wav
+  lyrics: lyrics.txt
+  stems:
+    vocal:
+      main_vocal: vocal.wav
+      chorus: chorus.wav
+    drums: drums.wav

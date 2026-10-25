@@ -1,0 +1,31 @@
+{
+  "v": 2,
+  "title": "breaked",
+  "fps": 30,
+  "size": [1920, 1080],
+  "markers": {
+    "mirror": { "at": "lyric:more i look at the mirror@beat<=" },
+    "atone": { "at": "lyric:what i have done#0" }
+  },
+  "clips": [
+    { "id": "intro", "at": 0, "scene": "intro", "brief": "Previous loop: void; the one blue hole is the first cell of an R-pentomino that blooms through the void as holes onto the blue at one constant rate; BREAKED registers in brick by brick with construction lines; its 256 cells burst and fly into the first sung \"i\", high on the wall of Verse 1." },
+    { "id": "walls", "at": "section:Verse 1", "scene": "walls", "brief": "A long damaged wall slides by slowly; the lyric is written on it and moves with it, the first \"i\" the title packed into, then word by word where it can be read, each syllable forming its own way; an alley of black props passes in front at 12 fps, poking over the bars." },
+    { "id": "mirror", "at": "@mirror", "scene": "mirror", "brief": "The line types onto a wall, readable; from \"mirror\" a slow linear pull-back: the scene was inside a mirror on the alley wall, which reads backwards out here; \"coming right at\" jumps at the camera per syllable about the text, cracks the glass and shatters it." },
+    { "id": "room", "at": "section:Chorus 1", "scene": "room", "brief": "A dimmed typewriter wall of chorus text becomes an LED screen whose pixels are its letters; \"without a destination\": a vector field, curved arrows riding into a blue vortex, out over the bars; a flashlight brightens the wall and opens wide on \"i can't see the\"; the walls compress in four sudden moves, each a kick." },
+    { "id": "atone", "at": "@atone", "scene": "atone", "brief": "A ledger: every landed syllable becomes a Game of Life seed, two generations a beat; the heaviest words blue; entry numbers, struck-through lines and a tally of days alongside." },
+    { "id": "ceiling", "at": "section:Verse 2", "scene": "ceiling", "brief": "Blue plate. Wireframe ceiling; tiles carry words and pictograms that switch like a departure board; every syllable on a tile; the line slides in pushing the last one out and drops like stepped Tetris bricks; from \"ceiling\" the tiles fall at the camera over the bars." },
+    { "id": "dust", "at": "section:Verse 3", "scene": "dust", "brief": "An LED alarm clock of Life cells; a snake carving a maze onto the blue, eating food on the beat; a cube in a time-lapse of days and star trails that turns to dust, frozen on \"heart\"; a record of existence redacted in blue, coming apart into the pencil of the blueprint." },
+    { "id": "flock", "at": "section:Verse 4", "scene": "flock", "brief": "Blueprint: the four lines stand as extruded bricks and stay; \"deconstruction\" is cut, trembles, explodes on \"tion\" and takes off as a flock leaving a Conway trail; \"stop\" freezes the birds and some become warheads; \"motion\" opens the Droste box and the warheads fly into it on dashed arcs." },
+    { "id": "build_up", "at": "lyric:emotion", "scene": "build_up", "brief": "Inside the Droste: a smooth fall, faster and faster, one word to a level; warheads spiral in; outside, two sealed chambers of unsorted particles; at the bottom the box opens on the cells of Chorus 2." },
+    { "id": "without", "at": "section:Chorus 2", "scene": "without", "brief": "One cell per 2-bar line, each with its own image that keeps living after its line: myself, despair turning blue, a crane game, light, eyes, a developing fractal, falling letters, a finger over the pond; every cell closes with its own wipe and a save dialog stops at 99 %; the echo flips the scene." },
+    { "id": "cnn", "at": "section:Build up - Intrumental", "scene": "cnn", "brief": "The song through a convolutional network: kernels slide over the lyric image, feature maps stack and shrink into a dense column and a twelve-class head curving into one output that flashes ever faster and stops on a deforming tesseract; the loss runs the full width; the bars crack in and the screen shatters." },
+    { "id": "broken", "at": "section:Final chorus", "scene": "broken", "brief": "The fabric tears into ASCII: \"(i) i\" in code over Cantor's diagonal; the vortex; the flashlight on a wall of text; Hilbert's hotel on \"walls surrounding\"; a blue flood on \"never gone\"; Life and a calendar tearing off days; a montage wall thinning to one blue module that drifts away." },
+    { "id": "outro", "at": "section:Outro", "scene": "outro", "brief": "The walls laid again like masonry, the tesseract drawn in; the intro's bloom runs backwards to its single cell and takes the tesseract with it; credits in a title block; ends on the first frame." }
+  ],
+  "transitions": [
+    { "id": "shards", "scene": "over_shards", "at": "clip:room.start", "post": 1.6, "brief": "The mirror's shards keep flying at the camera across the cut, breaking in two, out over the bars." },
+    { "id": "tiles", "scene": "over_tiles", "at": "clip:dust.start", "post": 2.7, "brief": "The last ceiling tiles and the bricks of 'reason to live' keep falling at the camera over the bars into dust." },
+    { "id": "laser", "scene": "over_laser", "at": "clip:cnn.start", "post": 1.3, "brief": "The progress bar stuck at 99 % breaks out of its dialog as a laser into cnn, swings, breaks up." },
+    { "id": "shatter", "scene": "over_shatter", "at": "clip:broken.start", "post": 1.2, "brief": "The network screen's shards keep falling under gravity across the cut into broken." }
+  ]
+}

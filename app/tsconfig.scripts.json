@@ -1,5 +1,5 @@
 {
   "extends": "./tsconfig.json",
-  "compilerOptions": { "types": ["bun"] },
-  "include": ["scripts"]
+  "compilerOptions": { "types": ["bun"], "customConditions": ["bun"] },
+  "include": ["scripts", "vite.config.ts"]
 }

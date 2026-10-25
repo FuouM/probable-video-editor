@@ -1,0 +1,5312 @@
+{
+  "format": "words",
+  "fps": 60,
+  "method": "lyricsync",
+  "sections": [
+    {
+      "id": "intro_0",
+      "name": "Intro",
+      "start": 0,
+      "end": 19.52
+    },
+    {
+      "id": "verse_1_1",
+      "name": "Verse 1",
+      "start": 19.52,
+      "end": 38.68
+    },
+    {
+      "id": "chorus_1_2",
+      "name": "Chorus 1",
+      "start": 38.68,
+      "end": 57.9
+    },
+    {
+      "id": "verse_2_3",
+      "name": "Verse 2",
+      "start": 57.9,
+      "end": 77.08
+    },
+    {
+      "id": "verse_3_4",
+      "name": "Verse 3",
+      "start": 77.08,
+      "end": 96.28
+    },
+    {
+      "id": "verse_4_5",
+      "name": "Verse 4",
+      "start": 96.28,
+      "end": 105.88
+    },
+    {
+      "id": "build_up_6",
+      "name": "Build up",
+      "start": 105.88,
+      "end": 115.48
+    },
+    {
+      "id": "chorus_2_7",
+      "name": "Chorus 2",
+      "start": 115.48,
+      "end": 134.68
+    },
+    {
+      "id": "build_up_intrumental_8",
+      "name": "Build up - Intrumental",
+      "start": 134.68,
+      "end": 153.88
+    },
+    {
+      "id": "final_chorus_9",
+      "name": "Final chorus",
+      "start": 153.88,
+      "end": 173.08
+    },
+    {
+      "id": "outro_10",
+      "name": "Outro",
+      "start": 173.08,
+      "end": 194.261
+    }
+  ],
+  "lines": [
+    {
+      "i": 0,
+      "text": "i looking at the walls as days went by",
+      "start": 19.52,
+      "end": 24.81,
+      "words": [
+        {
+          "w": "i",
+          "start": 19.52,
+          "end": 20.925,
+          "syl": [
+            [
+              19.52,
+              20.925
+            ]
+          ],
+          "sylText": [
+            "i"
+          ]
+        },
+        {
+          "w": "looking",
+          "start": 20.925,
+          "end": 21.9,
+          "syl": [
+            [
+              20.925,
+              21.3
+            ],
+            [
+              21.3,
+              21.9
+            ]
+          ],
+          "sylText": [
+            "loo",
+            "king"
+          ]
+        },
+        {
+          "w": "at",
+          "start": 21.9,
+          "end": 22.8,
+          "syl": [
+            [
+              21.9,
+              22.8
+            ]
+          ],
+          "sylText": [
+            "at"
+          ]
+        },
+        {
+          "w": "the",
+          "start": 22.8,
+          "end": 22.94,
+          "syl": [
+            [
+              22.8,
+              22.94
+            ]
+          ],
+          "sylText": [
+            "the"
+          ]
+        },
+        {
+          "w": "walls",
+          "start": 22.94,
+          "end": 23.4,
+          "syl": [
+            [
+              22.94,
+              23.4
+            ]
+          ],
+          "sylText": [
+            "walls"
+          ]
+        },
+        {
+          "w": "as",
+          "start": 23.4,
+          "end": 23.7,
+          "syl": [
+            [
+              23.4,
+              23.7
+            ]
+          ],
+          "sylText": [
+            "as"
+          ]
+        },
+        {
+          "w": "days",
+          "start": 23.7,
+          "end": 24,
+          "syl": [
+            [
+              23.7,
+              24
+            ]
+          ],
+          "sylText": [
+            "days"
+          ]
+        },
+        {
+          "w": "went",
+          "start": 24,
+          "end": 24.3,
+          "syl": [
+            [
+              24,
+              24.3
+            ]
+          ],
+          "sylText": [
+            "went"
+          ]
+        },
+        {
+          "w": "by",
+          "start": 24.3,
+          "end": 24.81,
+          "syl": [
+            [
+              24.3,
+              24.81
+            ]
+          ],
+          "sylText": [
+            "by"
+          ]
+        }
+      ]
+    },
+    {
+      "i": 1,
+      "text": "i don't know what's real or fake any",
+      "start": 25.629,
+      "end": 29.01,
+      "words": [
+        {
+          "w": "i",
+          "start": 25.629,
+          "end": 25.815,
+          "syl": [
+            [
+              25.629,
+              25.815
+            ]
+          ],
+          "sylText": [
+            "i"
+          ]
+        },
+        {
+          "w": "don't",
+          "start": 25.815,
+          "end": 26.04,
+          "syl": [
+            [
+              25.815,
+              26.04
+            ]
+          ],
+          "sylText": [
+            "don't"
+          ]
+        },
+        {
+          "w": "know",
+          "start": 26.04,
+          "end": 26.36,
+          "syl": [
+            [
+              26.04,
+              26.36
+            ]
+          ],
+          "sylText": [
+            "know"
+          ]
+        },
+        {
+          "w": "what's",
+          "start": 26.36,
+          "end": 26.68,
+          "syl": [
+            [
+              26.36,
+              26.68
+            ]
+          ],
+          "sylText": [
+            "what's"
+          ]
+        },
+        {
+          "w": "real",
+          "start": 26.68,
+          "end": 27.06,
+          "syl": [
+            [
+              26.68,
+              27.06
+            ]
+          ],
+          "sylText": [
+            "real"
+          ]
+        },
+        {
+          "w": "or",
+          "start": 27.06,
+          "end": 27.58,
+          "syl": [
+            [
+              27.06,
+              27.58
+            ]
+          ],
+          "sylText": [
+            "or"
+          ]
+        },
+        {
+          "w": "fake",
+          "start": 27.58,
+          "end": 28.03,
+          "syl": [
+            [
+              27.58,
+              28.03
+            ]
+          ],
+          "sylText": [
+            "fake"
+          ]
+        },
+        {
+          "w": "any",
+          "start": 28.03,
+          "end": 29.01,
+          "syl": [
+            [
+              28.03,
+              28.48
+            ],
+            [
+              28.48,
+              29.01
+            ]
+          ],
+          "sylText": [
+            "a",
+            "ny"
+          ]
+        }
+      ]
+    },
+    {
+      "i": 2,
+      "text": "more i look at the mirror i",
+      "start": 29.01,
+      "end": 32.28,
+      "words": [
+        {
+          "w": "more",
+          "start": 29.01,
+          "end": 29.83,
+          "syl": [
+            [
+              29.01,
+              29.83
+            ]
+          ],
+          "sylText": [
+            "more"
+          ]
+        },
+        {
+          "w": "i",
+          "start": 29.83,
+          "end": 29.98,
+          "syl": [
+            [
+              29.83,
+              29.98
+            ]
+          ],
+          "sylText": [
+            "i"
+          ]
+        },
+        {
+          "w": "look",
+          "start": 29.98,
+          "end": 30.28,
+          "syl": [
+            [
+              29.98,
+              30.28
+            ]
+          ],
+          "sylText": [
+            "look"
+          ]
+        },
+        {
+          "w": "at",
+          "start": 30.28,
+          "end": 30.58,
+          "syl": [
+            [
+              30.28,
+              30.58
+            ]
+          ],
+          "sylText": [
+            "at"
+          ]
+        },
+        {
+          "w": "the",
+          "start": 30.58,
+          "end": 30.736,
+          "syl": [
+            [
+              30.58,
+              30.736
+            ]
+          ],
+          "sylText": [
+            "the"
+          ]
+        },
+        {
+          "w": "mirror",
+          "start": 30.736,
+          "end": 31.48,
+          "syl": [
+            [
+              30.736,
+              31.18
+            ],
+            [
+              31.18,
+              31.48
+            ]
+          ],
+          "sylText": [
+            "mir",
+            "ror"
+          ]
+        },
+        {
+          "w": "i",
+          "start": 31.48,
+          "end": 32.28,
+          "syl": [
+            [
+              31.48,
+              32.28
+            ]
+          ],
+          "sylText": [
+            "i"
+          ]
+        }
+      ]
+    },
+    {
+      "i": 3,
+      "text": "can't see myself like i used to in the past without you here",
+      "start": 32.98,
+      "end": 37.48,
+      "words": [
+        {
+          "w": "can't",
+          "start": 32.98,
+          "end": 33.28,
+          "syl": [
+            [
+              32.98,
+              33.28
+            ]
+          ],
+          "sylText": [
+            "can't"
+          ]
+        },
+        {
+          "w": "see",
+          "start": 33.28,
+          "end": 33.58,
+          "syl": [
+            [
+              33.28,
+              33.58
+            ]
+          ],
+          "sylText": [
+            "see"
+          ]
+        },
+        {
+          "w": "myself",
+          "start": 33.58,
+          "end": 34.78,
+          "syl": [
+            [
+              33.58,
+              33.9
+            ],
+            [
+              33.9,
+              34.78
+            ]
+          ],
+          "sylText": [
+            "my",
+            "self"
+          ]
+        },
+        {
+          "w": "like",
+          "start": 34.78,
+          "end": 35.08,
+          "syl": [
+            [
+              34.78,
+              35.08
+            ]
+          ],
+          "sylText": [
+            "like"
+          ]
+        },
+        {
+          "w": "i",
+          "start": 35.08,
+          "end": 35.38,
+          "syl": [
+            [
+              35.08,
+              35.38
+            ]
+          ],
+          "sylText": [
+            "i"
+          ]
+        },
+        {
+          "w": "used",
+          "start": 35.38,
+          "end": 35.53,
+          "syl": [
+            [
+              35.38,
+              35.53
+            ]
+          ],
+          "sylText": [
+            "used"
+          ]
+        },
+        {
+          "w": "to",
+          "start": 35.53,
+          "end": 35.82,
+          "syl": [
+            [
+              35.53,
+              35.82
+            ]
+          ],
+          "sylText": [
+            "to"
+          ]
+        },
+        {
+          "w": "in",
+          "start": 35.82,
+          "end": 35.98,
+          "syl": [
+            [
+              35.82,
+              35.98
+            ]
+          ],
+          "sylText": [
+            "in"
+          ]
+        },
+        {
+          "w": "the",
+          "start": 35.98,
+          "end": 36.28,
+          "syl": [
+            [
+              35.98,
+              36.28
+            ]
+          ],
+          "sylText": [
+            "the"
+          ]
+        },
+        {
+          "w": "past",
+          "start": 36.28,
+          "end": 36.58,
+          "syl": [
+            [
+              36.28,
+              36.58
+            ]
+          ],
+          "sylText": [
+            "past"
+          ]
+        },
+        {
+          "w": "without",
+          "start": 36.58,
+          "end": 37.03,
+          "syl": [
+            [
+              36.58,
+              36.73
+            ],
+            [
+              36.73,
+              37.03
+            ]
+          ],
+          "sylText": [
+            "wi",
+            "thout"
+          ]
+        },
+        {
+          "w": "you",
+          "start": 37.03,
+          "end": 37.18,
+          "syl": [
+            [
+              37.03,
+              37.18
+            ]
+          ],
+          "sylText": [
+            "you"
+          ]
+        },
+        {
+          "w": "here",
+          "start": 37.18,
+          "end": 37.48,
+          "syl": [
+            [
+              37.18,
+              37.48
+            ]
+          ],
+          "sylText": [
+            "here"
+          ]
+        }
+      ]
+    },
+    {
+      "i": 4,
+      "text": "coming right at",
+      "start": 37.48,
+      "end": 38.68,
+      "words": [
+        {
+          "w": "coming",
+          "start": 37.48,
+          "end": 38.08,
+          "syl": [
+            [
+              37.48,
+              37.78
+            ],
+            [
+              37.78,
+              38.08
+            ]
+          ],
+          "sylText": [
+            "co",
+            "ming"
+          ],
+          "sylCalibrated": [
+            false,
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "right",
+          "start": 38.08,
+          "end": 38.38,
+          "syl": [
+            [
+              38.08,
+              38.38
+            ]
+          ],
+          "sylText": [
+            "right"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "at",
+          "start": 38.38,
+          "end": 38.68,
+          "syl": [
+            [
+              38.38,
+              38.68
+            ]
+          ],
+          "sylText": [
+            "at"
+          ],
+          "sylCalibrated": [
+            true
+          ],
+          "calibrated": true
+        }
+      ],
+      "calibrated": false
+    },
+    {
+      "i": 5,
+      "text": "me i can't stop i just went on without a destination",
+      "start": 38.92,
+      "end": 43.48,
+      "words": [
+        {
+          "w": "me",
+          "start": 38.92,
+          "end": 39.28,
+          "syl": [
+            [
+              38.92,
+              39.28
+            ]
+          ],
+          "sylText": [
+            "me"
+          ]
+        },
+        {
+          "w": "i",
+          "start": 39.28,
+          "end": 39.6,
+          "syl": [
+            [
+              39.28,
+              39.6
+            ]
+          ],
+          "sylText": [
+            "i"
+          ]
+        },
+        {
+          "w": "can't",
+          "start": 39.6,
+          "end": 39.9,
+          "syl": [
+            [
+              39.6,
+              39.9
+            ]
+          ],
+          "sylText": [
+            "can't"
+          ]
+        },
+        {
+          "w": "stop",
+          "start": 39.9,
+          "end": 40.2,
+          "syl": [
+            [
+              39.9,
+              40.2
+            ]
+          ],
+          "sylText": [
+            "stop"
+          ]
+        },
+        {
+          "w": "i",
+          "start": 40.2,
+          "end": 40.5,
+          "syl": [
+            [
+              40.2,
+              40.5
+            ]
+          ],
+          "sylText": [
+            "i"
+          ]
+        },
+        {
+          "w": "just",
+          "start": 40.5,
+          "end": 40.8,
+          "syl": [
+            [
+              40.5,
+              40.8
+            ]
+          ],
+          "sylText": [
+            "just"
+          ]
+        },
+        {
+          "w": "went",
+          "start": 40.8,
+          "end": 41.1,
+          "syl": [
+            [
+              40.8,
+              41.1
+            ]
+          ],
+          "sylText": [
+            "went"
+          ]
+        },
+        {
+          "w": "on",
+          "start": 41.1,
+          "end": 41.4,
+          "syl": [
+            [
+              41.1,
+              41.4
+            ]
+          ],
+          "sylText": [
+            "on"
+          ]
+        },
+        {
+          "w": "without",
+          "start": 41.4,
+          "end": 41.98,
+          "syl": [
+            [
+              41.4,
+              41.68
+            ],
+            [
+              41.68,
+              41.98
+            ]
+          ],
+          "sylText": [
+            "wi",
+            "thout"
+          ]
+        },
+        {
+          "w": "a",
+          "start": 41.98,
+          "end": 42.28,
+          "syl": [
+            [
+              41.98,
+              42.28
+            ]
+          ],
+          "sylText": [
+            "a"
+          ]
+        },
+        {
+          "w": "destination",
+          "start": 42.28,
+          "end": 43.48,
+          "syl": [
+            [
+              42.28,
+              42.58
+            ],
+            [
+              42.58,
+              42.88
+            ],
+            [
+              42.88,
+              43.18
+            ],
+            [
+              43.18,
+              43.48
+            ]
+          ],
+          "sylText": [
+            "de",
+            "sti",
+            "na",
+            "tion"
+          ]
+        }
+      ]
+    },
+    {
+      "i": 6,
+      "text": "i can't see the walls surrounding me without a doubt it's never gone",
+      "start": 43.48,
+      "end": 48.58,
+      "words": [
+        {
+          "w": "i",
+          "start": 43.48,
+          "end": 43.78,
+          "syl": [
+            [
+              43.48,
+              43.78
+            ]
+          ],
+          "sylText": [
+            "i"
+          ]
+        },
+        {
+          "w": "can't",
+          "start": 43.78,
+          "end": 44.08,
+          "syl": [
+            [
+              43.78,
+              44.08
+            ]
+          ],
+          "sylText": [
+            "can't"
+          ]
+        },
+        {
+          "w": "see",
+          "start": 44.08,
+          "end": 44.38,
+          "syl": [
+            [
+              44.08,
+              44.38
+            ]
+          ],
+          "sylText": [
+            "see"
+          ]
+        },
+        {
+          "w": "the",
+          "start": 44.38,
+          "end": 44.68,
+          "syl": [
+            [
+              44.38,
+              44.68
+            ]
+          ],
+          "sylText": [
+            "the"
+          ]
+        },
+        {
+          "w": "walls",
+          "start": 44.68,
+          "end": 45,
+          "syl": [
+            [
+              44.68,
+              45
+            ]
+          ],
+          "sylText": [
+            "walls"
+          ]
+        },
+        {
+          "w": "surrounding",
+          "start": 45,
+          "end": 45.88,
+          "syl": [
+            [
+              45,
+              45.3
+            ],
+            [
+              45.3,
+              45.6
+            ],
+            [
+              45.6,
+              45.88
+            ]
+          ],
+          "sylText": [
+            "sur",
+            "roun",
+            "ding"
+          ]
+        },
+        {
+          "w": "me",
+          "start": 45.88,
+          "end": 46.18,
+          "syl": [
+            [
+              45.88,
+              46.18
+            ]
+          ],
+          "sylText": [
+            "me"
+          ]
+        },
+        {
+          "w": "without",
+          "start": 46.18,
+          "end": 46.78,
+          "syl": [
+            [
+              46.18,
+              46.48
+            ],
+            [
+              46.48,
+              46.78
+            ]
+          ],
+          "sylText": [
+            "wi",
+            "thout"
+          ]
+        },
+        {
+          "w": "a",
+          "start": 46.78,
+          "end": 47.08,
+          "syl": [
+            [
+              46.78,
+              47.08
+            ]
+          ],
+          "sylText": [
+            "a"
+          ]
+        },
+        {
+          "w": "doubt",
+          "start": 47.08,
+          "end": 47.38,
+          "syl": [
+            [
+              47.08,
+              47.38
+            ]
+          ],
+          "sylText": [
+            "doubt"
+          ]
+        },
+        {
+          "w": "it's",
+          "start": 47.38,
+          "end": 47.68,
+          "syl": [
+            [
+              47.38,
+              47.68
+            ]
+          ],
+          "sylText": [
+            "it's"
+          ]
+        },
+        {
+          "w": "never",
+          "start": 47.68,
+          "end": 48.28,
+          "syl": [
+            [
+              47.68,
+              47.98
+            ],
+            [
+              47.98,
+              48.28
+            ]
+          ],
+          "sylText": [
+            "ne",
+            "ver"
+          ]
+        },
+        {
+          "w": "gone",
+          "start": 48.28,
+          "end": 48.58,
+          "syl": [
+            [
+              48.28,
+              48.58
+            ]
+          ],
+          "sylText": [
+            "gone"
+          ]
+        }
+      ]
+    },
+    {
+      "i": 7,
+      "text": "what i have done i can't atone as days went on as i step on",
+      "start": 48.58,
+      "end": 53.38,
+      "words": [
+        {
+          "w": "what",
+          "start": 48.58,
+          "end": 48.88,
+          "syl": [
+            [
+              48.58,
+              48.88
+            ]
+          ],
+          "sylText": [
+            "what"
+          ]
+        },
+        {
+          "w": "i",
+          "start": 48.88,
+          "end": 49.18,
+          "syl": [
+            [
+              48.88,
+              49.18
+            ]
+          ],
+          "sylText": [
+            "i"
+          ]
+        },
+        {
+          "w": "have",
+          "start": 49.18,
+          "end": 49.48,
+          "syl": [
+            [
+              49.18,
+              49.48
+            ]
+          ],
+          "sylText": [
+            "have"
+          ]
+        },
+        {
+          "w": "done",
+          "start": 49.48,
+          "end": 49.78,
+          "syl": [
+            [
+              49.48,
+              49.78
+            ]
+          ],
+          "sylText": [
+            "done"
+          ]
+        },
+        {
+          "w": "i",
+          "start": 49.78,
+          "end": 50.1,
+          "syl": [
+            [
+              49.78,
+              50.1
+            ]
+          ],
+          "sylText": [
+            "i"
+          ]
+        },
+        {
+          "w": "can't",
+          "start": 50.1,
+          "end": 50.4,
+          "syl": [
+            [
+              50.1,
+              50.4
+            ]
+          ],
+          "sylText": [
+            "can't"
+          ]
+        },
+        {
+          "w": "atone",
+          "start": 50.4,
+          "end": 51,
+          "syl": [
+            [
+              50.4,
+              50.7
+            ],
+            [
+              50.7,
+              51
+            ]
+          ],
+          "sylText": [
+            "a",
+            "tone"
+          ]
+        },
+        {
+          "w": "as",
+          "start": 51,
+          "end": 51.28,
+          "syl": [
+            [
+              51,
+              51.28
+            ]
+          ],
+          "sylText": [
+            "as"
+          ]
+        },
+        {
+          "w": "days",
+          "start": 51.28,
+          "end": 51.58,
+          "syl": [
+            [
+              51.28,
+              51.58
+            ]
+          ],
+          "sylText": [
+            "days"
+          ]
+        },
+        {
+          "w": "went",
+          "start": 51.58,
+          "end": 51.88,
+          "syl": [
+            [
+              51.58,
+              51.88
+            ]
+          ],
+          "sylText": [
+            "went"
+          ]
+        },
+        {
+          "w": "on",
+          "start": 51.88,
+          "end": 52.18,
+          "syl": [
+            [
+              51.88,
+              52.18
+            ]
+          ],
+          "sylText": [
+            "on"
+          ]
+        },
+        {
+          "w": "as",
+          "start": 52.18,
+          "end": 52.48,
+          "syl": [
+            [
+              52.18,
+              52.48
+            ]
+          ],
+          "sylText": [
+            "as"
+          ]
+        },
+        {
+          "w": "i",
+          "start": 52.48,
+          "end": 52.8,
+          "syl": [
+            [
+              52.48,
+              52.8
+            ]
+          ],
+          "sylText": [
+            "i"
+          ]
+        },
+        {
+          "w": "step",
+          "start": 52.8,
+          "end": 53.08,
+          "syl": [
+            [
+              52.8,
+              53.08
+            ]
+          ],
+          "sylText": [
+            "step"
+          ]
+        },
+        {
+          "w": "on",
+          "start": 53.08,
+          "end": 53.38,
+          "syl": [
+            [
+              53.08,
+              53.38
+            ]
+          ],
+          "sylText": [
+            "on"
+          ]
+        }
+      ]
+    },
+    {
+      "i": 8,
+      "text": "the destination's still a far i'll never see you again",
+      "start": 53.38,
+      "end": 57.9,
+      "words": [
+        {
+          "w": "the",
+          "start": 53.38,
+          "end": 53.68,
+          "syl": [
+            [
+              53.38,
+              53.68
+            ]
+          ],
+          "sylText": [
+            "the"
+          ]
+        },
+        {
+          "w": "destination's",
+          "start": 53.68,
+          "end": 54.9,
+          "syl": [
+            [
+              53.68,
+              53.98
+            ],
+            [
+              53.98,
+              54.3
+            ],
+            [
+              54.3,
+              54.6
+            ],
+            [
+              54.6,
+              54.9
+            ]
+          ],
+          "sylText": [
+            "de",
+            "sti",
+            "na",
+            "tion's"
+          ]
+        },
+        {
+          "w": "still",
+          "start": 54.9,
+          "end": 55.2,
+          "syl": [
+            [
+              54.9,
+              55.2
+            ]
+          ],
+          "sylText": [
+            "still"
+          ]
+        },
+        {
+          "w": "a",
+          "start": 55.2,
+          "end": 55.5,
+          "syl": [
+            [
+              55.2,
+              55.5
+            ]
+          ],
+          "sylText": [
+            "a"
+          ]
+        },
+        {
+          "w": "far",
+          "start": 55.5,
+          "end": 55.8,
+          "syl": [
+            [
+              55.5,
+              55.8
+            ]
+          ],
+          "sylText": [
+            "far"
+          ]
+        },
+        {
+          "w": "i'll",
+          "start": 55.8,
+          "end": 56.1,
+          "syl": [
+            [
+              55.8,
+              56.1
+            ]
+          ],
+          "sylText": [
+            "i'll"
+          ]
+        },
+        {
+          "w": "never",
+          "start": 56.1,
+          "end": 56.7,
+          "syl": [
+            [
+              56.1,
+              56.4
+            ],
+            [
+              56.4,
+              56.7
+            ]
+          ],
+          "sylText": [
+            "ne",
+            "ver"
+          ]
+        },
+        {
+          "w": "see",
+          "start": 56.7,
+          "end": 57,
+          "syl": [
+            [
+              56.7,
+              57
+            ]
+          ],
+          "sylText": [
+            "see"
+          ]
+        },
+        {
+          "w": "you",
+          "start": 57,
+          "end": 57.3,
+          "syl": [
+            [
+              57,
+              57.3
+            ]
+          ],
+          "sylText": [
+            "you"
+          ]
+        },
+        {
+          "w": "again",
+          "start": 57.3,
+          "end": 57.9,
+          "syl": [
+            [
+              57.3,
+              57.6
+            ],
+            [
+              57.6,
+              57.9
+            ]
+          ],
+          "sylText": [
+            "a",
+            "gain"
+          ]
+        }
+      ]
+    },
+    {
+      "i": 9,
+      "text": "i remember the moment we first met",
+      "start": 57.9,
+      "end": 62.986,
+      "words": [
+        {
+          "w": "i",
+          "start": 57.9,
+          "end": 59.31,
+          "syl": [
+            [
+              57.9,
+              59.31
+            ]
+          ],
+          "sylText": [
+            "i"
+          ],
+          "sylCalibrated": [
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "remember",
+          "start": 59.31,
+          "end": 61.2,
+          "syl": [
+            [
+              59.31,
+              59.7
+            ],
+            [
+              59.7,
+              60.3
+            ],
+            [
+              60.3,
+              61.2
+            ]
+          ],
+          "sylText": [
+            "re",
+            "mem",
+            "ber"
+          ],
+          "sylCalibrated": [
+            false,
+            false,
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "the",
+          "start": 61.2,
+          "end": 61.35,
+          "syl": [
+            [
+              61.2,
+              61.35
+            ]
+          ],
+          "sylText": [
+            "the"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "moment",
+          "start": 61.35,
+          "end": 62.1,
+          "syl": [
+            [
+              61.35,
+              61.71
+            ],
+            [
+              61.71,
+              62.1
+            ]
+          ],
+          "sylText": [
+            "mo",
+            "ment"
+          ],
+          "sylCalibrated": [
+            false,
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "we",
+          "start": 62.1,
+          "end": 62.4,
+          "syl": [
+            [
+              62.1,
+              62.4
+            ]
+          ],
+          "sylText": [
+            "we"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "first",
+          "start": 62.4,
+          "end": 62.7,
+          "syl": [
+            [
+              62.4,
+              62.7
+            ]
+          ],
+          "sylText": [
+            "first"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "met",
+          "start": 62.7,
+          "end": 62.986,
+          "syl": [
+            [
+              62.7,
+              62.986
+            ]
+          ],
+          "sylText": [
+            "met"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        }
+      ],
+      "calibrated": false
+    },
+    {
+      "i": 10,
+      "text": "you looked so confused as we walked back home",
+      "start": 64.04,
+      "end": 68.1,
+      "words": [
+        {
+          "w": "you",
+          "start": 64.04,
+          "end": 64.2,
+          "syl": [
+            [
+              64.04,
+              64.2
+            ]
+          ],
+          "sylText": [
+            "you"
+          ],
+          "sylCalibrated": [
+            false
+          ]
+        },
+        {
+          "w": "looked",
+          "start": 64.2,
+          "end": 64.5,
+          "syl": [
+            [
+              64.2,
+              64.5
+            ]
+          ],
+          "sylText": [
+            "looked"
+          ],
+          "sylCalibrated": [
+            false
+          ]
+        },
+        {
+          "w": "so",
+          "start": 64.5,
+          "end": 64.8,
+          "syl": [
+            [
+              64.5,
+              64.8
+            ]
+          ],
+          "sylText": [
+            "so"
+          ],
+          "sylCalibrated": [
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "confused",
+          "start": 64.8,
+          "end": 65.55,
+          "syl": [
+            [
+              64.8,
+              65.1
+            ],
+            [
+              65.1,
+              65.55
+            ]
+          ],
+          "sylText": [
+            "con",
+            "fused"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "as",
+          "start": 65.55,
+          "end": 66,
+          "syl": [
+            [
+              65.55,
+              66
+            ]
+          ],
+          "sylText": [
+            "as"
+          ],
+          "sylCalibrated": [
+            false
+          ]
+        },
+        {
+          "w": "we",
+          "start": 66,
+          "end": 66.44,
+          "syl": [
+            [
+              66,
+              66.44
+            ]
+          ],
+          "sylText": [
+            "we"
+          ],
+          "sylCalibrated": [
+            false
+          ]
+        },
+        {
+          "w": "walked",
+          "start": 66.44,
+          "end": 66.9,
+          "syl": [
+            [
+              66.44,
+              66.9
+            ]
+          ],
+          "sylText": [
+            "walked"
+          ],
+          "sylCalibrated": [
+            false
+          ]
+        },
+        {
+          "w": "back",
+          "start": 66.9,
+          "end": 67.5,
+          "syl": [
+            [
+              66.9,
+              67.5
+            ]
+          ],
+          "sylText": [
+            "back"
+          ],
+          "sylCalibrated": [
+            false
+          ]
+        },
+        {
+          "w": "home",
+          "start": 67.5,
+          "end": 68.1,
+          "syl": [
+            [
+              67.5,
+              68.1
+            ]
+          ],
+          "sylText": [
+            "home"
+          ],
+          "sylCalibrated": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "i": 11,
+      "text": "i looked at myself in your eyes",
+      "start": 68.1,
+      "end": 70.65,
+      "words": [
+        {
+          "w": "i",
+          "start": 68.1,
+          "end": 68.4,
+          "syl": [
+            [
+              68.1,
+              68.4
+            ]
+          ],
+          "sylText": [
+            "i"
+          ]
+        },
+        {
+          "w": "looked",
+          "start": 68.4,
+          "end": 68.7,
+          "syl": [
+            [
+              68.4,
+              68.7
+            ]
+          ],
+          "sylText": [
+            "looked"
+          ]
+        },
+        {
+          "w": "at",
+          "start": 68.7,
+          "end": 69,
+          "syl": [
+            [
+              68.7,
+              69
+            ]
+          ],
+          "sylText": [
+            "at"
+          ]
+        },
+        {
+          "w": "myself",
+          "start": 69,
+          "end": 69.44,
+          "syl": [
+            [
+              69,
+              69.14
+            ],
+            [
+              69.14,
+              69.44
+            ]
+          ],
+          "sylText": [
+            "my",
+            "self"
+          ]
+        },
+        {
+          "w": "in",
+          "start": 69.44,
+          "end": 69.6,
+          "syl": [
+            [
+              69.44,
+              69.6
+            ]
+          ],
+          "sylText": [
+            "in"
+          ]
+        },
+        {
+          "w": "your",
+          "start": 69.6,
+          "end": 69.9,
+          "syl": [
+            [
+              69.6,
+              69.9
+            ]
+          ],
+          "sylText": [
+            "your"
+          ]
+        },
+        {
+          "w": "eyes",
+          "start": 69.9,
+          "end": 70.65,
+          "syl": [
+            [
+              69.9,
+              70.65
+            ]
+          ],
+          "sylText": [
+            "eyes"
+          ]
+        }
+      ]
+    },
+    {
+      "i": 12,
+      "text": "tears never stop as i stare at the ceiling looking for a reason to live",
+      "start": 71.38,
+      "end": 77.08,
+      "words": [
+        {
+          "w": "tears",
+          "start": 71.38,
+          "end": 71.68,
+          "syl": [
+            [
+              71.38,
+              71.68
+            ]
+          ],
+          "sylText": [
+            "tears"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "never",
+          "start": 71.68,
+          "end": 72.28,
+          "syl": [
+            [
+              71.68,
+              71.98
+            ],
+            [
+              71.98,
+              72.28
+            ]
+          ],
+          "sylText": [
+            "ne",
+            "ver"
+          ],
+          "sylCalibrated": [
+            false,
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "stop",
+          "start": 72.28,
+          "end": 73.18,
+          "syl": [
+            [
+              72.28,
+              73.18
+            ]
+          ],
+          "sylText": [
+            "stop"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "as",
+          "start": 73.18,
+          "end": 73.48,
+          "syl": [
+            [
+              73.18,
+              73.48
+            ]
+          ],
+          "sylText": [
+            "as"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "i",
+          "start": 73.48,
+          "end": 73.78,
+          "syl": [
+            [
+              73.48,
+              73.78
+            ]
+          ],
+          "sylText": [
+            "i"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "stare",
+          "start": 73.78,
+          "end": 73.93,
+          "syl": [
+            [
+              73.78,
+              73.93
+            ]
+          ],
+          "sylText": [
+            "stare"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "at",
+          "start": 73.93,
+          "end": 74.23,
+          "syl": [
+            [
+              73.93,
+              74.23
+            ]
+          ],
+          "sylText": [
+            "at"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "the",
+          "start": 74.23,
+          "end": 74.38,
+          "syl": [
+            [
+              74.23,
+              74.38
+            ]
+          ],
+          "sylText": [
+            "the"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "ceiling",
+          "start": 74.38,
+          "end": 74.98,
+          "syl": [
+            [
+              74.38,
+              74.68
+            ],
+            [
+              74.68,
+              74.98
+            ]
+          ],
+          "sylText": [
+            "cei",
+            "ling"
+          ],
+          "sylCalibrated": [
+            false,
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "looking",
+          "start": 74.98,
+          "end": 75.43,
+          "syl": [
+            [
+              74.98,
+              75.136
+            ],
+            [
+              75.136,
+              75.43
+            ]
+          ],
+          "sylText": [
+            "loo",
+            "king"
+          ],
+          "sylCalibrated": [
+            false,
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "for",
+          "start": 75.43,
+          "end": 75.58,
+          "syl": [
+            [
+              75.43,
+              75.58
+            ]
+          ],
+          "sylText": [
+            "for"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "a",
+          "start": 75.58,
+          "end": 75.88,
+          "syl": [
+            [
+              75.58,
+              75.88
+            ]
+          ],
+          "sylText": [
+            "a"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "reason",
+          "start": 75.88,
+          "end": 76.48,
+          "syl": [
+            [
+              75.88,
+              76.18
+            ],
+            [
+              76.18,
+              76.48
+            ]
+          ],
+          "sylText": [
+            "rea",
+            "son"
+          ],
+          "sylCalibrated": [
+            false,
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "to",
+          "start": 76.48,
+          "end": 76.78,
+          "syl": [
+            [
+              76.48,
+              76.78
+            ]
+          ],
+          "sylText": [
+            "to"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "live",
+          "start": 76.78,
+          "end": 77.08,
+          "syl": [
+            [
+              76.78,
+              77.08
+            ]
+          ],
+          "sylText": [
+            "live"
+          ],
+          "sylCalibrated": [
+            true
+          ],
+          "calibrated": true
+        }
+      ],
+      "calibrated": false
+    },
+    {
+      "i": 13,
+      "text": "as time goes on waiting for none",
+      "start": 77.38,
+      "end": 80.68,
+      "words": [
+        {
+          "w": "as",
+          "start": 77.38,
+          "end": 77.66,
+          "syl": [
+            [
+              77.38,
+              77.66
+            ]
+          ],
+          "sylText": [
+            "as"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "time",
+          "start": 77.66,
+          "end": 77.96,
+          "syl": [
+            [
+              77.66,
+              77.96
+            ]
+          ],
+          "sylText": [
+            "time"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "goes",
+          "start": 77.96,
+          "end": 78.24,
+          "syl": [
+            [
+              77.96,
+              78.24
+            ]
+          ],
+          "sylText": [
+            "goes"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "on",
+          "start": 78.24,
+          "end": 78.54,
+          "syl": [
+            [
+              78.24,
+              78.54
+            ]
+          ],
+          "sylText": [
+            "on"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "waiting",
+          "start": 78.54,
+          "end": 79.16,
+          "syl": [
+            [
+              78.54,
+              78.86
+            ],
+            [
+              78.86,
+              79.16
+            ]
+          ],
+          "sylText": [
+            "wai",
+            "ting"
+          ],
+          "sylCalibrated": [
+            false,
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "for",
+          "start": 79.16,
+          "end": 79.364,
+          "syl": [
+            [
+              79.16,
+              79.364
+            ]
+          ],
+          "sylText": [
+            "for"
+          ],
+          "sylCalibrated": [
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "none",
+          "start": 79.364,
+          "end": 80.68,
+          "syl": [
+            [
+              79.364,
+              80.68
+            ]
+          ],
+          "sylText": [
+            "none"
+          ],
+          "sylCalibrated": [
+            true
+          ],
+          "calibrated": true
+        }
+      ],
+      "calibrated": false
+    },
+    {
+      "i": 14,
+      "text": "one has to ask where do i go from here",
+      "start": 80.98,
+      "end": 85.18,
+      "words": [
+        {
+          "w": "one",
+          "start": 80.98,
+          "end": 81.205,
+          "syl": [
+            [
+              80.98,
+              81.205
+            ]
+          ],
+          "sylText": [
+            "one"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "has",
+          "start": 81.205,
+          "end": 81.43,
+          "syl": [
+            [
+              81.205,
+              81.43
+            ]
+          ],
+          "sylText": [
+            "has"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "to",
+          "start": 81.43,
+          "end": 81.88,
+          "syl": [
+            [
+              81.43,
+              81.88
+            ]
+          ],
+          "sylText": [
+            "to"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "ask",
+          "start": 81.88,
+          "end": 83.08,
+          "syl": [
+            [
+              81.88,
+              83.08
+            ]
+          ],
+          "sylText": [
+            "ask"
+          ],
+          "sylCalibrated": [
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "where",
+          "start": 83.359,
+          "end": 83.68,
+          "syl": [
+            [
+              83.359,
+              83.68
+            ]
+          ],
+          "sylText": [
+            "where"
+          ],
+          "sylCalibrated": [
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "do",
+          "start": 83.68,
+          "end": 83.83,
+          "syl": [
+            [
+              83.68,
+              83.83
+            ]
+          ],
+          "sylText": [
+            "do"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "i",
+          "start": 83.83,
+          "end": 84.28,
+          "syl": [
+            [
+              83.83,
+              84.28
+            ]
+          ],
+          "sylText": [
+            "i"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "go",
+          "start": 84.28,
+          "end": 84.58,
+          "syl": [
+            [
+              84.28,
+              84.58
+            ]
+          ],
+          "sylText": [
+            "go"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "from",
+          "start": 84.58,
+          "end": 84.736,
+          "syl": [
+            [
+              84.58,
+              84.736
+            ]
+          ],
+          "sylText": [
+            "from"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "here",
+          "start": 84.736,
+          "end": 85.18,
+          "syl": [
+            [
+              84.736,
+              85.18
+            ]
+          ],
+          "sylText": [
+            "here"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        }
+      ],
+      "calibrated": false
+    },
+    {
+      "i": 15,
+      "text": "having lost everything",
+      "start": 85.18,
+      "end": 86.68,
+      "words": [
+        {
+          "w": "having",
+          "start": 85.18,
+          "end": 85.706,
+          "syl": [
+            [
+              85.18,
+              85.48
+            ],
+            [
+              85.48,
+              85.706
+            ]
+          ],
+          "sylText": [
+            "ha",
+            "ving"
+          ],
+          "sylCalibrated": [
+            false,
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "lost",
+          "start": 85.706,
+          "end": 85.94,
+          "syl": [
+            [
+              85.706,
+              85.94
+            ]
+          ],
+          "sylText": [
+            "lost"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "everything",
+          "start": 85.94,
+          "end": 86.68,
+          "syl": [
+            [
+              85.94,
+              86.187
+            ],
+            [
+              86.187,
+              86.38
+            ],
+            [
+              86.38,
+              86.68
+            ]
+          ],
+          "sylText": [
+            "eve",
+            "ry",
+            "thing"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true
+          ],
+          "calibrated": true
+        }
+      ],
+      "calibrated": false
+    },
+    {
+      "i": 16,
+      "text": "looking at my shadow",
+      "start": 86.68,
+      "end": 88.479,
+      "words": [
+        {
+          "w": "looking",
+          "start": 86.68,
+          "end": 87.13,
+          "syl": [
+            [
+              86.68,
+              86.98
+            ],
+            [
+              86.98,
+              87.13
+            ]
+          ],
+          "sylText": [
+            "loo",
+            "king"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "at",
+          "start": 87.13,
+          "end": 87.58,
+          "syl": [
+            [
+              87.13,
+              87.58
+            ]
+          ],
+          "sylText": [
+            "at"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "my",
+          "start": 87.58,
+          "end": 87.88,
+          "syl": [
+            [
+              87.58,
+              87.88
+            ]
+          ],
+          "sylText": [
+            "my"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "shadow",
+          "start": 87.88,
+          "end": 88.479,
+          "syl": [
+            [
+              87.88,
+              88.18
+            ],
+            [
+              88.18,
+              88.479
+            ]
+          ],
+          "sylText": [
+            "sha",
+            "dow"
+          ],
+          "sylCalibrated": [
+            false,
+            false
+          ],
+          "calibrated": false
+        }
+      ],
+      "calibrated": false
+    },
+    {
+      "i": 17,
+      "text": "as i slowly fading away",
+      "start": 88.479,
+      "end": 90.52,
+      "words": [
+        {
+          "w": "as",
+          "start": 88.479,
+          "end": 88.78,
+          "syl": [
+            [
+              88.479,
+              88.78
+            ]
+          ],
+          "sylText": [
+            "as"
+          ]
+        },
+        {
+          "w": "i",
+          "start": 88.78,
+          "end": 89.08,
+          "syl": [
+            [
+              88.78,
+              89.08
+            ]
+          ],
+          "sylText": [
+            "i"
+          ]
+        },
+        {
+          "w": "slowly",
+          "start": 89.08,
+          "end": 89.53,
+          "syl": [
+            [
+              89.08,
+              89.38
+            ],
+            [
+              89.38,
+              89.53
+            ]
+          ],
+          "sylText": [
+            "slow",
+            "ly"
+          ]
+        },
+        {
+          "w": "fading",
+          "start": 89.53,
+          "end": 90.127,
+          "syl": [
+            [
+              89.53,
+              89.83
+            ],
+            [
+              89.83,
+              90.127
+            ]
+          ],
+          "sylText": [
+            "fa",
+            "ding"
+          ]
+        },
+        {
+          "w": "away",
+          "start": 90.127,
+          "end": 90.52,
+          "syl": [
+            [
+              90.127,
+              90.28
+            ],
+            [
+              90.28,
+              90.52
+            ]
+          ],
+          "sylText": [
+            "a",
+            "way"
+          ]
+        }
+      ]
+    },
+    {
+      "i": 18,
+      "text": "like dust in the winter morning",
+      "start": 90.52,
+      "end": 92.379,
+      "words": [
+        {
+          "w": "like",
+          "start": 90.52,
+          "end": 90.72,
+          "syl": [
+            [
+              90.52,
+              90.72
+            ]
+          ],
+          "sylText": [
+            "like"
+          ]
+        },
+        {
+          "w": "dust",
+          "start": 90.72,
+          "end": 91.02,
+          "syl": [
+            [
+              90.72,
+              91.02
+            ]
+          ],
+          "sylText": [
+            "dust"
+          ]
+        },
+        {
+          "w": "in",
+          "start": 91.02,
+          "end": 91.18,
+          "syl": [
+            [
+              91.02,
+              91.18
+            ]
+          ],
+          "sylText": [
+            "in"
+          ]
+        },
+        {
+          "w": "the",
+          "start": 91.18,
+          "end": 91.48,
+          "syl": [
+            [
+              91.18,
+              91.48
+            ]
+          ],
+          "sylText": [
+            "the"
+          ]
+        },
+        {
+          "w": "winter",
+          "start": 91.48,
+          "end": 91.926,
+          "syl": [
+            [
+              91.48,
+              91.78
+            ],
+            [
+              91.78,
+              91.926
+            ]
+          ],
+          "sylText": [
+            "win",
+            "ter"
+          ]
+        },
+        {
+          "w": "morning",
+          "start": 91.926,
+          "end": 92.379,
+          "syl": [
+            [
+              91.926,
+              92.22
+            ],
+            [
+              92.22,
+              92.379
+            ]
+          ],
+          "sylText": [
+            "mor",
+            "ning"
+          ]
+        }
+      ]
+    },
+    {
+      "i": 19,
+      "text": "as cold as my heart",
+      "start": 92.379,
+      "end": 93.88,
+      "words": [
+        {
+          "w": "as",
+          "start": 92.379,
+          "end": 92.68,
+          "syl": [
+            [
+              92.379,
+              92.68
+            ]
+          ],
+          "sylText": [
+            "as"
+          ]
+        },
+        {
+          "w": "cold",
+          "start": 92.68,
+          "end": 92.98,
+          "syl": [
+            [
+              92.68,
+              92.98
+            ]
+          ],
+          "sylText": [
+            "cold"
+          ]
+        },
+        {
+          "w": "as",
+          "start": 92.98,
+          "end": 93.28,
+          "syl": [
+            [
+              92.98,
+              93.28
+            ]
+          ],
+          "sylText": [
+            "as"
+          ]
+        },
+        {
+          "w": "my",
+          "start": 93.28,
+          "end": 93.58,
+          "syl": [
+            [
+              93.28,
+              93.58
+            ]
+          ],
+          "sylText": [
+            "my"
+          ]
+        },
+        {
+          "w": "heart",
+          "start": 93.58,
+          "end": 93.88,
+          "syl": [
+            [
+              93.58,
+              93.88
+            ]
+          ],
+          "sylText": [
+            "heart"
+          ]
+        }
+      ]
+    },
+    {
+      "i": 20,
+      "text": "i am losing my existence",
+      "start": 93.88,
+      "end": 95.68,
+      "words": [
+        {
+          "w": "i",
+          "start": 93.88,
+          "end": 94.18,
+          "syl": [
+            [
+              93.88,
+              94.18
+            ]
+          ],
+          "sylText": [
+            "i"
+          ]
+        },
+        {
+          "w": "am",
+          "start": 94.18,
+          "end": 94.33,
+          "syl": [
+            [
+              94.18,
+              94.33
+            ]
+          ],
+          "sylText": [
+            "am"
+          ]
+        },
+        {
+          "w": "losing",
+          "start": 94.33,
+          "end": 94.78,
+          "syl": [
+            [
+              94.33,
+              94.63
+            ],
+            [
+              94.63,
+              94.78
+            ]
+          ],
+          "sylText": [
+            "lo",
+            "sing"
+          ]
+        },
+        {
+          "w": "my",
+          "start": 94.78,
+          "end": 95.08,
+          "syl": [
+            [
+              94.78,
+              95.08
+            ]
+          ],
+          "sylText": [
+            "my"
+          ]
+        },
+        {
+          "w": "existence",
+          "start": 95.08,
+          "end": 95.68,
+          "syl": [
+            [
+              95.08,
+              95.24
+            ],
+            [
+              95.24,
+              95.526
+            ],
+            [
+              95.526,
+              95.68
+            ]
+          ],
+          "sylText": [
+            "ex",
+            "i",
+            "stence"
+          ]
+        }
+      ]
+    },
+    {
+      "i": 21,
+      "text": "disfigured beyond recognition",
+      "start": 95.68,
+      "end": 99.88,
+      "words": [
+        {
+          "w": "disfigured",
+          "start": 95.68,
+          "end": 96.73,
+          "syl": [
+            [
+              95.68,
+              95.98
+            ],
+            [
+              95.98,
+              96.28
+            ],
+            [
+              96.28,
+              96.73
+            ]
+          ],
+          "sylText": [
+            "dis",
+            "fi",
+            "gured"
+          ]
+        },
+        {
+          "w": "beyond",
+          "start": 96.73,
+          "end": 97.93,
+          "syl": [
+            [
+              96.73,
+              97.18
+            ],
+            [
+              97.18,
+              97.93
+            ]
+          ],
+          "sylText": [
+            "be",
+            "yond"
+          ]
+        },
+        {
+          "w": "recognition",
+          "start": 97.93,
+          "end": 99.88,
+          "syl": [
+            [
+              97.93,
+              98.38
+            ],
+            [
+              98.38,
+              98.68
+            ],
+            [
+              98.68,
+              99.58
+            ],
+            [
+              99.58,
+              99.88
+            ]
+          ],
+          "sylText": [
+            "re",
+            "cog",
+            "ni",
+            "tion"
+          ]
+        }
+      ]
+    },
+    {
+      "i": 22,
+      "text": "it is my admission",
+      "start": 99.88,
+      "end": 102.28,
+      "words": [
+        {
+          "w": "it",
+          "start": 99.88,
+          "end": 100.18,
+          "syl": [
+            [
+              99.88,
+              100.18
+            ]
+          ],
+          "sylText": [
+            "it"
+          ]
+        },
+        {
+          "w": "is",
+          "start": 100.18,
+          "end": 100.48,
+          "syl": [
+            [
+              100.18,
+              100.48
+            ]
+          ],
+          "sylText": [
+            "is"
+          ]
+        },
+        {
+          "w": "my",
+          "start": 100.48,
+          "end": 100.78,
+          "syl": [
+            [
+              100.48,
+              100.78
+            ]
+          ],
+          "sylText": [
+            "my"
+          ]
+        },
+        {
+          "w": "admission",
+          "start": 100.78,
+          "end": 102.28,
+          "syl": [
+            [
+              100.78,
+              101.08
+            ],
+            [
+              101.08,
+              101.98
+            ],
+            [
+              101.98,
+              102.28
+            ]
+          ],
+          "sylText": [
+            "ad",
+            "mis",
+            "sion"
+          ]
+        }
+      ]
+    },
+    {
+      "i": 23,
+      "text": "deconstruction",
+      "start": 102.28,
+      "end": 104.08,
+      "words": [
+        {
+          "w": "deconstruction",
+          "start": 102.28,
+          "end": 104.08,
+          "syl": [
+            [
+              102.28,
+              102.73
+            ],
+            [
+              102.73,
+              103.18
+            ],
+            [
+              103.18,
+              103.625
+            ],
+            [
+              103.625,
+              104.08
+            ]
+          ],
+          "sylText": [
+            "de",
+            "con",
+            "struc",
+            "tion"
+          ]
+        }
+      ]
+    },
+    {
+      "i": 24,
+      "text": "and let everything stop in motion",
+      "start": 104.08,
+      "end": 107.68,
+      "words": [
+        {
+          "w": "and",
+          "start": 104.08,
+          "end": 104.32,
+          "syl": [
+            [
+              104.08,
+              104.32
+            ]
+          ],
+          "sylText": [
+            "and"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "let",
+          "start": 104.32,
+          "end": 104.68,
+          "syl": [
+            [
+              104.32,
+              104.68
+            ]
+          ],
+          "sylText": [
+            "let"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "everything",
+          "start": 104.68,
+          "end": 105.28,
+          "syl": [
+            [
+              104.68,
+              104.83
+            ],
+            [
+              104.83,
+              104.98
+            ],
+            [
+              104.98,
+              105.28
+            ]
+          ],
+          "sylText": [
+            "eve",
+            "ry",
+            "thing"
+          ],
+          "sylCalibrated": [
+            false,
+            false,
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "stop",
+          "start": 105.28,
+          "end": 105.58,
+          "syl": [
+            [
+              105.28,
+              105.58
+            ]
+          ],
+          "sylText": [
+            "stop"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "in",
+          "start": 105.58,
+          "end": 105.88,
+          "syl": [
+            [
+              105.58,
+              105.88
+            ]
+          ],
+          "sylText": [
+            "in"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "motion",
+          "start": 105.88,
+          "end": 107.68,
+          "syl": [
+            [
+              105.88,
+              106.32
+            ],
+            [
+              106.32,
+              107.68
+            ]
+          ],
+          "sylText": [
+            "mo",
+            "tion"
+          ],
+          "sylCalibrated": [
+            false,
+            true
+          ],
+          "calibrated": false
+        }
+      ],
+      "calibrated": false
+    },
+    {
+      "i": 25,
+      "text": "emotion",
+      "start": 107.98,
+      "end": 109.78,
+      "words": [
+        {
+          "w": "emotion",
+          "start": 107.98,
+          "end": 109.78,
+          "syl": [
+            [
+              107.98,
+              108.28
+            ],
+            [
+              108.28,
+              108.73
+            ],
+            [
+              108.73,
+              109.78
+            ]
+          ],
+          "sylText": [
+            "e",
+            "mo",
+            "tion"
+          ]
+        }
+      ]
+    },
+    {
+      "i": 26,
+      "text": "reconciliation",
+      "start": 109.78,
+      "end": 112.16,
+      "words": [
+        {
+          "w": "reconciliation",
+          "start": 109.78,
+          "end": 112.16,
+          "syl": [
+            [
+              109.78,
+              110.06
+            ],
+            [
+              110.06,
+              110.36
+            ],
+            [
+              110.36,
+              110.52
+            ],
+            [
+              110.52,
+              110.66
+            ],
+            [
+              110.66,
+              111.12
+            ],
+            [
+              111.12,
+              112.16
+            ]
+          ],
+          "sylText": [
+            "re",
+            "con",
+            "ci",
+            "li",
+            "a",
+            "tion"
+          ]
+        }
+      ]
+    },
+    {
+      "i": 27,
+      "text": "with my inner demon",
+      "start": 112.16,
+      "end": 113.98,
+      "words": [
+        {
+          "w": "with",
+          "start": 112.16,
+          "end": 112.46,
+          "syl": [
+            [
+              112.16,
+              112.46
+            ]
+          ],
+          "sylText": [
+            "with"
+          ]
+        },
+        {
+          "w": "my",
+          "start": 112.46,
+          "end": 112.76,
+          "syl": [
+            [
+              112.46,
+              112.76
+            ]
+          ],
+          "sylText": [
+            "my"
+          ]
+        },
+        {
+          "w": "inner",
+          "start": 112.76,
+          "end": 113.06,
+          "syl": [
+            [
+              112.76,
+              112.91
+            ],
+            [
+              112.91,
+              113.06
+            ]
+          ],
+          "sylText": [
+            "in",
+            "ner"
+          ]
+        },
+        {
+          "w": "demon",
+          "start": 113.06,
+          "end": 113.98,
+          "syl": [
+            [
+              113.06,
+              113.52
+            ],
+            [
+              113.52,
+              113.98
+            ]
+          ],
+          "sylText": [
+            "de",
+            "mon"
+          ]
+        }
+      ]
+    },
+    {
+      "i": 28,
+      "text": "i can't run from it",
+      "start": 113.98,
+      "end": 115.336,
+      "words": [
+        {
+          "w": "i",
+          "start": 113.98,
+          "end": 114.28,
+          "syl": [
+            [
+              113.98,
+              114.28
+            ]
+          ],
+          "sylText": [
+            "i"
+          ]
+        },
+        {
+          "w": "can't",
+          "start": 114.28,
+          "end": 114.58,
+          "syl": [
+            [
+              114.28,
+              114.58
+            ]
+          ],
+          "sylText": [
+            "can't"
+          ]
+        },
+        {
+          "w": "run",
+          "start": 114.58,
+          "end": 114.88,
+          "syl": [
+            [
+              114.58,
+              114.88
+            ]
+          ],
+          "sylText": [
+            "run"
+          ]
+        },
+        {
+          "w": "from",
+          "start": 114.88,
+          "end": 115.18,
+          "syl": [
+            [
+              114.88,
+              115.18
+            ]
+          ],
+          "sylText": [
+            "from"
+          ]
+        },
+        {
+          "w": "it",
+          "start": 115.18,
+          "end": 115.336,
+          "syl": [
+            [
+              115.18,
+              115.336
+            ]
+          ],
+          "sylText": [
+            "it"
+          ]
+        }
+      ]
+    },
+    {
+      "i": 29,
+      "text": "i can't even lie to myself",
+      "start": 115.78,
+      "end": 118.18,
+      "words": [
+        {
+          "w": "i",
+          "start": 115.78,
+          "end": 116.08,
+          "syl": [
+            [
+              115.78,
+              116.08
+            ]
+          ],
+          "sylText": [
+            "i"
+          ]
+        },
+        {
+          "w": "can't",
+          "start": 116.08,
+          "end": 116.38,
+          "syl": [
+            [
+              116.08,
+              116.38
+            ]
+          ],
+          "sylText": [
+            "can't"
+          ]
+        },
+        {
+          "w": "even",
+          "start": 116.38,
+          "end": 116.98,
+          "syl": [
+            [
+              116.38,
+              116.68
+            ],
+            [
+              116.68,
+              116.98
+            ]
+          ],
+          "sylText": [
+            "e",
+            "ven"
+          ]
+        },
+        {
+          "w": "lie",
+          "start": 116.98,
+          "end": 117.28,
+          "syl": [
+            [
+              116.98,
+              117.28
+            ]
+          ],
+          "sylText": [
+            "lie"
+          ]
+        },
+        {
+          "w": "to",
+          "start": 117.28,
+          "end": 117.58,
+          "syl": [
+            [
+              117.28,
+              117.58
+            ]
+          ],
+          "sylText": [
+            "to"
+          ]
+        },
+        {
+          "w": "myself",
+          "start": 117.58,
+          "end": 118.18,
+          "syl": [
+            [
+              117.58,
+              117.88
+            ],
+            [
+              117.88,
+              118.18
+            ]
+          ],
+          "sylText": [
+            "my",
+            "self"
+          ]
+        }
+      ]
+    },
+    {
+      "i": 30,
+      "text": "my despair is all that i have",
+      "start": 118.18,
+      "end": 120.58,
+      "words": [
+        {
+          "w": "my",
+          "start": 118.18,
+          "end": 118.48,
+          "syl": [
+            [
+              118.18,
+              118.48
+            ]
+          ],
+          "sylText": [
+            "my"
+          ]
+        },
+        {
+          "w": "despair",
+          "start": 118.48,
+          "end": 119.08,
+          "syl": [
+            [
+              118.48,
+              118.78
+            ],
+            [
+              118.78,
+              119.08
+            ]
+          ],
+          "sylText": [
+            "de",
+            "spair"
+          ]
+        },
+        {
+          "w": "is",
+          "start": 119.08,
+          "end": 119.38,
+          "syl": [
+            [
+              119.08,
+              119.38
+            ]
+          ],
+          "sylText": [
+            "is"
+          ]
+        },
+        {
+          "w": "all",
+          "start": 119.38,
+          "end": 119.68,
+          "syl": [
+            [
+              119.38,
+              119.68
+            ]
+          ],
+          "sylText": [
+            "all"
+          ]
+        },
+        {
+          "w": "that",
+          "start": 119.68,
+          "end": 119.98,
+          "syl": [
+            [
+              119.68,
+              119.98
+            ]
+          ],
+          "sylText": [
+            "that"
+          ]
+        },
+        {
+          "w": "i",
+          "start": 119.98,
+          "end": 120.28,
+          "syl": [
+            [
+              119.98,
+              120.28
+            ]
+          ],
+          "sylText": [
+            "i"
+          ]
+        },
+        {
+          "w": "have",
+          "start": 120.28,
+          "end": 120.58,
+          "syl": [
+            [
+              120.28,
+              120.58
+            ]
+          ],
+          "sylText": [
+            "have"
+          ]
+        }
+      ]
+    },
+    {
+      "i": 31,
+      "text": "i tried to grab something to help",
+      "start": 120.58,
+      "end": 122.98,
+      "words": [
+        {
+          "w": "i",
+          "start": 120.58,
+          "end": 120.88,
+          "syl": [
+            [
+              120.58,
+              120.88
+            ]
+          ],
+          "sylText": [
+            "i"
+          ]
+        },
+        {
+          "w": "tried",
+          "start": 120.88,
+          "end": 121.18,
+          "syl": [
+            [
+              120.88,
+              121.18
+            ]
+          ],
+          "sylText": [
+            "tried"
+          ]
+        },
+        {
+          "w": "to",
+          "start": 121.18,
+          "end": 121.48,
+          "syl": [
+            [
+              121.18,
+              121.48
+            ]
+          ],
+          "sylText": [
+            "to"
+          ]
+        },
+        {
+          "w": "grab",
+          "start": 121.48,
+          "end": 121.78,
+          "syl": [
+            [
+              121.48,
+              121.78
+            ]
+          ],
+          "sylText": [
+            "grab"
+          ]
+        },
+        {
+          "w": "something",
+          "start": 121.78,
+          "end": 122.38,
+          "syl": [
+            [
+              121.78,
+              122.08
+            ],
+            [
+              122.08,
+              122.38
+            ]
+          ],
+          "sylText": [
+            "some",
+            "thing"
+          ]
+        },
+        {
+          "w": "to",
+          "start": 122.38,
+          "end": 122.68,
+          "syl": [
+            [
+              122.38,
+              122.68
+            ]
+          ],
+          "sylText": [
+            "to"
+          ]
+        },
+        {
+          "w": "help",
+          "start": 122.68,
+          "end": 122.98,
+          "syl": [
+            [
+              122.68,
+              122.98
+            ]
+          ],
+          "sylText": [
+            "help"
+          ]
+        }
+      ]
+    },
+    {
+      "i": 32,
+      "text": "me stay alive without a light",
+      "start": 122.98,
+      "end": 125.38,
+      "words": [
+        {
+          "w": "me",
+          "start": 122.98,
+          "end": 123.28,
+          "syl": [
+            [
+              122.98,
+              123.28
+            ]
+          ],
+          "sylText": [
+            "me"
+          ]
+        },
+        {
+          "w": "stay",
+          "start": 123.28,
+          "end": 123.58,
+          "syl": [
+            [
+              123.28,
+              123.58
+            ]
+          ],
+          "sylText": [
+            "stay"
+          ]
+        },
+        {
+          "w": "alive",
+          "start": 123.58,
+          "end": 124.18,
+          "syl": [
+            [
+              123.58,
+              123.88
+            ],
+            [
+              123.88,
+              124.18
+            ]
+          ],
+          "sylText": [
+            "a",
+            "live"
+          ]
+        },
+        {
+          "w": "without",
+          "start": 124.18,
+          "end": 124.78,
+          "syl": [
+            [
+              124.18,
+              124.48
+            ],
+            [
+              124.48,
+              124.78
+            ]
+          ],
+          "sylText": [
+            "wi",
+            "thout"
+          ]
+        },
+        {
+          "w": "a",
+          "start": 124.78,
+          "end": 125.08,
+          "syl": [
+            [
+              124.78,
+              125.08
+            ]
+          ],
+          "sylText": [
+            "a"
+          ]
+        },
+        {
+          "w": "light",
+          "start": 125.08,
+          "end": 125.38,
+          "syl": [
+            [
+              125.08,
+              125.38
+            ]
+          ],
+          "sylText": [
+            "light"
+          ]
+        }
+      ]
+    },
+    {
+      "i": 33,
+      "text": "without a sight",
+      "start": 125.38,
+      "end": 126.58,
+      "words": [
+        {
+          "w": "without",
+          "start": 125.38,
+          "end": 125.98,
+          "syl": [
+            [
+              125.38,
+              125.68
+            ],
+            [
+              125.68,
+              125.98
+            ]
+          ],
+          "sylText": [
+            "wi",
+            "thout"
+          ]
+        },
+        {
+          "w": "a",
+          "start": 125.98,
+          "end": 126.28,
+          "syl": [
+            [
+              125.98,
+              126.28
+            ]
+          ],
+          "sylText": [
+            "a"
+          ]
+        },
+        {
+          "w": "sight",
+          "start": 126.28,
+          "end": 126.58,
+          "syl": [
+            [
+              126.28,
+              126.58
+            ]
+          ],
+          "sylText": [
+            "sight"
+          ]
+        }
+      ]
+    },
+    {
+      "i": 34,
+      "text": "without a signal",
+      "start": 126.58,
+      "end": 128.08,
+      "words": [
+        {
+          "w": "without",
+          "start": 126.58,
+          "end": 127.18,
+          "syl": [
+            [
+              126.58,
+              126.88
+            ],
+            [
+              126.88,
+              127.18
+            ]
+          ],
+          "sylText": [
+            "wi",
+            "thout"
+          ]
+        },
+        {
+          "w": "a",
+          "start": 127.18,
+          "end": 127.48,
+          "syl": [
+            [
+              127.18,
+              127.48
+            ]
+          ],
+          "sylText": [
+            "a"
+          ]
+        },
+        {
+          "w": "signal",
+          "start": 127.48,
+          "end": 128.08,
+          "syl": [
+            [
+              127.48,
+              127.78
+            ],
+            [
+              127.78,
+              128.08
+            ]
+          ],
+          "sylText": [
+            "sig",
+            "nal"
+          ]
+        }
+      ]
+    },
+    {
+      "i": 35,
+      "text": "as i falling through my feeling",
+      "start": 128.08,
+      "end": 130.48,
+      "words": [
+        {
+          "w": "as",
+          "start": 128.08,
+          "end": 128.38,
+          "syl": [
+            [
+              128.08,
+              128.38
+            ]
+          ],
+          "sylText": [
+            "as"
+          ]
+        },
+        {
+          "w": "i",
+          "start": 128.38,
+          "end": 128.68,
+          "syl": [
+            [
+              128.38,
+              128.68
+            ]
+          ],
+          "sylText": [
+            "i"
+          ]
+        },
+        {
+          "w": "falling",
+          "start": 128.68,
+          "end": 129.28,
+          "syl": [
+            [
+              128.68,
+              128.98
+            ],
+            [
+              128.98,
+              129.28
+            ]
+          ],
+          "sylText": [
+            "fal",
+            "ling"
+          ]
+        },
+        {
+          "w": "through",
+          "start": 129.28,
+          "end": 129.58,
+          "syl": [
+            [
+              129.28,
+              129.58
+            ]
+          ],
+          "sylText": [
+            "through"
+          ]
+        },
+        {
+          "w": "my",
+          "start": 129.58,
+          "end": 129.88,
+          "syl": [
+            [
+              129.58,
+              129.88
+            ]
+          ],
+          "sylText": [
+            "my"
+          ]
+        },
+        {
+          "w": "feeling",
+          "start": 129.88,
+          "end": 130.48,
+          "syl": [
+            [
+              129.88,
+              130.18
+            ],
+            [
+              130.18,
+              130.48
+            ]
+          ],
+          "sylText": [
+            "fee",
+            "ling"
+          ]
+        }
+      ]
+    },
+    {
+      "i": 36,
+      "text": "as i staring at myself",
+      "start": 130.48,
+      "end": 132.58,
+      "words": [
+        {
+          "w": "as",
+          "start": 130.48,
+          "end": 130.78,
+          "syl": [
+            [
+              130.48,
+              130.78
+            ]
+          ],
+          "sylText": [
+            "as"
+          ]
+        },
+        {
+          "w": "i",
+          "start": 130.78,
+          "end": 131.08,
+          "syl": [
+            [
+              130.78,
+              131.08
+            ]
+          ],
+          "sylText": [
+            "i"
+          ]
+        },
+        {
+          "w": "staring",
+          "start": 131.08,
+          "end": 131.68,
+          "syl": [
+            [
+              131.08,
+              131.38
+            ],
+            [
+              131.38,
+              131.68
+            ]
+          ],
+          "sylText": [
+            "sta",
+            "ring"
+          ]
+        },
+        {
+          "w": "at",
+          "start": 131.68,
+          "end": 131.98,
+          "syl": [
+            [
+              131.68,
+              131.98
+            ]
+          ],
+          "sylText": [
+            "at"
+          ]
+        },
+        {
+          "w": "myself",
+          "start": 131.98,
+          "end": 132.58,
+          "syl": [
+            [
+              131.98,
+              132.28
+            ],
+            [
+              132.28,
+              132.58
+            ]
+          ],
+          "sylText": [
+            "my",
+            "self"
+          ]
+        }
+      ]
+    },
+    {
+      "i": 37,
+      "text": "is there something to save (save)",
+      "start": 132.58,
+      "end": 134.68,
+      "words": [
+        {
+          "w": "is",
+          "start": 132.58,
+          "end": 132.88,
+          "syl": [
+            [
+              132.58,
+              132.88
+            ]
+          ],
+          "sylText": [
+            "is"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "there",
+          "start": 132.88,
+          "end": 133.18,
+          "syl": [
+            [
+              132.88,
+              133.18
+            ]
+          ],
+          "sylText": [
+            "there"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "something",
+          "start": 133.18,
+          "end": 133.78,
+          "syl": [
+            [
+              133.18,
+              133.48
+            ],
+            [
+              133.48,
+              133.78
+            ]
+          ],
+          "sylText": [
+            "some",
+            "thing"
+          ],
+          "sylCalibrated": [
+            false,
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "to",
+          "start": 133.78,
+          "end": 134.08,
+          "syl": [
+            [
+              133.78,
+              134.08
+            ]
+          ],
+          "sylText": [
+            "to"
+          ],
+          "sylCalibrated": [
+            false
+          ],
+          "calibrated": false
+        },
+        {
+          "w": "save",
+          "start": 134.08,
+          "end": 134.38,
+          "syl": [
+            [
+              134.08,
+              134.38
+            ]
+          ],
+          "sylText": [
+            "save"
+          ],
+          "sylCalibrated": [
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "(save)",
+          "start": 134.38,
+          "end": 134.68,
+          "syl": [
+            [
+              134.38,
+              134.68
+            ]
+          ],
+          "sylText": [
+            "(save)"
+          ],
+          "sylCalibrated": [
+            true
+          ],
+          "calibrated": true
+        }
+      ],
+      "calibrated": false
+    },
+    {
+      "i": 38,
+      "text": "(i) i can't stop i just went on without a destination",
+      "start": 154.18,
+      "end": 158.68,
+      "words": [
+        {
+          "w": "(i)",
+          "start": 154.18,
+          "end": 154.48,
+          "syl": [
+            [
+              154.18,
+              154.48
+            ]
+          ],
+          "sylText": [
+            "(i)"
+          ]
+        },
+        {
+          "w": "i",
+          "start": 154.48,
+          "end": 154.78,
+          "syl": [
+            [
+              154.48,
+              154.78
+            ]
+          ],
+          "sylText": [
+            "i"
+          ]
+        },
+        {
+          "w": "can't",
+          "start": 154.78,
+          "end": 155.08,
+          "syl": [
+            [
+              154.78,
+              155.08
+            ]
+          ],
+          "sylText": [
+            "can't"
+          ]
+        },
+        {
+          "w": "stop",
+          "start": 155.08,
+          "end": 155.38,
+          "syl": [
+            [
+              155.08,
+              155.38
+            ]
+          ],
+          "sylText": [
+            "stop"
+          ]
+        },
+        {
+          "w": "i",
+          "start": 155.38,
+          "end": 155.68,
+          "syl": [
+            [
+              155.38,
+              155.68
+            ]
+          ],
+          "sylText": [
+            "i"
+          ]
+        },
+        {
+          "w": "just",
+          "start": 155.68,
+          "end": 155.98,
+          "syl": [
+            [
+              155.68,
+              155.98
+            ]
+          ],
+          "sylText": [
+            "just"
+          ]
+        },
+        {
+          "w": "went",
+          "start": 155.98,
+          "end": 156.28,
+          "syl": [
+            [
+              155.98,
+              156.28
+            ]
+          ],
+          "sylText": [
+            "went"
+          ]
+        },
+        {
+          "w": "on",
+          "start": 156.28,
+          "end": 156.58,
+          "syl": [
+            [
+              156.28,
+              156.58
+            ]
+          ],
+          "sylText": [
+            "on"
+          ]
+        },
+        {
+          "w": "without",
+          "start": 156.58,
+          "end": 157.18,
+          "syl": [
+            [
+              156.58,
+              156.88
+            ],
+            [
+              156.88,
+              157.18
+            ]
+          ],
+          "sylText": [
+            "wi",
+            "thout"
+          ]
+        },
+        {
+          "w": "a",
+          "start": 157.18,
+          "end": 157.48,
+          "syl": [
+            [
+              157.18,
+              157.48
+            ]
+          ],
+          "sylText": [
+            "a"
+          ]
+        },
+        {
+          "w": "destination",
+          "start": 157.48,
+          "end": 158.68,
+          "syl": [
+            [
+              157.48,
+              157.78
+            ],
+            [
+              157.78,
+              158.08
+            ],
+            [
+              158.08,
+              158.38
+            ],
+            [
+              158.38,
+              158.68
+            ]
+          ],
+          "sylText": [
+            "de",
+            "sti",
+            "na",
+            "tion"
+          ]
+        }
+      ]
+    },
+    {
+      "i": 39,
+      "text": "i can't see the walls surrounding me without a doubt it's never gone",
+      "start": 158.68,
+      "end": 163.78,
+      "words": [
+        {
+          "w": "i",
+          "start": 158.68,
+          "end": 158.98,
+          "syl": [
+            [
+              158.68,
+              158.98
+            ]
+          ],
+          "sylText": [
+            "i"
+          ]
+        },
+        {
+          "w": "can't",
+          "start": 158.98,
+          "end": 159.28,
+          "syl": [
+            [
+              158.98,
+              159.28
+            ]
+          ],
+          "sylText": [
+            "can't"
+          ]
+        },
+        {
+          "w": "see",
+          "start": 159.28,
+          "end": 159.58,
+          "syl": [
+            [
+              159.28,
+              159.58
+            ]
+          ],
+          "sylText": [
+            "see"
+          ]
+        },
+        {
+          "w": "the",
+          "start": 159.58,
+          "end": 159.88,
+          "syl": [
+            [
+              159.58,
+              159.88
+            ]
+          ],
+          "sylText": [
+            "the"
+          ]
+        },
+        {
+          "w": "walls",
+          "start": 159.88,
+          "end": 160.18,
+          "syl": [
+            [
+              159.88,
+              160.18
+            ]
+          ],
+          "sylText": [
+            "walls"
+          ]
+        },
+        {
+          "w": "surrounding",
+          "start": 160.18,
+          "end": 161.08,
+          "syl": [
+            [
+              160.18,
+              160.48
+            ],
+            [
+              160.48,
+              160.78
+            ],
+            [
+              160.78,
+              161.08
+            ]
+          ],
+          "sylText": [
+            "sur",
+            "roun",
+            "ding"
+          ]
+        },
+        {
+          "w": "me",
+          "start": 161.08,
+          "end": 161.38,
+          "syl": [
+            [
+              161.08,
+              161.38
+            ]
+          ],
+          "sylText": [
+            "me"
+          ]
+        },
+        {
+          "w": "without",
+          "start": 161.38,
+          "end": 161.98,
+          "syl": [
+            [
+              161.38,
+              161.68
+            ],
+            [
+              161.68,
+              161.98
+            ]
+          ],
+          "sylText": [
+            "wi",
+            "thout"
+          ]
+        },
+        {
+          "w": "a",
+          "start": 161.98,
+          "end": 162.28,
+          "syl": [
+            [
+              161.98,
+              162.28
+            ]
+          ],
+          "sylText": [
+            "a"
+          ]
+        },
+        {
+          "w": "doubt",
+          "start": 162.28,
+          "end": 162.58,
+          "syl": [
+            [
+              162.28,
+              162.58
+            ]
+          ],
+          "sylText": [
+            "doubt"
+          ]
+        },
+        {
+          "w": "it's",
+          "start": 162.58,
+          "end": 162.88,
+          "syl": [
+            [
+              162.58,
+              162.88
+            ]
+          ],
+          "sylText": [
+            "it's"
+          ]
+        },
+        {
+          "w": "never",
+          "start": 162.88,
+          "end": 163.48,
+          "syl": [
+            [
+              162.88,
+              163.18
+            ],
+            [
+              163.18,
+              163.48
+            ]
+          ],
+          "sylText": [
+            "ne",
+            "ver"
+          ]
+        },
+        {
+          "w": "gone",
+          "start": 163.48,
+          "end": 163.78,
+          "syl": [
+            [
+              163.48,
+              163.78
+            ]
+          ],
+          "sylText": [
+            "gone"
+          ]
+        }
+      ]
+    },
+    {
+      "i": 40,
+      "text": "what i have done i can't atone as days went on as i step on",
+      "start": 163.78,
+      "end": 168.58,
+      "words": [
+        {
+          "w": "what",
+          "start": 163.78,
+          "end": 164.08,
+          "syl": [
+            [
+              163.78,
+              164.08
+            ]
+          ],
+          "sylText": [
+            "what"
+          ]
+        },
+        {
+          "w": "i",
+          "start": 164.08,
+          "end": 164.38,
+          "syl": [
+            [
+              164.08,
+              164.38
+            ]
+          ],
+          "sylText": [
+            "i"
+          ]
+        },
+        {
+          "w": "have",
+          "start": 164.38,
+          "end": 164.68,
+          "syl": [
+            [
+              164.38,
+              164.68
+            ]
+          ],
+          "sylText": [
+            "have"
+          ]
+        },
+        {
+          "w": "done",
+          "start": 164.68,
+          "end": 164.98,
+          "syl": [
+            [
+              164.68,
+              164.98
+            ]
+          ],
+          "sylText": [
+            "done"
+          ]
+        },
+        {
+          "w": "i",
+          "start": 164.98,
+          "end": 165.28,
+          "syl": [
+            [
+              164.98,
+              165.28
+            ]
+          ],
+          "sylText": [
+            "i"
+          ]
+        },
+        {
+          "w": "can't",
+          "start": 165.28,
+          "end": 165.58,
+          "syl": [
+            [
+              165.28,
+              165.58
+            ]
+          ],
+          "sylText": [
+            "can't"
+          ]
+        },
+        {
+          "w": "atone",
+          "start": 165.58,
+          "end": 166.18,
+          "syl": [
+            [
+              165.58,
+              165.88
+            ],
+            [
+              165.88,
+              166.18
+            ]
+          ],
+          "sylText": [
+            "a",
+            "tone"
+          ]
+        },
+        {
+          "w": "as",
+          "start": 166.18,
+          "end": 166.48,
+          "syl": [
+            [
+              166.18,
+              166.48
+            ]
+          ],
+          "sylText": [
+            "as"
+          ]
+        },
+        {
+          "w": "days",
+          "start": 166.48,
+          "end": 166.78,
+          "syl": [
+            [
+              166.48,
+              166.78
+            ]
+          ],
+          "sylText": [
+            "days"
+          ]
+        },
+        {
+          "w": "went",
+          "start": 166.78,
+          "end": 167.08,
+          "syl": [
+            [
+              166.78,
+              167.08
+            ]
+          ],
+          "sylText": [
+            "went"
+          ]
+        },
+        {
+          "w": "on",
+          "start": 167.08,
+          "end": 167.38,
+          "syl": [
+            [
+              167.08,
+              167.38
+            ]
+          ],
+          "sylText": [
+            "on"
+          ]
+        },
+        {
+          "w": "as",
+          "start": 167.38,
+          "end": 167.68,
+          "syl": [
+            [
+              167.38,
+              167.68
+            ]
+          ],
+          "sylText": [
+            "as"
+          ]
+        },
+        {
+          "w": "i",
+          "start": 167.68,
+          "end": 167.98,
+          "syl": [
+            [
+              167.68,
+              167.98
+            ]
+          ],
+          "sylText": [
+            "i"
+          ]
+        },
+        {
+          "w": "step",
+          "start": 167.98,
+          "end": 168.28,
+          "syl": [
+            [
+              167.98,
+              168.28
+            ]
+          ],
+          "sylText": [
+            "step"
+          ]
+        },
+        {
+          "w": "on",
+          "start": 168.28,
+          "end": 168.58,
+          "syl": [
+            [
+              168.28,
+              168.58
+            ]
+          ],
+          "sylText": [
+            "on"
+          ]
+        }
+      ]
+    },
+    {
+      "i": 41,
+      "text": "the destination's still a far i'll never see you again",
+      "start": 168.58,
+      "end": 173.066,
+      "words": [
+        {
+          "w": "the",
+          "start": 168.58,
+          "end": 168.88,
+          "syl": [
+            [
+              168.58,
+              168.88
+            ]
+          ],
+          "sylText": [
+            "the"
+          ]
+        },
+        {
+          "w": "destination's",
+          "start": 168.88,
+          "end": 170.08,
+          "syl": [
+            [
+              168.88,
+              169.18
+            ],
+            [
+              169.18,
+              169.48
+            ],
+            [
+              169.48,
+              169.78
+            ],
+            [
+              169.78,
+              170.08
+            ]
+          ],
+          "sylText": [
+            "de",
+            "sti",
+            "na",
+            "tion's"
+          ]
+        },
+        {
+          "w": "still",
+          "start": 170.08,
+          "end": 170.38,
+          "syl": [
+            [
+              170.08,
+              170.38
+            ]
+          ],
+          "sylText": [
+            "still"
+          ]
+        },
+        {
+          "w": "a",
+          "start": 170.38,
+          "end": 170.68,
+          "syl": [
+            [
+              170.38,
+              170.68
+            ]
+          ],
+          "sylText": [
+            "a"
+          ]
+        },
+        {
+          "w": "far",
+          "start": 170.68,
+          "end": 170.98,
+          "syl": [
+            [
+              170.68,
+              170.98
+            ]
+          ],
+          "sylText": [
+            "far"
+          ]
+        },
+        {
+          "w": "i'll",
+          "start": 170.98,
+          "end": 171.28,
+          "syl": [
+            [
+              170.98,
+              171.28
+            ]
+          ],
+          "sylText": [
+            "i'll"
+          ]
+        },
+        {
+          "w": "never",
+          "start": 171.28,
+          "end": 171.88,
+          "syl": [
+            [
+              171.28,
+              171.58
+            ],
+            [
+              171.58,
+              171.88
+            ]
+          ],
+          "sylText": [
+            "ne",
+            "ver"
+          ]
+        },
+        {
+          "w": "see",
+          "start": 171.88,
+          "end": 172.255,
+          "syl": [
+            [
+              171.88,
+              172.255
+            ]
+          ],
+          "sylText": [
+            "see"
+          ]
+        },
+        {
+          "w": "you",
+          "start": 172.255,
+          "end": 172.48,
+          "syl": [
+            [
+              172.255,
+              172.48
+            ]
+          ],
+          "sylText": [
+            "you"
+          ]
+        },
+        {
+          "w": "again",
+          "start": 172.48,
+          "end": 173.066,
+          "syl": [
+            [
+              172.48,
+              172.78
+            ],
+            [
+              172.78,
+              173.066
+            ]
+          ],
+          "sylText": [
+            "a",
+            "gain"
+          ]
+        }
+      ]
+    }
+  ]
+}

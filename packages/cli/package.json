@@ -1,0 +1,11 @@
+{
+  "name": "@pve/cli",
+  "private": true,
+  "type": "module",
+  "bin": { "pve": "./src/main.ts" },
+  "dependencies": {
+    "@pve/core": "workspace:*",
+    "@pve/engine": "workspace:*",
+    "playwright-core": "^1.63.0"
+  }
+}

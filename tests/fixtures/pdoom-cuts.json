@@ -1,0 +1,27 @@
+{
+  "source": "upstream/main fa164b7, window.__pdoom.engine.timeline of the running app (export mode), times in seconds",
+  "entries": [
+    { "id": "open", "start": 0, "end": 9.328 },
+    { "id": "loss", "start": 9.328, "end": 16.601 },
+    { "id": "prompt1", "start": 16.601, "end": 22.509 },
+    { "id": "hook1", "start": 22.509, "end": 24.328 },
+    { "id": "room", "start": 24.328, "end": 29.782 },
+    { "id": "shoggoth", "start": 29.782, "end": 38.418 },
+    { "id": "spacetime", "start": 38.418, "end": 52.508 },
+    { "id": "prompt2", "start": 52.508, "end": 58.871 },
+    { "id": "hook2", "start": 58.871, "end": 60.235 },
+    { "id": "ascent", "start": 60.235, "end": 69.78 },
+    { "id": "bureau", "start": 69.78, "end": 81.143 },
+    { "id": "leftturn", "start": 81.143, "end": 88.87 },
+    { "id": "prompt3", "start": 88.87, "end": 95.233 },
+    { "id": "hook3", "start": 95.233, "end": 96.596 },
+    { "id": "paperclips", "start": 96.596, "end": 102.051 },
+    { "id": "fuse", "start": 102.051, "end": 109.778 },
+    { "id": "stack", "start": 109.778, "end": 115.232 },
+    { "id": "dense", "start": 115.232, "end": 124.322 },
+    { "id": "hook4", "start": 124.322, "end": 126.14 },
+    { "id": "loom", "start": 126.14, "end": 131.595 },
+    { "id": "ilya", "start": 131.595, "end": 140.23 },
+    { "id": "outro", "start": 140.23, "end": 156.651 }
+  ]
+}

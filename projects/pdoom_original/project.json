@@ -1,0 +1,18 @@
+{
+  "v": 1,
+  "id": "pdoom_original",
+  "engine": "0.1",
+  "fps": 60,
+  "output": {
+    "size": [1920, 1080],
+    "fit": "contain"
+  },
+  "assets": {
+    "song": {
+      "kind": "audio",
+      "src": "user_input/pdoom.mp3"
+    }
+  },
+  "markers": {},
+  "tracks": []
+}

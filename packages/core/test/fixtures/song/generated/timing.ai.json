@@ -1,0 +1,9 @@
+{
+  "v": 1,
+  "model": "fixture",
+  "duration": 4.2,
+  "bpm": 120,
+  "beat_period": 0.5,
+  "beats": [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4],
+  "downbeats": [0.5, 2.5]
+}

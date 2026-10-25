@@ -1,0 +1,29 @@
+{
+  "sections": [
+    { "id": "s0", "name": "Verse 1", "start": 0.5, "end": 2.5 },
+    { "id": "s1", "name": "Chorus", "start": 2.5, "end": 4.2 }
+  ],
+  "lines": [
+    {
+      "i": 0,
+      "text": "hello world",
+      "start": 0.52,
+      "end": 1.98,
+      "calibrated": true,
+      "words": [
+        { "w": "hello", "start": 0.52, "end": 1.1, "syl": [[0.52, 0.8], [0.8, 1.1]], "sylText": ["hel", "lo"] },
+        { "w": "world", "start": 1.1, "end": 1.98, "syl": [[1.1, 1.98]], "sylText": ["world"] }
+      ]
+    },
+    {
+      "i": 1,
+      "text": "sing again",
+      "start": 2.51,
+      "end": 3.9,
+      "words": [
+        { "w": "sing", "start": 2.51, "end": 3.0, "syl": [[2.51, 3.0]], "sylText": ["sing"], "sylCalibrated": [true] },
+        { "w": "again", "start": 3.0, "end": 3.9, "syl": [[3.0, 3.25], [3.25, 3.9]], "sylText": ["a", "gain"] }
+      ]
+    }
+  ]
+}
