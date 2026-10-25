@@ -34,8 +34,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
-      # `link:lyricsync` in packages/core stays a dangling link: the site build never imports Lyric-Sync
-      - run: bun install --frozen-lockfile
+      # packages/core depends on `link:lyricsync` (the sibling repository Lyric-Sync). The site build never imports it,
+      # and bun on Linux fails the install when the link target is missing: give the link an empty target.
+      - name: Install
+        run: |
+          mkdir -p packages/core/lyricsync
+          echo '{ "name": "lyricsync", "private": true }' > packages/core/lyricsync/package.json
+          bun install --frozen-lockfile
       - name: Download the audio
         env:
           GH_TOKEN: ${{ github.token }}
