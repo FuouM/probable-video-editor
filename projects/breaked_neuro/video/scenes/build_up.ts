@@ -6,11 +6,10 @@
 // Rates: fall 24 fps.
 import type { Frame } from '@pve/engine/scene';
 import { W } from '@pve/engine/gl';
-import { clamp, ease, prog } from '@pve/engine/util';
-import { BAR, BEAT, BLUE, BOX_H, INK, PAPER, PrintScene, drawBars, readout, stepT, type PrintOpts } from './_kit';
+import { clamp, ease, pad0, prog, stepT } from '@pve/engine/util';
+import { BAR, BEAT, BLUE, BOX_H, INK, PAPER, PrintScene, drawBars, readout, type PrintOpts } from './_kit';
 import { DrosteFall } from './_droste';
 
-const OPEN = 0.45; // seconds the cells of Chorus 2 take to close over the fall
 
 export default class BuildUp extends PrintScene {
   private fall!: DrosteFall;
@@ -38,8 +37,8 @@ export default class BuildUp extends PrintScene {
     const z = this.fall.z(tz);
     let words = 0;
     for (const w of this.fall.words.values()) if (w.t <= tz) words++;
-    readout(c, `BUILD UP · LEVEL ${String(Math.floor(z)).padStart(2, '0')} · ${Math.pow(1 / 0.44, z).toExponential(1).toUpperCase()}×`, 'left');
-    readout(c, `WORDS ${String(words).padStart(2, '0')}/${this.fall.words.size}`, 'right');
+    readout(c, `BUILD UP · LEVEL ${pad0(Math.floor(z))} · ${Math.pow(1 / 0.44, z).toExponential(1).toUpperCase()}×`, 'left');
+    readout(c, `WORDS ${pad0(words)}/${this.fall.words.size}`, 'right');
     this.fall.draw(c, tz, true); // its white words run on over the bars
     if (pBlue > 0) this.fall.drawWords(c, tz, true);
     return { plane: 0, view: { x: 0, y: 0, cell: this.fall.planeCell(tz) } };

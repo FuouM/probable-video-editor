@@ -50,7 +50,8 @@ function nearest(list: number[], v: number) {
 }
 
 /** CSS font string for Canvas2D. */
-export const font = (family: string, sizePx: number) => `${sizePx}px "${family}"`;
+export const font = (family: string, sizePx: number, weight?: number | string) =>
+  weight !== undefined ? `${weight} ${sizePx}px "${family}"` : `${sizePx}px "${family}"`;
 
 const otCache = new Map<string, opentype.Font>();
 const bufCache = new Map<string, ArrayBuffer>();
@@ -237,4 +238,86 @@ export function textPoints(text: string, family: string, size: number, step = 6,
     }
   }
   return out;
+}
+
+// ---------- vertical setting (tategaki) ----------
+// Canvas2D has no vertical text: glyphs are set one by one down a column. Punctuation takes its vertical
+// presentation form, the long vowel mark and dashes turn 90°, small kana sit high and right, Latin runs turn 90°.
+const VFORM: Record<string, string> = {
+  '、': '︑', '。': '︒', '「': '﹁', '」': '﹂', '『': '﹃', '』': '﹄',
+  '…': '︙', '（': '︵', '）': '︶', '：': '︓', '！': '！', '？': '？', '?': '？', '!': '！',
+};
+const ROT: Record<string, true> = { 'ー': true, '〜': true, '～': true, '—': true, '―': true, '-': true, '–': true };
+const SMALL: Record<string, true> = Object.fromEntries([...'ぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮ'].map((k) => [k, true]));
+const LATIN = /[A-Za-z0-9.,'&]/;
+
+export interface VCell {
+  /** What to draw. */
+  ch: string;
+  /** Turn 90° clockwise (a long mark or a Latin run). */
+  rot: boolean;
+  small: boolean;
+  /** Advance down the column, in em. */
+  adv: number;
+}
+
+/**
+ * The cells of `text` set vertically. Straight double quotes alternate between 〝 and 〟.
+ * `measure` gives the width in em of a Latin run (it turns 90°, so its width is its advance).
+ */
+export function vcells(text: string, measure: (s: string) => number): VCell[] {
+  const out: VCell[] = [];
+  let open = true;
+  const chars = [...text];
+  for (let i = 0; i < chars.length; i++) {
+    const ch = chars[i]!;
+    if (LATIN.test(ch)) {
+      let run = ch;
+      while (i + 1 < chars.length && (LATIN.test(chars[i + 1]!) || (chars[i + 1] === ' ' && i + 2 < chars.length && LATIN.test(chars[i + 2]!)))) run += chars[++i];
+      out.push({ ch: run, rot: true, small: false, adv: measure(run) + 0.15 });
+      continue;
+    }
+    if (ch === '"') {
+      out.push({ ch: open ? '〝' : '〟', rot: false, small: false, adv: 1 });
+      open = !open;
+      continue;
+    }
+    if (ch === ' ') continue;
+    const small = SMALL[ch] === true;
+    out.push({ ch: VFORM[ch] ?? ch, rot: ROT[ch] === true, small, adv: small ? 0.7 : 1 });
+  }
+  return out;
+}
+
+/**
+ * Draw `text` as one vertical column centred on x, starting at y (top). Returns the y below the last cell.
+ * The current fillStyle is used. `each(i, cellTop, adv)` runs before each cell (to change style or skip: return false).
+ */
+export function drawV(
+  c: CanvasRenderingContext2D, text: string, x: number, y: number, size: number, family: string, weight: number | string = 400,
+  each?: (i: number, top: number, adv: number) => boolean | void,
+): number {
+  c.font = font(family, size, weight);
+  c.textAlign = 'center';
+  c.textBaseline = 'middle';
+  const cells = vcells(text, (s) => c.measureText(s).width / size);
+  let top = y;
+  cells.forEach((cell, i) => {
+    const adv = cell.adv * size;
+    if (each && each(i, top, adv) === false) { top += adv; return; }
+    const cy = top + adv / 2;
+    if (cell.rot) {
+      c.save();
+      c.translate(x, cy);
+      c.rotate(Math.PI / 2);
+      c.fillText(cell.ch, 0, 0);
+      c.restore();
+    } else if (cell.small) {
+      c.fillText(cell.ch, x + size * 0.12, cy - size * 0.1);
+    } else {
+      c.fillText(cell.ch, x, cy);
+    }
+    top += adv;
+  });
+  return top;
 }

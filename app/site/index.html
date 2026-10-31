@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>breaked</title>
+<title>pve</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="description" content="breaked: a music video that is code. It is drawn live in your browser, frame by frame, to the song." />
+<meta name="description" content="Music videos that are code. Each one is drawn live in your browser, frame by frame, to the song." />
 <link rel="icon" href="data:," />
 <link rel="stylesheet" href="../src/ui/daw.css" />
 <link rel="stylesheet" href="./player.css" />
@@ -24,7 +24,7 @@
 
   <div class="group-box pl-monitor">
     <div class="group-box-title">
-      <span id="title">breaked</span>
+      <span id="title">pve</span>
       <strong style="color:var(--sys-accent)" id="mon-res"></strong>
       <span class="nle-title-sep">&middot;</span>
       <span id="mon-fps" style="color:#4ade80"></span>
@@ -35,15 +35,19 @@
     <div class="pl-frame" id="frame">
       <div class="pl-view">
         <canvas id="c"></canvas>
+        <div class="pl-subs" id="subs" hidden></div>
         <div class="pl-dialog-wrap" id="splash">
-          <div class="pl-dialog" role="dialog" aria-labelledby="dlg-title">
-            <div class="pl-dialog-title" id="dlg-title">breaked</div>
+          <div class="pl-dialog loading" role="dialog" aria-labelledby="dlg-title">
+            <div class="pl-dialog-title" id="dlg-title">pve</div>
+            <img class="pl-cover" id="cover" alt="" hidden />
             <div class="pl-dialog-body">
               <p>A music video that is code. Your browser draws every frame live, in time with the song. This is not a video file.</p>
               <p class="pl-muted">Needs WebGL2. A desktop GPU is best. Pick a lower resolution below if it stutters.</p>
-              <p class="pl-status" id="splash-status">Loading the song and the scenes</p>
+              <div class="pl-videos" id="videos" hidden></div>
+              <div id="loader-host"></div>
+              <p class="pl-status" id="splash-status"></p>
             </div>
-            <div class="pl-dialog-foot">
+            <div class="pl-dialog-foot" id="splash-foot">
               <button class="pl-btn pl-btn-default" id="splash-play" disabled>Loading</button>
             </div>
           </div>
@@ -66,11 +70,29 @@
           </div>
           <div class="pl-time"><span id="time-now">0:00</span> <span class="pl-muted">/</span> <span id="time-total">0:00</span></div>
           <div class="nle-chip" id="chip-section" title="Current section"><span class="pl-muted">SECTION:</span> <strong id="section">&mdash;</strong></div>
+          <div class="pl-stat" id="stat" title="Video, output size, frames per second, CPU time of one frame"></div>
           <div class="daw-transport-spacer"></div>
           <div class="daw-transport-group">
             <button class="daw-tbtn" id="btn-mute" title="Mute (M)" aria-label="Mute"></button>
             <input class="pl-vol" id="vol" type="range" min="0" max="1" step="0.05" value="1" aria-label="Volume" title="Volume (Up / Down)" />
           </div>
+          <div class="daw-transport-group" id="sub-group" hidden>
+            <button class="daw-tbtn pl-cc" id="btn-sub" title="Subtitles (C)" aria-label="Subtitles" aria-pressed="false">CC</button>
+            <select class="nle-select pl-select" id="sub-lang" aria-label="Subtitle language" title="Subtitle language"></select>
+          </div>
+          <label class="pl-field" id="field-video" title="Video" hidden>
+            <span class="pl-muted">VIDEO:</span>
+            <select class="nle-select pl-select" id="video" aria-label="Video"></select>
+          </label>
+          <span id="options"></span>
+          <label class="pl-field" title="Playback speed ( &lt; and &gt; )">
+            <span class="pl-muted">SPEED:</span>
+            <select class="nle-select pl-select" id="speed" aria-label="Playback speed"></select>
+          </label>
+          <label class="pl-field" title="Motion blur: the film's own, where it has it. Costs more GPU time">
+            <span class="pl-muted">BLUR:</span>
+            <select class="nle-select pl-select" id="blur" aria-label="Motion blur"></select>
+          </label>
           <label class="pl-field" title="Output resolution (reloads the player at the same time)">
             <span class="pl-muted">RES:</span>
             <select class="nle-select pl-select" id="res" aria-label="Resolution"></select>

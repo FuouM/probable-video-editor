@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { Lyrics } from '../src/lyrics.ts';
+import { hiraToKata, kataToHira, Lyrics, romajiToKana, rubyOf, type Syl, type WrittenUnit } from '../src/lyrics.ts';
 
 describe('Lyrics helpers', () => {
   const lyrics = new Lyrics({
@@ -88,5 +88,41 @@ describe('Lyrics helpers', () => {
       const gap = lyrics.wordNow(line, 1.9); // between 1.8 and 2.0
       expect(gap?.w.w).toBe('hello');
     });
+  });
+});
+
+describe('kana and ruby helpers', () => {
+  it('converts standard romaji syllables to hiragana', () => {
+    expect(romajiToKana('kami')).toBe('かみ');
+    expect(romajiToKana('shikkei')).toBe('しっけい');
+    expect(romajiToKana('tokubetsu')).toBe('とくべつ');
+    expect(romajiToKana('tsuyoi')).toBe('つよい');
+    expect(romajiToKana('chotto')).toBe('ちょっと');
+    expect(romajiToKana('fa')).toBe('ふぁ');
+  });
+
+  it('handles sokuon and hatson edge cases', () => {
+    expect(romajiToKana('p')).toBe('っ');
+    expect(romajiToKana('shik')).toBe('しっ');
+    expect(romajiToKana('hontou')).toBe('ほんとう');
+    expect(romajiToKana('on')).toBe('おん');
+  });
+
+  it('converts between hiragana and katakana', () => {
+    expect(kataToHira('カミ')).toBe('かみ');
+    expect(hiraToKata('かみ')).toBe('カミ');
+  });
+
+  it('generates ruby for kanji units from syllables', () => {
+    const u: WrittenUnit = { glyph: '神', from: 0, to: 2, start: 0, end: 1 };
+    const dummyWord = { w: 'dummy', start: 0, end: 1, line: 0, index: 0, gi: 0 };
+    const syls: Syl[] = [
+      { text: 'ka', start: 0, end: 0.5, word: dummyWord, wi: 0, si: 0 },
+      { text: 'mi', start: 0.5, end: 1, word: dummyWord, wi: 0, si: 1 },
+    ];
+    expect(rubyOf(u, syls)).toBe('かみ');
+
+    const kanaUnit: WrittenUnit = { glyph: 'ぽい', from: 0, to: 2, start: 0, end: 1 };
+    expect(rubyOf(kanaUnit, syls)).toBeNull();
   });
 });

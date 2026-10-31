@@ -28,12 +28,22 @@ Do the steps in this order. The cheapest evidence comes first.
 1. Read the brief: `pve outline` and `video/treatment.md`. The outline prints clips, markers, sections, lyric lines and open notes with times and `bar.beat`. `pve outline <clip>` prints only that clip and the lyric lines inside it.
 2. Block out the edit. Write clips with a `brief` and no `scene`. Each clip without a scene renders a storyboard card. Run `pve check`.
 3. Make a scene: `pve scene new <name>`. Set `"scene": "<name>"` on the clip. The template renders as it is.
-4. Check: `pve check`. It takes under a second. Fix every error before you render. It does not compile GLSL and does not type-check.
+4. Check: `pve check`. It takes under a second. Fix every error before you render. It does not compile GLSL and does not type-check. `pve check --watch` runs it again after each change in `video/` or `user_input/` until you stop it.
 5. Look and probe: `pve look <clip>` for a contact sheet. `pve still <time...>` for full-size frames. `pve look cuts` for both sides of every cut. When scenes mark what they draw (`mark(name, x, y, w, h, c?)` from `@pve/engine/marks`, e.g. `syl:<text>`, `word:<text>`, `first-i`), use `pve probe <from..to> -t <name>` to track an object box and save a zoomed crop strip, and `pve probe --lyrics <clip...>` to verify every sung syllable is on screen. A shader that does not compile or a scene that throws makes `look`, `still` and `probe` fail with the browser error.
 6. Measure: `pve bench <clip>`. Keep the median scene cost under 16.7 ms.
-7. Type-check before you report a scene done: `bun run typecheck` (about 30 s).
+7. Gate before you report a scene done: `pve gate`. It runs the type-check of each project, `pve check`, `bun test` and (when the work tree changes the engine or `pdoom_original`) the golden stills, at the same time. It stops at the first failure and prints its first lines (about 20 s in all). `--keep-going` runs every step. `--skip typecheck:app` leaves one step out. `bun run typecheck` alone is still there.
 8. Read notes: `pve notes`. Fix each note, then run `pve notes resolve <id>`.
 9. Render a range only when motion must be judged: `pve render --from @a --to @b`. The human starts the final render.
+
+## Sweeps, boards and commits
+
+- A range of stills: `pve still 38.68..40.3 --step 0.1` (one PNG per step, at most 240). Both ends can be expressions.
+- A transition: `pve still --transition <id> --count 6` gives 6 stills from the start to the last frame of an Over transition. `pve look --transition <id> --n 8` puts them on one sheet.
+- Boards: `pve look 38.68..40.3 --n 6 --cols 3` (a range on one sheet, or `--step`), `pve look clips` (one tile per clip, `--n` for more). Each tile has its time, clip and `bar.beat`.
+- Exploration boards: `pve board video/scenes/<file>.ts` renders a scene file that `video.json` does not name (a type specimen, a layout sketch, a contact board of candidates) as one PNG in `out/boards/`. `--at s` sets the time into the scene. Delete the file when the exploration ends.
+- Time and lyric questions: `pve at "bar:129+2b"`, `pve at "bar 38..42" --syl` (syllables, words, glyphs and phrases with times) and `pve at "<text>"` answer them. Do not write a script for this.
+- Join the segments of a render into one MP4: `pve render --name <name> --encode-only`. It names the first missing segment.
+- Commit: `pve commit -p <id> -m "<summary>"` runs the gate, then commits `projects/<id>/` and the `--paths` (comma-separated) and nothing else. The message gets a `Ran:` list of the steps that passed. Run it only when the human asks for a commit.
 
 ## video.json
 
@@ -72,7 +82,13 @@ Use expressions, not seconds. Then a cut follows the song when the human re-time
 
 After the target: `@beat<=` snaps to the beat at or before it (20 ms tolerance), `@beat~` to the nearest beat, `@downbeat<=` and `@downbeat~` to downbeats. Then offsets: `+2b` (beats), `-1bar`, `+3f` (frames), `+0.1s`. `A || B` uses B when A does not resolve.
 
-`pve find <text>` prints every match with an expression that resolves, and its distance from the beat.
+`pve find <text>` prints every match with an expression that resolves, and its distance from the beat. It searches the romaji, and the Japanese and English of the lyric map when the song has one.
+
+## Locate
+
+Do not parse the song JSON by hand. Run `pve at "<where>"`. It prints one JSON object per line with the time, the frame, `bar.beat`, the beat offset, the section, the clip, the lyric line and the syllable that sound there. `<where>` is `bar 111`, `bar 111.3`, `beat 250`, `f5665`, `1:34.4`, `line 38`, `syl 38.5`, any time expression, a range (`bar 111..115`) or lyric text in romaji, Japanese or English. Separate several queries with `;`. `--syl` adds the syllables, the Japanese glyphs and the English phrases of each line with their times (`--frames` writes frames). It works on a song folder without `video/video.json`.
+
+Some songs have `user_input/lyrics.map.json`. It maps each calibrated syllable to its Japanese glyph and English phrase. A ghost syllable (`(o)` in the calibrated text) exists only to sync the timing: never draw it. An English phrase marked loose (`"~"`) is a best-guess split. The format and the `pve at` keys are in `docs/LYRICMAP.md`.
 
 ## Scene contract
 

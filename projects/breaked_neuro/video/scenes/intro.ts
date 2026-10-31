@@ -9,9 +9,9 @@
 // "i" high on the wall of Verse 1, where walls takes it over on its first frame.
 import type { Frame } from '@pve/engine/scene';
 import { mark } from '@pve/engine/marks';
-import { ease, prog } from '@pve/engine/util';
+import { ease, pad0, prog, stepT } from '@pve/engine/util';
 import { H, W } from '@pve/engine/gl';
-import { BEAT, BEAT0, INK, Life, PAPER, PrintScene, bricks, brickRect, gray, hashI, readout, rebate, stepT, type PrintOpts } from './_kit';
+import { BEAT, BEAT0, INK, Life, PAPER, PrintScene, bricks, brickRect, gray, hashI, readout, rebate, type PrintOpts } from './_kit';
 import { FIRST_I, I_CELLS, ceilingGrid } from './_motifs';
 
 const barT = (b: number) => BEAT0 + b * 4 * BEAT;
@@ -106,8 +106,8 @@ export default class Intro extends PrintScene {
     else this.drawPack(c, stepT(t, 24));
 
     // readouts: what runs, and the countdown that lies (the outro ends on this frame 0)
-    readout(c, `R-PENTOMINO · B3/S23 · GEN ${String(g).padStart(4, '0')} · POP ${String(pop).padStart(4, '0')}`, 'left');
-    readout(c, String(Math.max(0, 16 - bar)).padStart(2, '0'), 'right');
+    readout(c, `R-PENTOMINO · B3/S23 · GEN ${pad0(g, 4)} · POP ${pad0(pop, 4)}`, 'left');
+    readout(c, pad0(Math.max(0, 16 - bar)), 'right');
     // the noise fades in from the loop seam: the outro's last frame has none either
     return { noise: prog(t, 0, 0.6) };
   }
@@ -131,7 +131,7 @@ export default class Intro extends PrintScene {
       const x = x0 + title.charX[k]! * CELL;
       c.fillStyle = gray(0.4);
       c.fillRect(x, y0 - 90, 1, 10 * CELL + 180);
-      rebate(c, `${'BREAKED'[k]} · ${String(title.charX[k]).padStart(2, '0')}`, x + 6, y0 - 80, 'left', 1);
+      rebate(c, `${'BREAKED'[k]} · ${pad0(title.charX[k])}`, x + 6, y0 - 80, 'left', 1);
     }
     title.bricks.forEach((b, i) => {
       const ta = this.appearT(hashI(i, 5));

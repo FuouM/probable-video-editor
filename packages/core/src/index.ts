@@ -33,4 +33,21 @@ export {
 } from './resolve.ts';
 export { lintVideo, OFF_BEAT_TOLERANCE_SEC } from './lint.ts';
 export { validateVideo, type ValidateResult, type ValidationError } from './validate.ts';
+export {
+  checkLyricMap,
+  isGhostSyllable,
+  LyricMap,
+  LyricMapError,
+  parseLyricMap,
+  straighten,
+  type EnPhrase,
+  type JpUnit,
+  type LyricMapDoc,
+  type LyricMapEn,
+  type LyricMapLine,
+  type LyricMapProblem,
+  type MapLine,
+  type MapSyllable,
+  type RawLyrics,
+} from './lyricmap.ts';
 export { validateNotes, type Note, type NotesJson, type NotesResult } from './notes.ts';

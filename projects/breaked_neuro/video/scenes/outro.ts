@@ -9,9 +9,9 @@
 // with the overlays turned off while it is on screen so it reads cleanly.
 import type { Frame } from '@pve/engine/scene';
 import { H, W } from '@pve/engine/gl';
-import { clamp, ease, prog } from '@pve/engine/util';
+import { clamp, ease, pad0, prog, stepT } from '@pve/engine/util';
 import { F, font } from '@pve/engine/type';
-import { BAR, BEAT, BEAT0, BLUE, INK, Life, PAPER, PrintScene, brickRect, bricks, gray, hashI, readout, stepT, type PrintOpts } from './_kit';
+import { BAR, BEAT, BEAT0, BLUE, INK, Life, PAPER, PrintScene, brickRect, bricks, gray, hashI, readout, type PrintOpts } from './_kit';
 import { tesseract } from './_motifs';
 
 const COURSES = 12; // courses in each wall, continuing to build taller until bar 157
@@ -110,8 +110,8 @@ export default class Outro extends PrintScene {
 
     // readouts on the laid walls: the bloom counting down and the bricks of the walls; in the last bar the
     // intro's frame 0 (gen 0, the single hole, 17 bars to go)
-    readout(c, `R-PENTOMINO · B3/S23 · GEN ${String(gen).padStart(4, '0')} · POP ${String(pop).padStart(4, '0')}`, 'left');
-    readout(c, tq >= last ? '17' : `BRICKS ${String(laid).padStart(4, '0')}`, 'right');
+    readout(c, `R-PENTOMINO · B3/S23 · GEN ${pad0(gen, 4)} · POP ${pad0(pop, 4)}`, 'left');
+    readout(c, tq >= last ? '17' : `BRICKS ${pad0(laid, 4)}`, 'right');
     // Low-fps (6 fps) gradual fade of overlays so there is no abrupt drop when the credits box enters at 181.48 s
     const tf = stepT(t, 6);
     const fade = (1 - prog(tf, t0 + 1.2, this.ctx.end - 0.8, ease.inOutQuad)) * (1 - 0.55 * prog(tf, this.bar(5), this.bar(9), ease.inOutQuad));

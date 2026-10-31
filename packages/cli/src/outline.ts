@@ -1,7 +1,7 @@
 // pve outline and pve find (DESIGN 8.2): the resolved edit and the song, as text or JSON.
-import { foldText, resolveAnchor, type TimingData } from '@pve/core';
+import { foldText, resolveAnchor, straighten, type TimingData } from '@pve/core';
 import { fmtBarBeat, fmtBeatOffset, fmtTime, table } from './out';
-import type { Project } from './project';
+import type { Project, View } from './project';
 
 export interface Outline {
   title: string;
@@ -96,25 +96,38 @@ export function formatOutline(o: Outline): string {
   return out.join('\n');
 }
 
-export type FindKind = 'line' | 'word' | 'syl' | 'section' | 'marker' | 'clip';
+export type FindKind = 'line' | 'word' | 'syl' | 'jp' | 'en' | 'section' | 'marker' | 'clip';
 
 export interface FindHit {
   kind: FindKind;
-  /** The matched text: the lyric line, word, syllable, name or clip id (with its brief). */
+  /** The matched text: the lyric line (romaji, Japanese or English), word, syllable, name or clip id (with its brief). */
   text: string;
   t: number;
   barBeat: string;
   /** `on beat`, `+31ms` or `-12ms`: distance from the nearest beat. */
   beat: string;
-  /** A time expression that resolves to `t` in this project. */
+  /** A time expression that resolves to `t` in this project. Seconds when no expression names the place (Japanese and English hits). */
   expr: string;
+}
+
+/**
+ * Index of the part that holds the first character of each match of `fq` in `parts.join(sep)`.
+ * Parts and query are folded (case, curly quotes) before they are compared. One index per part.
+ */
+function partsMatching(parts: string[], sep: string, fq: string): number[] {
+  const folded = parts.map((x) => foldText(straighten(x)));
+  const starts = folded.map((_, i) => folded.slice(0, i).reduce((n, f) => n + f.length + sep.length, 0));
+  const all = folded.join(sep);
+  const found = new Set<number>();
+  for (let at = all.indexOf(fq); at >= 0; at = all.indexOf(fq, at + 1)) found.add(starts.findLastIndex((s) => s <= at));
+  return [...found];
 }
 
 /**
  * Every lyric line, word, syllable, section, marker and clip that matches `text`, each with an expression
  * that resolves to its start. A query that matches more than once gets `#n` (0-based), as the resolver needs.
  */
-export function find(p: Project, text: string): FindHit[] {
+export function find(p: View, text: string): FindHit[] {
   const { timing, resolved: r } = p;
   const q = text.trim();
   const hits: FindHit[] = [];
@@ -133,6 +146,14 @@ export function find(p: Project, text: string): FindHit[] {
     each((n) => timing.getLyric(q, n), (l, s) => add('line', l.text, l.words[0]?.start ?? l.start, `lyric:${q}${s}`));
     each((n) => timing.getWord(q, n), (w, s) => add('word', w.text, w.start, `word:${q}${s}`));
     each((n) => timing.getSyllable(q, n), (y, s) => add('syl', y.text, y.start, `syl:${q}${s}`));
+  }
+  // Japanese and English from the lyric map: the time is the start of the glyph or the phrase that holds the match
+  if (q && p.lyrics) {
+    const fq = foldText(straighten(q));
+    for (const l of p.lyrics.lines) {
+      for (const i of partsMatching(l.jpUnits.map((u) => u.glyph), '', fq)) add('jp', l.jp, l.jpUnits[i]!.start, '');
+      for (const i of partsMatching(l.en.map((e) => e.text), ' ', fq)) add('en', l.enText, l.en[i]!.start, '');
+    }
   }
   const fq = foldText(q);
   for (const s of timing.sections) if (foldText(s.name).includes(fq)) add('section', s.name, s.start, `section:${s.name}`);

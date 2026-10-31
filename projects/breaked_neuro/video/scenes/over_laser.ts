@@ -3,8 +3,8 @@
 // it straight to the right, out over the frame's edge; it thins and breaks into dashes that scatter and fade.
 import type { Frame } from '@pve/engine/scene';
 import { W } from '@pve/engine/gl';
-import { clamp, ease, prog } from '@pve/engine/util';
-import { INK, OverScene, PAPER, gray, hashI, stepT, type PrintOpts } from './_kit';
+import { clamp, ease, prog, stepT } from '@pve/engine/util';
+import { INK, OverScene, PAPER, gray, hashI, type PrintOpts } from './_kit';
 import { BAR_RECT, STUCK } from './_dialog';
 
 export default class OverLaser extends OverScene {

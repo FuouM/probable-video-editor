@@ -10,9 +10,10 @@
 // turned over: its back is atone's ledger page, creases and all.
 // Rates: typewriter 30 fps, LED syllable switches on onsets, walls snap at 30 fps, field 12 fps, paper 30 fps.
 import type { Frame } from '@pve/engine/scene';
-import { H, SCALE, W } from '@pve/engine/gl';
-import { clamp, ease, lerp, prog } from '@pve/engine/util';
-import { BAR, BEAT, BLUE, BOX_H, GlyphAtlas, INK, PAPER, PrintScene, ROWS, brickRect, bricks, drawBars, gray, hashI, lastBefore, readout, stepT, sylAt, sylLine, type PrintOpts, type Syl, type SylLine } from './_kit';
+import { H, makeCanvas, SCALE, W } from '@pve/engine/gl';
+import { clamp, ease, lastBefore, lerp, prog, stepT } from '@pve/engine/util';
+import { sylAt, type Syl } from '@pve/engine/lyrics';
+import { BAR, BLUE, BOX_H, GlyphAtlas, INK, PAPER, PrintScene, ROWS, bricks, drawBars, gray, hashI, readout, sylLine, type PrintOpts, type SylLine } from './_kit';
 import { CREASE_W, PAGE, ledgerRules, pageCreases, pagePt, vortex } from './_motifs';
 import { squeezedLetters } from './_room_squeeze';
 import { mark } from '@pve/engine/marks';
@@ -23,7 +24,6 @@ const ROWS_N = Math.floor(BOX_H / SLOT_H);
 const GX = (W - COLS * SLOT_W) / 2, GY = BAR + (BOX_H - ROWS_N * SLOT_H) / 2;
 const RATE = 1100; // letters typed per second: the screen is full in under two seconds
 const FINAL: [number, number] = [36, 12]; // the window the walls leave, in slots
-const REVEAL = 41.83; // song time the vortex and its arrows open
 const FOCAL = 1600; // px: the perspective of the paper ball
 
 /** Apply to `c` the affine map that takes the triangle `s` (x0, y0, x1, y1, x2, y2) onto the triangle `d`. */
@@ -50,7 +50,8 @@ export default class Room extends PrintScene {
   private tVer = Infinity;
   private tGone = Infinity;
   /** the window side of the sheet: the live window, copied from the layer every frame it moves (SCALE px) */
-  private face = document.createElement('canvas');
+  private face!: HTMLCanvasElement;
+  private fc!: CanvasRenderingContext2D;
   private treeSyls: Syl[] = [];
   /** the LED pixels lit this frame, one per slot, and a 1-slot dark halo around them when squeezed */
   private lit = new Uint8Array(COLS * ROWS_N);
@@ -83,8 +84,9 @@ export default class Room extends PrintScene {
     this.tIts = neverWord.start;
     this.tVer = neverWord.syl?.[1]?.[0] ?? (neverWord.start + neverWord.end) / 2;
     this.tGone = goneWord.start;
-    this.face.width = Math.ceil(FINAL[0] * SLOT_W * SCALE);
-    this.face.height = Math.ceil(FINAL[1] * SLOT_H * SCALE);
+    const { cv: face, c: fc } = makeCanvas(FINAL[0] * SLOT_W, FINAL[1] * SLOT_H);
+    this.face = face;
+    this.fc = fc;
     this.plane = {};
   }
 
@@ -238,7 +240,7 @@ export default class Room extends PrintScene {
       return;
     }
     // the window side: the live window (its cut-through syllable stays blue)
-    const fc = this.face.getContext('2d')!;
+    const fc = this.fc;
     fc.fillStyle = BLUE;
     fc.fillRect(0, 0, this.face.width, this.face.height);
     fc.drawImage(c.canvas, bx * SCALE, by * SCALE, bw * SCALE, bh * SCALE, 0, 0, bw * SCALE, bh * SCALE);

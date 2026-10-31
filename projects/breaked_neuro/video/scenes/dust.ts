@@ -16,9 +16,10 @@
 //   one line, the pencil that writes "gured" on the blueprint of Verse 4.
 import type { Frame } from '@pve/engine/scene';
 import { H, W } from '@pve/engine/gl';
-import { clamp, ease, prog } from '@pve/engine/util';
+import { clamp, ease, lastBefore, pad0, prog, stepT } from '@pve/engine/util';
+import { sylAt } from '@pve/engine/lyrics';
 import {
-  BAR, BEAT, BEAT0, BLUE, BOX_H, INK, PAPER, PrintScene, brickRect, bricks, drawBars, gray, hashI, lastBefore, readout, stepT, sylAt, sylLine, sylOfChar,
+  BAR, BEAT, BLUE, BOX_H, INK, PAPER, PrintScene, brickRect, drawBars, gray, hashI, readout, sylLine, sylOfChar,
   type PrintOpts, type SylLine,
 } from './_kit';
 import { headOffset } from './_motifs';
@@ -43,7 +44,6 @@ export default class Dust extends PrintScene {
   private tFade = 0;
   private tFreeze = Infinity;
   private tExist = 0;
-  private tDis = 0;
   private exist!: SylLine;
   private dis!: SylLine;
   private fold!: CardFold;
@@ -96,7 +96,6 @@ export default class Dust extends PrintScene {
     this.exist = sylLine(ly, 'i am losing my existence');
     this.tExist = this.exist.line.start;
     this.dis = sylLine(ly, 'disfigured beyond recognition');
-    this.tDis = this.dis.line.start;
     this.fold = new CardFold(this.exist, this.dis, 15);
     this.kicks = [];
     const step = 0.02;
@@ -113,7 +112,7 @@ export default class Dust extends PrintScene {
     const seen = new Uint8Array(MW * MH);
     // Seed the maze with the exact 7-segment corridors of "01:20" (at tMaze = 80.98 s) so the time literally becomes the start of the maze!
     const m = Math.floor(this.tMaze / 60), s = Math.floor(this.tMaze - m * 60);
-    const initDigits = `${String(m).padStart(2, '0')}${String(s).padStart(2, '0')}`;
+    const initDigits = `${pad0(m)}${pad0(s)}`;
     const seedPairs = this.digitCarve(initDigits);
     const stack: number[] = [];
     for (const [c, from] of seedPairs) {
@@ -208,7 +207,7 @@ export default class Dust extends PrintScene {
 
     // Draw the 7-segment digits of song time directly as maze corridors on the 40x18 grid!
     const m = Math.floor(tc / 60), s = Math.floor(tc - m * 60);
-    const digits = `${String(m).padStart(2, '0')}${String(s).padStart(2, '0')}`;
+    const digits = `${pad0(m)}${pad0(s)}`;
     this.hud = [`VERSE 3 · CLOCK ${digits.slice(0, 2)}:${digits.slice(2)}`, 'ALARM NONE SET'];
     const wall = 6;
     const cellXY = (cell: number): [number, number] => [MX + (cell % MW) * MC, MY + Math.floor(cell / MW) * MC];
@@ -262,9 +261,9 @@ export default class Dust extends PrintScene {
    */
   private maze(c: CanvasRenderingContext2D, tq: number, sl: SylLine, tl: number) {
     const tLostEnd = 85.94; // onset of "everything"
-    const level = `VERSE 3 · MAZE LEVEL ${String(Math.max(1, sl.line.i - 13)).padStart(2, '0')}`;
+    const level = `VERSE 3 · MAZE LEVEL ${pad0(Math.max(1, sl.line.i - 13))}`;
     // "having lost everything": all of it carved, the food gone (the food phase below sets its own)
-    this.hud = [`${level} · CARVED ${String(this.carve.length).padStart(3, '0')}`, 'FOOD 00'];
+    this.hud = [`${level} · CARVED ${pad0(this.carve.length, 3)}`, 'FOOD 00'];
     if (tq < tLostEnd) {
       const N = this.carve.length;
       const head = Math.min(N - 1, this.seedLen - 1 + Math.floor(prog(tq, this.tMaze, this.tLost - 0.3) * (N - this.seedLen)));
@@ -327,7 +326,7 @@ export default class Dust extends PrintScene {
           c.stroke();
           c.setLineDash([]);
         }
-        this.hud = [`${level} · CARVED ${String(head + 1).padStart(3, '0')}`, `FOOD ${String(foodCount).padStart(2, '0')}`];
+        this.hud = [`${level} · CARVED ${pad0(head + 1, 3)}`, `FOOD ${pad0(foodCount)}`];
       }
     } else {
       // "everything": the solid maze becomes the sky of the first day, with no cut. Its edges travel in
@@ -529,7 +528,7 @@ export default class Dust extends PrintScene {
       const p: V3 = [d.p[0] - 0.5 * d.a - 0.12 * d.a * d.a + Math.sin(d.id + d.a * 3) * 0.06 * d.a, d.p[1] + 0.45 * d.a + 0.5 * d.a * d.a, d.p[2] + 0.2 * d.a * (hashI(d.id, 3) - 0.5)];
       vox(p, 0.94 * (0.3 + 0.7 * life), d.a * (1 + 2 * hashI(d.id, 4)));
     }
-    this.hud = [`VERSE 3 · CUBE DAY ${String(Math.floor(age / DAY) + 1).padStart(2, '0')} · ${day ? 'SUN' : 'MOON'} ${String(Math.round((((th / (Math.PI * 2)) % 1) + 1) % 1 * 24)).padStart(2, '0')}H`, `VOXELS ${String(standing.length).padStart(3, '0')}`];
+    this.hud = [`VERSE 3 · CUBE DAY ${pad0(Math.floor(age / DAY) + 1)} · ${day ? 'SUN' : 'MOON'} ${pad0(Math.round((((th / (Math.PI * 2)) % 1) + 1) % 1 * 24))}H`, `VOXELS ${pad0(standing.length, 3)}`];
     // the starry sky is the picture here: no Life plane
     return { plane: 0, clumps: 0, grain: 0.6 };
   }
@@ -538,7 +537,7 @@ export default class Dust extends PrintScene {
   private record(c: CanvasRenderingContext2D, tr: number) {
     const ex = this.exist;
     const k = sylAt(ex, tr);
-    this.hud = [`VERSE 3 · RECORD REDACTED ${String(k + 1).padStart(2, '0')}/${String(ex.syls.length).padStart(2, '0')}`, tr >= ex.syls[ex.syls.length - 1]!.start ? 'STATUS VOID' : 'STATUS OPEN'];
+    this.hud = [`VERSE 3 · RECORD REDACTED ${pad0(k + 1)}/${pad0(ex.syls.length)}`, tr >= ex.syls[ex.syls.length - 1]!.start ? 'STATUS VOID' : 'STATUS OPEN'];
     if (tr < this.fold.t0) {
       drawCard(c, tr, ex);
       if (k >= 0) mark(`syl:${ex.syls[k]!.text}`, ...cardLineRect(ex, k));

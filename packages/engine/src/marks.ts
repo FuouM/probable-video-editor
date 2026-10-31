@@ -22,10 +22,12 @@ let on = true;
 export function clearMarks() {
   list = [];
 }
-/** Engine: the entry now rendering; `record` false while a stateful scene prerolls. */
-export function markScope(id: string, record: boolean) {
+/** Engine: the entry now rendering; `record` false while a stateful scene prerolls. Returns the prior scope. */
+export function markScope(id: string, record: boolean): [string, boolean] {
+  const prev: [string, boolean] = [clip, on];
   clip = id;
   on = record;
+  return prev;
 }
 /** The marks of the last rendered frame. */
 export function marks(): readonly Mark[] {

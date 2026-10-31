@@ -14,12 +14,43 @@ export interface Word {
   index: number; // index within line
   gi: number; // global word index
 }
+/** One written Japanese glyph (kanji, one kana mora, latin word, with the punctuation that sticks to it) and the syllables it is sung on. */
+export interface WrittenUnit {
+  glyph: string;
+  /** First syllable and one past the last, as indexes into `syllables(line)`. */
+  from: number;
+  to: number;
+  start: number;
+  end: number;
+}
+/** One English phrase and the syllables it translates. `loose`: the split is a best guess. */
+export interface WrittenPhrase {
+  text: string;
+  from: number;
+  to: number;
+  loose: boolean;
+  start: number;
+  end: number;
+}
+/** The line as written, from user_input/lyrics.map.json (docs/LYRICMAP.md). */
+export interface LineWritten {
+  /** The Japanese line without ghosts. */
+  jp: string;
+  units: WrittenUnit[];
+  /** The English line, and its phrases in English reading order. */
+  en: string;
+  phrases: WrittenPhrase[];
+  /** Indexes of the ghost syllables: sync only, never draw them. */
+  ghosts: number[];
+}
 export interface Line {
   i: number;
   text: string;
   start: number;
   end: number;
   words: Word[];
+  /** Only when the song has a lyric map. */
+  written?: LineWritten;
 }
 
 /** One lyric line as input: `syl` only on words with two or more syllables. */
@@ -29,6 +60,7 @@ export interface LyricsInputLine {
   start: number;
   end: number;
   words: Omit<Word, 'line' | 'index' | 'gi'>[];
+  written?: LineWritten;
 }
 
 export class Lyrics {
@@ -184,4 +216,130 @@ export function sylAt(syls: Syl[] | { syls: Syl[] }, t: number): number {
   let k = -1;
   for (let i = 0; i < arr.length; i++) if (arr[i]!.start <= t) k = i;
   return k;
+}
+
+/** The units (glyphs) of a line with their times. Throws when the song has no lyric map. */
+export function units(line: Line): WrittenUnit[] {
+  if (!line.written) throw new Error(`line ${line.i} has no written form: the song needs user_input/lyrics.map.json`);
+  return line.written.units;
+}
+
+/** Index of the last unit whose onset is at or before t, -1 before the first. */
+export function unitAt(us: WrittenUnit[], t: number): number {
+  let k = -1;
+  for (let i = 0; i < us.length; i++) if (us[i]!.start <= t) k = i;
+  return k;
+}
+
+/** The line by index in the calibrated lyrics. */
+export function lineNo(lyrics: Lyrics, i: number): Line {
+  const l = lyrics.lines[i];
+  if (!l) throw new Error(`no lyric line ${i}`);
+  return l;
+}
+
+// ---------- Japanese kana / phonetics ----------
+const VOWELS = 'aiueo';
+
+/**
+ * Standard Gojuon (五十音) grid: 5 vowel columns across consonant rows.
+ * Underscores mark historical morae merged in modern orthography (yi/ye, wi/wu/we).
+ * Generates both Kunrei-shiki (si, ti, tu, hu) and base Hepburn syllables.
+ */
+const KANA_ROWS: Record<string, string> = {
+  '': 'あいうえお', k: 'かきくけこ', s: 'さしすせそ', t: 'たちつてと', n: 'なにぬねの', h: 'はひふへほ',
+  m: 'まみむめも', y: 'や_ゆ_よ', r: 'らりるれろ', w: 'わ___を', g: 'がぎぐげご', z: 'ざじずぜぞ',
+  d: 'だぢづでど', b: 'ばびぶべぼ', p: 'ぱぴぷぺぽ',
+};
+
+const ROMA_MAP = new Map<string, string>();
+// 1. Populate basic Gojuon grid
+for (const [prefix, row] of Object.entries(KANA_ROWS)) {
+  [...row].forEach((k, i) => { if (k !== '_') ROMA_MAP.set(prefix + VOWELS[i]!, k); });
+}
+// 2. Hepburn phonetic overrides
+for (const [r, k] of [['shi', 'し'], ['chi', 'ち'], ['tsu', 'つ'], ['fu', 'ふ'], ['ji', 'じ']]) ROMA_MAP.set(r!, k!);
+// 3. Contracted sounds (Yoon digraphs with small ya/yu/yo)
+for (const [prefix, i] of [['k', 'き'], ['g', 'ぎ'], ['n', 'に'], ['h', 'ひ'], ['m', 'み'], ['r', 'り'], ['b', 'び'], ['p', 'ぴ']]) {
+  ROMA_MAP.set(`${prefix}ya`, `${i}ゃ`);
+  ROMA_MAP.set(`${prefix}yu`, `${i}ゅ`);
+  ROMA_MAP.set(`${prefix}yo`, `${i}ょ`);
+}
+for (const [prefix, i] of [['sh', 'し'], ['ch', 'ち'], ['j', 'じ']]) {
+  ROMA_MAP.set(`${prefix}a`, `${i}ゃ`);
+  ROMA_MAP.set(`${prefix}u`, `${i}ゅ`);
+  ROMA_MAP.set(`${prefix}o`, `${i}ょ`);
+}
+// 4. Modern loanword syllables
+ROMA_MAP.set('fa', 'ふぁ'); ROMA_MAP.set('fi', 'ふぃ'); ROMA_MAP.set('fe', 'ふぇ'); ROMA_MAP.set('fo', 'ふぉ');
+
+/**
+ * Convert Hepburn romaji syllables to Hiragana.
+ * Supports standard Japanese phonology and Lyric-Sync calibration conventions:
+ * - Standard doubled consonants (e.g. "tte", "ppo") -> sokuon (っ)
+ * - Lone/trailing plosives from Lyric-Sync vocal stem slices (e.g. "p" in "p-po-i", "k" in "shik-kei") -> sokuon (っ)
+ * - Syllabic n before consonants or word boundaries -> hatson (ん)
+ * - Yoon digraphs ("kya", "sha", "cha", "ja") and foreign loanword syllables ("fa")
+ */
+export function romajiToKana(romaji: string): string {
+  const s = romaji.toLowerCase().replace(/[^a-z]/g, '');
+  let out = '';
+  for (let i = 0; i < s.length;) {
+    const ch = s[i]!;
+    if (ch === 'n' && (i + 1 >= s.length || (!VOWELS.includes(s[i + 1]!) && s[i + 1] !== 'y'))) {
+      out += 'ん';
+      i++;
+      continue;
+    }
+    if (!VOWELS.includes(ch)) {
+      if (ch === s[i + 1]) {
+        out += 'っ';
+        i++;
+        continue;
+      }
+      const rest = s.slice(i);
+      if (!/[aiueo]/.test(rest)) {
+        out += 'っ'.repeat(rest.length);
+        break;
+      }
+    }
+    let hit = 0;
+    for (const len of [3, 2, 1]) {
+      const sub = s.slice(i, i + len);
+      if (ROMA_MAP.has(sub)) {
+        out += ROMA_MAP.get(sub)!;
+        hit = len;
+        break;
+      }
+    }
+    if (hit > 0) {
+      i += hit;
+    } else {
+      if (/[a-z]/.test(ch) && !VOWELS.includes(ch)) {
+        out += 'っ';
+        i++;
+      } else {
+        i++;
+      }
+    }
+  }
+  return out;
+}
+
+/** Katakana to hiragana. */
+export const kataToHira = (s: string) => s.replace(/[\u30a1-\u30f6]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60));
+
+/** Hiragana to katakana. */
+export const hiraToKata = (s: string) => s.replace(/[\u3041-\u3096]/g, (c) => String.fromCharCode(c.charCodeAt(0) + 0x60));
+
+const KANJI_RE = /[\u4e00-\u9fff]/;
+
+/**
+ * The ruby (furigana reading in hiragana) of a unit from its sung syllables.
+ * Returns null if the unit contains no kanji or has no syllables.
+ */
+export function rubyOf(u: WrittenUnit, syls: Syl[]): string | null {
+  if (!KANJI_RE.test(u.glyph)) return null;
+  const romaji = syls.slice(u.from, u.to).map((s) => s.text).join('');
+  return romaji ? romajiToKana(romaji) : null;
 }

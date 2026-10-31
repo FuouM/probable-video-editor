@@ -14,13 +14,14 @@
 // frame is a function of t. Rates: sheet and birds at 24 fps, the trail steps at 15.
 import type { Frame } from '@pve/engine/scene';
 import { H, W } from '@pve/engine/gl';
-import { clamp, ease, prog } from '@pve/engine/util';
+import { ease, pad0, prog, stepT } from '@pve/engine/util';
+import { sylAt } from '@pve/engine/lyrics';
 import {
-  BAR, BEAT, BOX_H, INK, Life, PAPER, PrintScene, drawBars, hashI, lastBefore, readout, rebate, stepT, sylAt, sylLine, sylOfChar,
+  BAR, BEAT, BOX_H, INK, Life, PAPER, PrintScene, drawBars, hashI, readout, rebate, sylLine, sylOfChar,
   type PrintOpts, type SylLine,
 } from './_kit';
 import { CardFold, drawDimension } from './_cardfold';
-import { DIVE, DrosteFall, drawWarhead } from './_droste';
+import { DrosteFall, drawWarhead } from './_droste';
 import { mark } from '@pve/engine/marks';
 
 const CELL = 15;
@@ -32,7 +33,6 @@ const COLX = 1420; // the schematics column
 
 /** A bird: flocking from its launch out of the word, then (from `dive`) a warhead on its arc into the window. */
 interface Bird { launch: number; x: number; y: number; vx: number; vy: number; on: boolean; dive: number; dx: number; dy: number; escort: number }
-const ESCORT_BIRDS = 7; // birds that become the arrows flying down the tunnel (escorts of `DrosteFall`)
 /** A row of the sheet: a line as extruded bricks, its origin and scale. */
 interface Row { sl: SylLine; ox: number; oy: number; sc: number }
 
@@ -218,8 +218,8 @@ export default class Flock extends PrintScene {
     drawBars(c);
     // readouts: the rows drawn and the birds in the frame; the generation of their trail
     const flying = tb >= this.tTion ? this.birds.filter((b) => b.on && b.x >= -80 && b.x <= W + 80 && b.y >= -80 && b.y <= H + 80).length : 0;
-    readout(c, `VERSE 4 · ROWS ${this.rows.filter((r) => tb >= r.sl.line.start).length}/${this.rows.length} · BIRDS ${String(flying).padStart(2, '0')}`, 'left');
-    readout(c, `TRAIL GEN ${String(tb >= this.tTion ? this.gen : 0).padStart(4, '0')}`, 'right');
+    readout(c, `VERSE 4 · ROWS ${this.rows.filter((r) => tb >= r.sl.line.start).length}/${this.rows.length} · BIRDS ${pad0(flying)}`, 'left');
+    readout(c, `TRAIL GEN ${pad0(tb >= this.tTion ? this.gen : 0, 4)}`, 'right');
     if (tb >= this.fall.tOpen) this.fall.draw(c, tb, true); // its white words run on over the bars
 
     // Row 2 ("DECONSTRUCTION") drawn AFTER drawBars so it sits cleanly over the bottom black bar
@@ -295,7 +295,7 @@ export default class Flock extends PrintScene {
       c.beginPath(); c.moveTo(x0, y); c.lineTo(x0 + w, y); c.stroke();
       const qty = this.decon.bt.bricks.filter((b) => b.ci === i).length;
       const done = sylOfChar(this.decon, i) <= k && k >= 0;
-      rebate(c, `${String(i + 1).padStart(3, '0')}   BRICK "${letters[i]!.toUpperCase()}"${' '.repeat(9)}${String(qty).padStart(2, '0')}${done ? '  ✓' : ''}`, x0 + 8, y + rh / 2, 'left', 1);
+      rebate(c, `${pad0(i + 1, 3)}   BRICK "${letters[i]!.toUpperCase()}"${' '.repeat(9)}${pad0(qty)}${done ? '  ✓' : ''}`, x0 + 8, y + rh / 2, 'left', 1);
     }
     // detail B: one brick magnified in a circle, with its section hatch
     const dcx = x0 + 90, dcy = y0 + rh * 16 + 120, dr = 80;

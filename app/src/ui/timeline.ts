@@ -74,19 +74,24 @@ export class NleTimeline {
 
   setFollow(enabled: boolean) {
     this.follow = enabled;
-    if (this.follow && (this.currentTime > this.viewStart + this.viewDuration || this.currentTime < this.viewStart)) {
-      this.viewStart = Math.max(0, Math.min(this.data.duration - this.viewDuration, this.currentTime - 2));
+    if (this.follow && this.viewDuration < this.data.duration) {
+      const anchorRatio = 0.4;
+      const anchorT = this.viewDuration * anchorRatio;
+      this.viewStart = Math.max(0, Math.min(this.data.duration - this.viewDuration, this.currentTime - anchorT));
     }
     this.draw();
   }
 
   setTime(t: number) {
     this.currentTime = t;
-    if (this.follow) {
-      if (t > this.viewStart + this.viewDuration - 1) {
-        this.viewStart = Math.min(this.data.duration - this.viewDuration, t - 2);
-      } else if (t < this.viewStart) {
-        this.viewStart = Math.max(0, t - 2);
+    if (this.follow && this.viewDuration < this.data.duration) {
+      // Continuous follow: smoothly scroll viewport so playhead tracks continuously
+      const anchorRatio = 0.4;
+      const anchorT = this.viewDuration * anchorRatio;
+      if (t > anchorT) {
+        this.viewStart = Math.max(0, Math.min(this.data.duration - this.viewDuration, t - anchorT));
+      } else {
+        this.viewStart = 0;
       }
     }
     this.draw();

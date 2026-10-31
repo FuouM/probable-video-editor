@@ -6,13 +6,13 @@ import type { EngineProject, TimelineEntry } from '@pve/engine/engine';
 import { Lyrics } from '@pve/engine/lyrics';
 import type { OverlayClass, SceneClass } from '@pve/engine/scene';
 import { StoryboardCard } from '@pve/engine/storyboard';
-import { fetchInputs, type ProjectInputs } from './inputs';
+import { DATA, fetchInputs, type ProjectInputs } from './inputs';
 
 // Scene modules of every project, loaded on demand: only the open project's scenes are fetched.
 const modules = import.meta.glob<{ default: SceneClass | OverlayClass }>('../../projects/*/video/scenes/*.ts');
 
 /** The open project, filled by loadProject. */
-export const project = { id: '', title: '', mix: '' };
+export const project = { id: '', title: '', mix: '', fps: 30 };
 export let inputs: ProjectInputs;
 export const sceneTimestamps = new Map<string, number>();
 
@@ -26,7 +26,7 @@ export async function loadProject(): Promise<EngineProject> {
   if (!checked.ok) throw new Error(`projects/${inputs.id}/video/video.json:\n${checked.errors.map((e) => `  ${e.path}: ${e.message}`).join('\n')}`);
   const { timing, features } = inputs;
   const video = resolveVideo(checked.video, new TimingData(timing));
-  Object.assign(project, { id: inputs.id, title: video.title, mix: inputs.mix });
+  Object.assign(project, { id: inputs.id, title: video.title, mix: inputs.mix, fps: video.fps });
 
   const scene = <T>(name: string) => () => {
     const ts = sceneTimestamps.get(name) ?? sceneTimestamps.get('*');
@@ -58,11 +58,12 @@ export async function loadProject(): Promise<EngineProject> {
       end: tr.end,
       over: true,
       params: { ...tr.params, at: tr.at },
+      ...(tr.samples ? { maxSamples: tr.samples.max } : {}),
     });
   }
 
   const audio = new AudioData({
-    duration: timing.duration,
+    duration: video.duration,
     bpm: timing.bpm,
     beats: timing.beats,
     downbeats: timing.downbeats,
@@ -76,7 +77,7 @@ export async function loadProject(): Promise<EngineProject> {
     audio,
     lyrics,
     timeline,
-    assets: `/projects/${inputs.id}/video/assets/`,
+    assets: DATA === undefined ? `/projects/${inputs.id}/video/assets/` : `${DATA}${inputs.id}/assets/`,
     fonts: inputs.assets.fonts,
     ...(video.overlay ? { overlay: scene<OverlayClass>(video.overlay), overlayScene: video.overlay } : {}),
   };

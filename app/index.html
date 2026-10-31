@@ -18,6 +18,7 @@
     <button class="nle-menu-item" id="menu-loop">Loop Clip (L)</button>
     <button class="nle-menu-item active" id="menu-follow">Follow (F)</button>
     <div class="nle-menubar-right">
+      <button class="nle-menu-item" id="menu-graph" title="Toggle Frametime / FPS Graph (G)">Graph (G)</button>
       <button class="nle-menu-item" id="menu-fullscreen" title="Toggle Fullscreen Preview (F11)">Fullscreen (F11)</button>
       <button class="nle-menu-item active" id="menu-notes">Notes (N)</button>
     </div>
@@ -29,20 +30,64 @@
       <span>Program Monitor</span>
       <strong style="color:var(--sys-accent)">[16:9 · 1080p]</strong>
       <span class="nle-title-sep">·</span>
-      <span id="monitor-fps" style="color:#4ade80">60.0 FPS</span>
+      <span id="monitor-fps" style="color:#4ade80; cursor:pointer" title="Toggle Frametime / FPS Graph (G)">60.0 FPS</span>
       <span class="nle-title-sep">·</span>
-      <span id="monitor-ms" style="color:var(--sys-text-muted)">16.6 ms</span>
+      <span id="monitor-ms" style="color:var(--sys-text-muted); cursor:pointer" title="Toggle Frametime / FPS Graph (G)">16.6 ms</span>
     </div>
     <div class="nle-stage-row">
       <main class="nle-stage" id="stage">
         <div class="nle-canvas-frame" id="canvas-frame">
           <canvas id="c"></canvas>
+          <!-- Monitor In-Screen Loading Display: filled by ui/loader.ts -->
+          <div class="nle-monitor-loading" id="monitor-loading"></div>
           <div class="nle-snippet-overlay hidden" id="snippet-overlay">
             <div class="nle-snippet-marquee hidden" id="snippet-marquee"></div>
             <div class="nle-snippet-hint">Select region: Drag rectangle over frame · Press Escape to cancel</div>
           </div>
         </div>
       </main>
+      <aside class="nle-perf-pane hidden" id="perf-pane">
+        <div class="nle-perf-header">
+          <div class="nle-perf-title">
+            <span>PERFORMANCE</span>
+            <button class="nle-perf-mode-btn" id="perf-graph-mode" title="Click to toggle Frametime / FPS mode">ms</button>
+          </div>
+          <div class="nle-perf-header-right">
+            <span class="nle-perf-chip nle-perf-chip--ok" id="perf-graph-fps">60.0 FPS</span>
+            <span class="nle-perf-chip" id="perf-graph-cpu">16.6 ms</span>
+            <button class="nle-btn-icon" id="perf-graph-close" title="Close Performance Pane (G)">✕</button>
+          </div>
+        </div>
+        <div class="nle-perf-canvas-wrap">
+          <canvas id="perf-graph-canvas"></canvas>
+        </div>
+        <div class="nle-perf-stats-grid" id="perf-stats-grid">
+          <div class="nle-perf-stat-row">
+            <span class="nle-perf-stat-label">CPU Render</span>
+            <span class="nle-perf-stat-val" id="perf-val-cpu">16.6 ms</span>
+          </div>
+          <div class="nle-perf-stat-row">
+            <span class="nle-perf-stat-label">Rolling Avg</span>
+            <span class="nle-perf-stat-val" id="perf-val-avg">16.6 ms</span>
+          </div>
+          <div class="nle-perf-stat-row">
+            <span class="nle-perf-stat-label">Peak Max</span>
+            <span class="nle-perf-stat-val" id="perf-val-peak">16.6 ms</span>
+          </div>
+          <div class="nle-perf-stat-row">
+            <span class="nle-perf-stat-label">Target Budget</span>
+            <span class="nle-perf-stat-val">33.3 ms (30fps)</span>
+          </div>
+          <div class="nle-perf-stat-row">
+            <span class="nle-perf-stat-label">Slow (>33ms)</span>
+            <span class="nle-perf-stat-val" id="perf-val-slow">0</span>
+          </div>
+        </div>
+        <div class="nle-perf-footer" id="perf-graph-footer">
+          <span>180 frames · ~3.0s window</span>
+          <span id="perf-status-tag" style="color:var(--sys-ok)">● REAL-TIME</span>
+        </div>
+      </aside>
       <aside class="nle-notes-pane" id="notes-pane">
         <div class="nle-notes-header">
           <div class="nle-notes-title">

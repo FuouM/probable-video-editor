@@ -12,7 +12,7 @@ import { NotesEditor } from './notes';
 import { updateSceneTimestamp } from '../project';
 import { RenderDialog } from './render-dialog';
 import { Metronome } from './metronome';
-
+import { PerfGraph } from './perf-graph';
 export class NleStudio {
   private audio: StudioAudioEngine;
   private transport: NleTransport;
@@ -22,6 +22,8 @@ export class NleStudio {
   private t = 0;
   private renderDialog: RenderDialog;
   private metronome: Metronome;
+  private perfGraph: PerfGraph;
+  private lastTickT = 0;
   private playing = false;
   private loop: [number, number] | null = null;
   private lastAudioT = 0;
@@ -35,12 +37,16 @@ export class NleStudio {
   private static STORAGE_FOLLOW = 'pve.studio.follow';
   private static STORAGE_SPEED = 'pve.studio.speed';
 
+  /** Resolves when the mix is decoded (the loading screen waits for it). */
+  readonly audioReady: Promise<void>;
+
   constructor(
     private engine: Engine,
     private project: ProjectInputs,
     private timelineEntries: TimelineEntry[],
     private canvas: HTMLCanvasElement,
     initialT: number | null = null,
+    onAudioLoad?: (fraction: number) => void,
   ) {
     this.t = initialT ?? 0;
     const savedFollow = localStorage.getItem(NleStudio.STORAGE_FOLLOW);
@@ -56,7 +62,9 @@ export class NleStudio {
         this.seek(0);
         this.transport.update({ playing: false, time: 0 });
       },
+      onAudioLoad,
     );
+    this.audioReady = this.audio.ready;
     this.audio.setPlaybackRate(this.speed);
 
     // Agent change detector
@@ -173,6 +181,7 @@ export class NleStudio {
       timelineEntries: this.timelineEntries,
     });
     this.metronome = new Metronome();
+    this.perfGraph = new PerfGraph();
     const tlTitle = document.getElementById('tl-title-info');
     if (tlTitle) {
       const fps = (project.video && typeof project.video === 'object' && 'fps' in project.video && typeof project.video.fps === 'number') ? project.video.fps : 30;
@@ -316,6 +325,9 @@ export class NleStudio {
       } else if (ev.key === 'm' || ev.key === 'M') {
         ev.preventDefault();
         this.metronome.toggle();
+      } else if (ev.key === 'g' || ev.key === 'G') {
+        ev.preventDefault();
+        this.perfGraph.toggle();
       }
     });
 
@@ -326,7 +338,7 @@ export class NleStudio {
     document.getElementById('menu-loop')?.addEventListener('click', () => this.toggleLoop());
     document.getElementById('menu-follow')?.addEventListener('click', () => this.toggleFollow());
     document.getElementById('menu-notes')?.addEventListener('click', () => this.notesEditor.toggle());
-
+    document.getElementById('menu-graph')?.addEventListener('click', () => this.perfGraph.toggle());
     document.getElementById('menu-fullscreen')?.addEventListener('click', () => {
       this.toggleFullscreen();
     });
@@ -396,12 +408,15 @@ export class NleStudio {
       // Measure playback FPS
       this.frames++;
       const now = performance.now();
+      const intervalMs = this.lastTickT > 0 ? now - this.lastTickT : 16.67;
+      this.lastTickT = now;
       if (now - this.fpsT > 250) {
         this.fps = (this.frames * 1000) / (now - this.fpsT);
         this.frames = 0;
         this.fpsT = now;
         this.updateMonitorFps();
       }
+      this.perfGraph.record(renderMs, intervalMs, this.fps);
       this.updateTransportStatus();
       requestAnimationFrame(tick);
     };

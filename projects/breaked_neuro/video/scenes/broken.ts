@@ -17,10 +17,11 @@
 // out on "never" until one blue module is left; "i'll never see you again": it drifts away.
 // Rates: grid 15 fps, line 24, Life two generations a beat.
 import type { Frame } from '@pve/engine/scene';
-import { H, SCALE, W } from '@pve/engine/gl';
+import { H, makeCanvas, W } from '@pve/engine/gl';
 import { mark } from '@pve/engine/marks';
-import { clamp, ease, prog } from '@pve/engine/util';
-import { BEAT, BEAT0, BLUE, INK, Life, PAPER, PrintScene, brickRect, bricks, genAt, gray, hashI, rebate, stepT, sylAt, sylLine, wrapLine, type Placed, type PrintOpts, type Syl, type SylLine } from './_kit';
+import { clamp, ease, prog, stepT } from '@pve/engine/util';
+import { sylAt, type Syl } from '@pve/engine/lyrics';
+import { BEAT, BEAT0, Life, PAPER, PrintScene, genAt, hashI, sylLine, wrapLine, type Placed, type PrintOpts, type SylLine } from './_kit';
 import { ACOLS, AH, AROWS, AW, Ascii, Grid, Tone, rampChar, textCells } from './_ascii';
 import { vortex } from './_motifs';
 import { PAGE, renderCalendar, renderCalendarParticles } from './_broken_calendar';
@@ -42,7 +43,6 @@ export default class Broken extends PrintScene {
   private life = new Life(ACOLS, AROWS);
   private gen = -1;
   private l2Seeds: { syl: Syl; cells: { q: number; r: number; ch: string }[] }[] = [];
-  private tDest = 0;
   private tSee = 0;
   private snaps: number[] = [];
   private tMe = 0;
@@ -52,16 +52,14 @@ export default class Broken extends PrintScene {
   private tDays = 0;
   private tFar = 0;
   private tMorphEnd = 0;
-  private tNever2 = 0;
   private tA = 0;
-  private tDoom = BEAT0 + 142 * 4 * BEAT; // Bar 143.1 (170.696 s)
   private tDoomEnd = 0;
   private tVer = 0;
   private tIrc = BEAT0 + 143 * 4 * BEAT;  // Bar 144.1 ("see you again")
   private tSee2 = 0;
   private gDoom = new Grid();
   private gIrc = new Grid();
-  private page = document.createElement('canvas');
+  private page!: HTMLCanvasElement;
   private pc!: CanvasRenderingContext2D;
   private activeLyricCells = new Uint8Array(ACOLS * AROWS);
   private drumHitTimes: number[] = [];
@@ -76,10 +74,9 @@ export default class Broken extends PrintScene {
       }
       throw new Error('unreachable');
     });
-    const [l0, l1, l2, l3] = this.lines as [SylLine, SylLine, SylLine, SylLine];
+    const [, l1, l2, l3] = this.lines as [SylLine, SylLine, SylLine, SylLine];
     const word = (sl: SylLine, w: string) => sl.line.words.find((x) => x.w.replace(/’/g, "'") === w.replace(/’/g, "'"))!;
     this.chorus = this.lines.map((s) => s.line.text.toLowerCase().replace(/’/g, "'")).join(' / ').replace(/[^a-z' ()/]/g, ' ');
-    this.tDest = l0.line.start;
     this.tSee = l1.line.start;
     const sur = word(l1, 'surrounding');
     this.snaps = [word(l1, 'walls').start, ...(sur.syl ?? [[sur.start, sEnd(sur)]]).map(([a]) => a)];
@@ -90,10 +87,7 @@ export default class Broken extends PrintScene {
     this.tNeverGone = its ? its.start : this.tNever;
     this.tFar = l2.line.words.at(-1)!.start; // on the step "on" (168.28 s, Bar 140 downbeat)
     this.tMorphEnd = word(l3, 'still').start; // 2 beats into Bar 141 (170.08 s, Bar 141.3)
-    this.tNever2 = word(l3, 'never').start;
     this.tA = word(l3, 'a').start; // 170.380 s ("a")
-    const farWord = word(l3, 'far');
-    this.tDoom = farWord.start; // 170.680 s (onset of "far", Bar 142 downbeat)
     this.tDoomEnd = word(l3, "i'll").start; // 170.980 s (spans full 2 beats across "a" and "far")
     const verSyl = l3.syls.find((s) => s.text === 'ver')!;
     this.tVer = verSyl.start; // 171.580 s (onset of ne"VER")
@@ -125,9 +119,9 @@ export default class Broken extends PrintScene {
       col += w + 3;
       this.l2Seeds.push({ syl: s, cells });
     });
-    this.page.width = Math.ceil(PAGE.cols * AW * SCALE);
-    this.page.height = Math.ceil(PAGE.rows * AH * SCALE);
-    this.pc = this.page.getContext('2d')!;
+    const { cv: page, c: pc } = makeCanvas(PAGE.cols * AW, PAGE.rows * AH);
+    this.page = page;
+    this.pc = pc;
   }
 
   draw(c: CanvasRenderingContext2D, f: Frame): PrintOpts {
@@ -681,7 +675,7 @@ const sEnd = (w: { start: number; end: number }) => w.end;
  * 10 almond eye (without), 11 network feature maps (cnn).
  */
 function motif(kind: number, u: number, v: number, t: number) {
-  const s = Math.sin, fr = (x: number) => x - Math.floor(x);
+  const fr = (x: number) => x - Math.floor(x);
   switch (kind) {
     case 0: return (fr(v * 6) > 0.18 && fr(u * 4 + (Math.floor(v * 6) % 2) * 0.5) > 0.08) ? 0.65 : 0;
     case 1: { const a = Math.atan2(v - 0.5, u - 0.5), r = Math.hypot(u - 0.5, v - 0.5); return fr(a * 2.2 + 0.3) < 0.05 || Math.abs(r - 0.32) < 0.025 ? 1 : 0.12; }

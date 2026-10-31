@@ -2,8 +2,8 @@
 import type { AudioData } from '@pve/engine/audio';
 import type { Lyrics } from '@pve/engine/lyrics';
 import { H, SCALE, W } from '@pve/engine/gl';
-import { clamp, ease, keys, prog } from '@pve/engine/util';
-import { BAR, BEAT, BLUE, INK, PAPER, bricks, brickRect, drawBars, gray, hashI, readout, rebate, stepT, type PrintOpts } from './_kit';
+import { ease, keys, pad0, prog, stepT } from '@pve/engine/util';
+import { BAR, BEAT, BLUE, INK, PAPER, bricks, brickRect, drawBars, gray, hashI, readout, rebate, type PrintOpts } from './_kit';
 import { IMPACT, SHARDS, drawCracks, flashPieces, shardOn, shardPath, traceCrackEdges } from './_shatter';
 
 const IW = 192, IH = 108;
@@ -309,8 +309,8 @@ export class CnnDiagram {
     if (lit > 0) rebate(c, 'dense · 32', fcX, 230 + 32 * 16 + 18, 'left', 0.8);
     if (bs >= 12.5) this.head(c, bs, cam, fcX);
     drawBars(c);
-    readout(c, `INSTRUMENTAL · CNN BAR ${String(Math.min(16, Math.floor(bs) + 1)).padStart(2, '0')}/16`, 'left');
-    readout(c, `DENSE LIT ${String(lit).padStart(2, '0')}/32`, 'right');
+    readout(c, `INSTRUMENTAL · CNN BAR ${pad0(Math.min(16, Math.floor(bs) + 1))}/16`, 'left');
+    readout(c, `DENSE LIT ${pad0(lit)}/32`, 'right');
     if (bt >= 13) this.drawPopBox(c, bt, cam, t);
     const tBar128 = 4580 / 30; // 152.6667 s (start of Bar 128, frame 4580)
     const tBar127 = this.start + 14 * 1.2; // 151.48 s (Bar 127 start)
@@ -355,7 +355,7 @@ export class CnnDiagram {
       if (i) c.lineTo(px, py); else c.moveTo(px, py);
     }
     c.stroke();
-    rebate(c, `LOSS · STEP ${String(n).padStart(3, '0')}/${N} · EPOCH ${String(Math.floor(e * 64)).padStart(2, '0')}/64`, x0, y0 - 12, 'left', 0.8 * enter);
+    rebate(c, `LOSS · STEP ${pad0(n, 3)}/${N} · EPOCH ${pad0(Math.floor(e * 64))}/64`, x0, y0 - 12, 'left', 0.8 * enter);
   }
 
   private head(c: CanvasRenderingContext2D, bs: number, cam: number, fcX: number) {

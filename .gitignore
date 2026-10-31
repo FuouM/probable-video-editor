@@ -1,12 +1,14 @@
 .DS_Store
 node_modules/
 .vite/
+.deprecated/
 
 # renders
 out/
 
 # projects: Lyric-Sync caches and song audio (stems) are local. pdoom_original keeps its audio in git.
 projects/*/lyricsync/
+projects/*/generated/beat_logits.json
 projects/*/user_input/**/*.wav
 projects/*/user_input/**/*.mp3
 projects/*/user_input/**/*.flac

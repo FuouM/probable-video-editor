@@ -324,3 +324,96 @@ export function writtenLength(st: StrokeText, charTimes: [number, number][], t: 
   }
   return len;
 }
+
+// ---------- SVG path sampling & polyline resampling ----------
+const PATH_TOK = /[MmLlHhVvCcSsQqZz]|-?(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?/g;
+
+/** Sample SVG path data (all standard cubic, quadratic, line and arc commands) into a dense polyline of [x, y] coordinates. */
+export function parseSvgPathD(d: string): [number, number][] {
+  const tk = d.match(PATH_TOK) ?? [];
+  const out: [number, number][] = [];
+  let i = 0, cmd = '', cx = 0, cy = 0, sx = 0, sy = 0, qx = 0, qy = 0, lastCubic = false;
+  const n = () => parseFloat(tk[i++]!);
+  const cubic = (x1: number, y1: number, x2: number, y2: number, x: number, y: number) => {
+    for (let k = 1; k <= 20; k++) {
+      const t = k / 20, u = 1 - t;
+      out.push([
+        u * u * u * cx + 3 * u * u * t * x1 + 3 * u * t * t * x2 + t * t * t * x,
+        u * u * u * cy + 3 * u * u * t * y1 + 3 * u * t * t * y2 + t * t * t * y,
+      ]);
+    }
+    qx = x2; qy = y2; cx = x; cy = y; lastCubic = true;
+  };
+  const line = (x: number, y: number) => { out.push([x, y]); cx = x; cy = y; lastCubic = false; };
+  while (i < tk.length) {
+    if (/[a-zA-Z]/.test(tk[i]!)) cmd = tk[i++]!;
+    const rel = cmd === cmd.toLowerCase();
+    const ox = rel ? cx : 0, oy = rel ? cy : 0;
+    switch (cmd.toUpperCase()) {
+      case 'M': {
+        cx = ox + n(); cy = oy + n(); sx = cx; sy = cy;
+        out.push([cx, cy]);
+        cmd = rel ? 'l' : 'L';
+        lastCubic = false;
+        break;
+      }
+      case 'L': line(ox + n(), oy + n()); break;
+      case 'H': line(ox + n(), cy); break;
+      case 'V': line(cx, oy + n()); break;
+      case 'C': { const a = n(), b = n(), c = n(), e = n(), f = n(), g = n(); cubic(ox + a, oy + b, ox + c, oy + e, ox + f, oy + g); break; }
+      case 'S': {
+        const x1 = lastCubic ? 2 * cx - qx : cx, y1 = lastCubic ? 2 * cy - qy : cy;
+        const c = n(), e = n(), f = n(), g = n();
+        cubic(x1, y1, ox + c, oy + e, ox + f, oy + g);
+        break;
+      }
+      case 'Q': {
+        const a = ox + n(), b = oy + n(), x = ox + n(), y = oy + n();
+        cubic(cx + (2 / 3) * (a - cx), cy + (2 / 3) * (b - cy), x + (2 / 3) * (a - x), y + (2 / 3) * (b - y), x, y);
+        break;
+      }
+      case 'Z': line(sx, sy); break;
+      default: throw new Error(`path command ${cmd} in ${d}`);
+    }
+  }
+  return out;
+}
+
+/** Evenly spaced points along a polyline, with arc length step h. */
+export function resamplePolyline(pts: [number, number][], h: number): [number, number][] {
+  if (!pts.length) return [];
+  const out: [number, number][] = [pts[0]!];
+  let carry = 0;
+  for (let i = 1; i < pts.length; i++) {
+    const [ax, ay] = pts[i - 1]!, [bx, by] = pts[i]!;
+    const seg = Math.hypot(bx - ax, by - ay);
+    let d = h - carry;
+    while (d <= seg) {
+      const t = d / seg;
+      out.push([ax + (bx - ax) * t, ay + (by - ay) * t]);
+      d += h;
+    }
+    carry = seg - (d - h);
+  }
+  const last = pts[pts.length - 1]!, end = out[out.length - 1]!;
+  if (Math.hypot(last[0] - end[0], last[1] - end[1]) > h * 0.25) out.push(last);
+  return out;
+}
+
+/** Total arc length of a polyline. */
+export function polylineArcLength(p: [number, number][]): number {
+  let l = 0;
+  for (let i = 1; i < p.length; i++) l += Math.hypot(p[i]![0] - p[i - 1]![0], p[i]![1] - p[i - 1]![1]);
+  return l;
+}
+
+/**
+ * In-place 3-point smoothing filter across a buffer (passes iterations):
+ * arr[i] = (arr[i - 1] + 2 * arr[i] + arr[i + 1]) / 4
+ */
+export function smoothBuffer(arr: Float32Array, passes = 3): void {
+  const n = arr.length;
+  for (let pass = 0; pass < passes; pass++) {
+    for (let i = 1; i < n - 1; i++) arr[i] = (arr[i - 1]! + 2 * arr[i]! + arr[i + 1]!) / 4;
+  }
+}

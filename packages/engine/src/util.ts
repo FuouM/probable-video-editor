@@ -120,6 +120,28 @@ export function lastBefore<T, F = T>(arr: T[], pred: (item: T) => boolean, fallb
   return fallback !== undefined ? fallback : arr[0]!;
 }
 
+/** Latest timestamp in a sorted list at or before t, or null if none; binary search, zero allocations. */
+export function lastTime(list: number[], t: number): number | null {
+  let lo = 0, hi = list.length - 1, best: number | null = null;
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    if (list[mid]! <= t) { best = list[mid]!; lo = mid + 1; }
+    else hi = mid - 1;
+  }
+  return best;
+}
+
+/**
+ * Low-discrepancy 2D point [x, y] in [0, 1) for index i (Martin Roberts' plastic-constant R2 sequence).
+ * Points space evenly across 2D with minimal clustering.
+ */
+export function r2(i: number): [number, number] {
+  return [
+    (0.5 + (i + 1) * 0.7548776662) % 1,
+    (0.5 + (i + 1) * 0.569840291) % 1,
+  ];
+}
+
 /** Stateless hash of integers/floats to [0,1). */
 export function hash(...xs: number[]) {
   let h = 2166136261 >>> 0;
@@ -199,8 +221,51 @@ export function pointAtLength(pts: V2[], L: Float32Array, s: number): { x: numbe
   while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (L[mid]! < s) lo = mid; else hi = mid; }
   const a = pts[lo]!, b = pts[hi]!;
   const seg = L[hi]! - L[lo]!;
+
   const u = seg > 0 ? (s - L[lo]!) / seg : 0;
   return { x: lerp(a.x, b.x, u), y: lerp(a.y, b.y, u), angle: Math.atan2(b.y - a.y, b.x - a.x) };
+}
+/**
+ * Clip a 2D convex or concave polygon against an axis-aligned rectangle [x0, y0, x1, y1]
+ * using Sutherland-Hodgman clipping. Coordinates are [x, y] tuples.
+ */
+export function clipPolygonRect(
+  pts: [number, number][],
+  x0 = 0, y0 = 0, x1 = 1920, y1 = 1080,
+): [number, number][] {
+  const edges = [
+    { inside: (p: [number, number]) => p[0] >= x0, intersect: (a: [number, number], b: [number, number]): [number, number] => [x0, a[1] + (b[1] - a[1]) * (x0 - a[0]) / (b[0] - a[0])] },
+    { inside: (p: [number, number]) => p[0] <= x1, intersect: (a: [number, number], b: [number, number]): [number, number] => [x1, a[1] + (b[1] - a[1]) * (x1 - a[0]) / (b[0] - a[0])] },
+    { inside: (p: [number, number]) => p[1] >= y0, intersect: (a: [number, number], b: [number, number]): [number, number] => [a[0] + (b[0] - a[0]) * (y0 - a[1]) / (b[1] - a[1]), y0] },
+    { inside: (p: [number, number]) => p[1] <= y1, intersect: (a: [number, number], b: [number, number]): [number, number] => [a[0] + (b[0] - a[0]) * (y1 - a[1]) / (b[1] - a[1]), y1] },
+  ];
+  let output = pts;
+  for (const edge of edges) {
+    if (output.length === 0) break;
+    const input = output;
+    output = [];
+    let s = input[input.length - 1]!;
+    for (const e of input) {
+      if (edge.inside(e)) {
+        if (!edge.inside(s)) output.push(edge.intersect(s, e));
+        output.push(e);
+      } else if (edge.inside(s)) {
+        output.push(edge.intersect(s, e));
+      }
+      s = e;
+    }
+  }
+  return output;
+}
+
+/** Area of a 2D polygon (Shoelace formula). */
+export function polygonArea(pts: [number, number][]): number {
+  let a = 0;
+  for (let i = 0; i < pts.length; i++) {
+    const [x1, y1] = pts[i]!, [x2, y2] = pts[(i + 1) % pts.length]!;
+    a += x1 * y2 - x2 * y1;
+  }
+  return Math.abs(a) / 2;
 }
 
 /** Linear-space color from hex (for GL uniforms; applies sRGB->linear). */
@@ -259,4 +324,34 @@ export function project3D(
     y: halfH - (dotUp / (z * f)) * halfH,
     z,
   };
+}
+
+/** Left-pad a number with leading zeros (default 2 digits). */
+export const pad0 = (n: number, width = 2) => String(Math.floor(n)).padStart(width, '0');
+
+/**
+ * Format seconds to song timestamp string: m:ss or m:ss.s.
+ * Precision: 0 (m:ss), 1 (m:ss.s), or 2 (m:ss.ss).
+ */
+export function formatTime(s: number, precision: 0 | 1 | 2 = 1): string {
+  const m = Math.floor(s / 60);
+  const rem = s % 60;
+  if (precision === 0) {
+    return `${m}:${pad0(rem, 2)}`;
+  }
+  const frac = rem.toFixed(precision);
+  return `${m}:${frac.padStart(3 + precision, '0')}`;
+}
+
+/**
+ * Camera distance (or focal length in pixels) for a perspective camera with vertical FOV (in degrees)
+ * to view plane z = 0 covering frame height h (default 1080).
+ */
+export const cameraDistance = (fovDeg: number, h = 1080) => (h / 2) / Math.tan((fovDeg * Math.PI) / 360);
+
+/** Draw and fill a rounded rectangle on a Canvas2D context. */
+export function roundRectFill(c: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number): void {
+  c.beginPath();
+  c.roundRect(x, y, w, h, r);
+  c.fill();
 }

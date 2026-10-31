@@ -7,12 +7,12 @@
 // Mid: drainpipes and a few lamp posts in halftone. In front: the alley, black stacks of boxes and
 // crates, a dumpster, pipes, a fence, rimmed in paper where they poke over the bars.
 // Every layer is drawn at a shift (px of travel): the scenes decide how the shifts move.
-import type { Lyrics } from '@pve/engine/lyrics';
+import { syllables, type Lyrics, type Syl } from '@pve/engine/lyrics';
 import { H, W } from '@pve/engine/gl';
 import { ease, prog } from '@pve/engine/util';
 import {
-  BAR, INK, PAPER, brickRect, bricks, damagedBrick, gray, hashI, syllables,
-  type BrickText, type Syl,
+  BAR, INK, PAPER, brickRect, bricks, damagedBrick, gray, hashI,
+  type BrickText,
 } from './_kit';
 import { FIRST_I, drawFirstI } from './_motifs';
 import { mark } from '@pve/engine/marks';

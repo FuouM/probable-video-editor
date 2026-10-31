@@ -7,6 +7,8 @@ import path from 'node:path';
 
 /** Files of a project folder that `projectInputs` (inputs.ts) reads, and the folders it reads whole. */
 const FILES = ['video/video.json', 'generated/timing.ai.json', 'generated/features.json', 'user_input/lyrics.calibrated.json'];
+/** Files that only some projects have: the lyric map (Japanese units and English phrases). */
+const OPTIONAL = ['user_input/lyrics.map.json'];
 const TREES = ['video/assets'];
 
 export interface SiteManifest {
@@ -20,7 +22,7 @@ export interface SiteManifest {
   audio: { file: string; duration: number; sha256: string; release: string };
 }
 
-/** The folder of the snapshot of project `dir`: inputs.json and manifest.json (and the local copy of the MP3). */
+/** The folder of the snapshot of project `dir`: inputs.json, subtitles.json, thumbnail.jpg and manifest.json (and the local copy of the MP3). */
 export const siteDir = (dir: string) => path.join(dir, 'site');
 
 function walk(root: string, rel: string, out: string[]) {
@@ -33,7 +35,7 @@ function walk(root: string, rel: string, out: string[]) {
 
 /** SHA-256 of every source file of project `dir`, by project-relative path. */
 export function sourceHashes(dir: string): Record<string, string> {
-  const files = [...FILES];
+  const files = [...FILES, ...OPTIONAL.filter((f) => existsSync(path.join(dir, f)))];
   for (const t of TREES) if (existsSync(path.join(dir, t))) walk(dir, t, files);
   const out: Record<string, string> = {};
   // text files, hashed with LF line endings: a Windows checkout (autocrlf) and the CI's must give the same hash

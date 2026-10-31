@@ -43,6 +43,8 @@ export interface Transition {
   post: number;
   /** Given to the scene unchanged. */
   params?: Record<string, unknown>;
+  /** Cap of the adaptive motion blur samples while it is on. 1 or 2 or 3 = no motion blur. */
+  samples?: ClipSamples;
   brief?: string;
 }
 
@@ -84,6 +86,7 @@ export interface ResolvedTransition {
   start: number;
   end: number;
   params?: Record<string, unknown>;
+  samples?: ClipSamples;
   brief?: string;
 }
 

@@ -9,6 +9,7 @@ import { chromium, type BrowserContext, type Page } from 'playwright-core';
 import type { BenchOptions, BenchPageResult } from '@pve/engine/bench/types';
 import type { AdaptiveSampling } from '@pve/engine/engine';
 import type { Mark } from '@pve/engine/marks';
+import type { Lyrics } from '@pve/engine/lyrics';
 
 export const ROOT = path.resolve(import.meta.dir, '../../..');
 export const APP = path.join(ROOT, 'app');
@@ -39,11 +40,12 @@ export interface PveExport {
   png(): Promise<string>;
   /** The named objects of the last rendered frame (scenes call `mark` from @pve/engine/marks). */
   marks(): Mark[];
-  stream(o: { from: number; to: number; fps: number; ws: string; samples?: number | AdaptiveSampling; shutter?: number; inflight?: number }): Promise<StreamFrame[]>;
+  stream(o: { from: number; to: number; fps: number; ws: string; samples?: number | AdaptiveSampling; shutter?: number; inflight?: number; webcodecs?: boolean }): Promise<StreamFrame[]>;
   engine: {
     hudOff: boolean;
     render(t: number, dt?: number, toScreen?: boolean, samples?: number | AdaptiveSampling, shutter?: number): number;
     readPixelsAsync(buf?: Uint8Array<ArrayBuffer>): Promise<Uint8Array<ArrayBuffer>>;
+    lyrics?: Lyrics;
   };
   bench(opts?: BenchOptions): Promise<BenchPageResult>;
 }
@@ -125,6 +127,8 @@ export interface OpenOptions {
   headed?: boolean;
   /** Profile slot: concurrent Chromes of one command need their own profile folders. */
   slot?: number;
+  /** Keep the GPU 2D canvas, as in the live preview (not deterministic: for timing only, never for pixels). */
+  gpuCanvas?: boolean;
 }
 
 /**
@@ -160,7 +164,7 @@ export async function openPage(url: string, project: string, o: OpenOptions = {}
       headless: !o.headed,
       viewport: { width: 1920, height: 1080 },
       deviceScaleFactor: 1,
-      args: CHROME_ARGS,
+      args: o.gpuCanvas ? CHROME_ARGS.filter((x) => x !== '--disable-accelerated-2d-canvas') : CHROME_ARGS,
     });
   } catch (e) {
     release();

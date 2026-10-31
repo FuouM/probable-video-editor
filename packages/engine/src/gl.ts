@@ -287,6 +287,18 @@ export class Layer2D {
   }
 }
 
+/**
+ * A scaled Canvas2D and context for CPU-side rasterization. Backing size is `w * scale` x `h * scale`,
+ * with context pre-scaled by `scale` and `{ willReadFrequently: true }` enabled.
+ */
+export function makeCanvas(w = W, h = H, scale = SCALE): { cv: HTMLCanvasElement; c: CanvasRenderingContext2D } {
+  const cv = document.createElement('canvas');
+  cv.width = Math.round(w * scale);
+  cv.height = Math.round(h * scale);
+  const c = scaleContext2D(cv.getContext('2d', { willReadFrequently: true })!, scale);
+  return { cv, c };
+}
+
 /** Clear a render target to a linear colour. */
 export function clearRT(renderer: THREE.WebGLRenderer, rt: THREE.WebGLRenderTarget | null, rgb: [number, number, number] = [0, 0, 0], a = 1) {
   const prev = renderer.getClearColor(new THREE.Color()).clone();

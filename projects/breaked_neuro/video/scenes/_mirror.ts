@@ -1,10 +1,10 @@
 // The mirror of Verse 1 and its glass, shared by the mirror plate and the Over transition that carries
 // its shards into the chorus: the zoom (a linear pull-back, then a jump at the camera per syllable of
 // "coming right at"), the frame position that keeps the typed text in view, the cracks, and the shards.
-import { H, SCALE, W } from '@pve/engine/gl';
+import { H, makeCanvas, SCALE, W } from '@pve/engine/gl';
 import type { Lyrics } from '@pve/engine/lyrics';
-import { ease, keys } from '@pve/engine/util';
-import { BAR, BLUE, BOX_H, INK, PAPER, brickRect, gray, hashI, stepT, sylLine, wrapLine, type Placed, type SylLine } from './_kit';
+import { ease, keys, stepT } from '@pve/engine/util';
+import { BAR, BLUE, BOX_H, INK, PAPER, brickRect, gray, hashI, sylLine, wrapLine, type Placed, type SylLine } from './_kit';
 import { ALLEY_SPAN, MID_SPEED, NEAR_SPEED, WALL_SPEED, WallWorld } from './_wall';
 
 /** px of the inner text block's left edge and top inside the mirror (letterbox content size) */
@@ -180,17 +180,17 @@ export class MirrorGlass {
   readonly g: MirrorGeom;
   /** song time walls started (its shifts are measured from there) */
   readonly t0Walls: number;
-  private inner = document.createElement('canvas');
-  private ic: CanvasRenderingContext2D;
+  private inner!: HTMLCanvasElement;
+  private ic!: CanvasRenderingContext2D;
   private world: WallWorld;
   /** the black patch under the typed lines, inner px */
   private patch: [number, number, number, number];
 
   /** `start`, `end`: the mirror clip. */
   constructor(ly: Lyrics, private start: number, end: number) {
-    this.inner.width = Math.round(W * SCALE);
-    this.inner.height = Math.round(BOX_H * SCALE);
-    this.ic = this.inner.getContext('2d')!;
+    const { cv: inner, c: ic } = makeCanvas(W, BOX_H);
+    this.inner = inner;
+    this.ic = ic;
     this.g = new MirrorGeom(ly, start, end);
     this.t0Walls = ly.get('looking at the walls').start;
     this.world = new WallWorld(ly, this.t0Walls, start);

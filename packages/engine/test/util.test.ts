@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { cutSpan, project3D } from '../src/util.ts';
+import { cameraDistance, cutSpan, formatTime, pad0, project3D } from '../src/util.ts';
 
 describe('project3D', () => {
   it('projects target point to screen center', () => {
@@ -39,5 +39,24 @@ describe('cutSpan', () => {
   });
   it('is open beyond the first start and the last end', () => {
     expect(cutSpan(clips, 25)).toEqual([20, Infinity]);
+  });
+});
+
+describe('formatting helpers', () => {
+  it('pad0 pads numbers with zeros', () => {
+    expect(pad0(5, 2)).toBe('05');
+    expect(pad0(12, 2)).toBe('12');
+    expect(pad0(7, 4)).toBe('0007');
+  });
+
+  it('formatTime formats seconds into song timestamp', () => {
+    expect(formatTime(65.4, 1)).toBe('1:05.4');
+    expect(formatTime(9.2, 1)).toBe('0:09.2');
+    expect(formatTime(125, 0)).toBe('2:05');
+  });
+
+  it('cameraDistance computes distance for matching viewport height', () => {
+    const d = cameraDistance(30, 1080);
+    expect(d).toBeCloseTo(1080 / 2 / Math.tan((15 * Math.PI) / 180), 2);
   });
 });

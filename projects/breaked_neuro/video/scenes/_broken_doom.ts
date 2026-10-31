@@ -1,5 +1,6 @@
 // First-person 3D ASCII dungeon corridor stepping in discrete 6 fps ticks in broken (final chorus).
-import { BEAT, stepT } from './_kit';
+import { stepT } from '@pve/engine/util';
+import { BEAT } from './_kit';
 import { ACOLS, AROWS, Grid, Tone } from './_ascii';
 
 export function renderAsciiDoom(

@@ -5,6 +5,7 @@
 // carries the falling shards on after the cut.
 import { H, W } from '@pve/engine/gl';
 import { BLUE, PAPER, hashI } from './_kit';
+import { clipPolygonRect as clipPolygon, polygonArea as polyArea } from '@pve/engine/util';
 
 /** the point the screen breaks from: the output cell of the network at its final camera */
 export const IMPACT: [number, number] = [1200, 540];
@@ -33,40 +34,6 @@ function forkNode(k: number, r: number, cx = IMPACT[0], cy = IMPACT[1]): [number
   return [x, y];
 }
 
-function clipPolygon(pts: [number, number][]): [number, number][] {
-  const edges = [
-    { inside: (p: [number, number]) => p[0] >= 0, intersect: (a: [number, number], b: [number, number]): [number, number] => [0, a[1] + (b[1] - a[1]) * (-a[0]) / (b[0] - a[0])] },
-    { inside: (p: [number, number]) => p[0] <= W, intersect: (a: [number, number], b: [number, number]): [number, number] => [W, a[1] + (b[1] - a[1]) * (W - a[0]) / (b[0] - a[0])] },
-    { inside: (p: [number, number]) => p[1] >= 0, intersect: (a: [number, number], b: [number, number]): [number, number] => [a[0] + (b[0] - a[0]) * (-a[1]) / (b[1] - a[1]), 0] },
-    { inside: (p: [number, number]) => p[1] <= H, intersect: (a: [number, number], b: [number, number]): [number, number] => [a[0] + (b[0] - a[0]) * (H - a[1]) / (b[1] - a[1]), H] },
-  ];
-  let output = pts;
-  for (const edge of edges) {
-    if (output.length === 0) break;
-    const input = output;
-    output = [];
-    let s = input[input.length - 1]!;
-    for (const e of input) {
-      if (edge.inside(e)) {
-        if (!edge.inside(s)) output.push(edge.intersect(s, e));
-        output.push(e);
-      } else if (edge.inside(s)) {
-        output.push(edge.intersect(s, e));
-      }
-      s = e;
-    }
-  }
-  return output;
-}
-
-function polyArea(pts: [number, number][]) {
-  let a = 0;
-  for (let i = 0; i < pts.length; i++) {
-    const [x1, y1] = pts[i]!, [x2, y2] = pts[(i + 1) % pts.length]!;
-    a += x1 * y2 - x2 * y1;
-  }
-  return Math.abs(a) / 2;
-}
 
 /** The pieces between the rays, rings and fork cracks, clipped strictly to [0..W, 0..H]. */
 export const SHARDS: Shard[] = (() => {

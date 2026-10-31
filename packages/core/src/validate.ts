@@ -18,7 +18,7 @@ const ROOT_KEYS = ['v', 'title', 'fps', 'size', 'markers', 'clips', 'transitions
 const MARKER_KEYS = ['at'];
 const CLIP_KEYS = ['id', 'scene', 'at', 'to', 'params', 'samples', 'xfade', 'brief'];
 const SAMPLES_KEYS = ['max'];
-const TRANSITION_KEYS = ['id', 'scene', 'at', 'pre', 'post', 'params', 'brief'];
+const TRANSITION_KEYS = ['id', 'scene', 'at', 'pre', 'post', 'params', 'samples', 'brief'];
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -161,6 +161,17 @@ export function validateVideo(json: unknown): ValidateResult {
           fail(path, 'pre + post must be > 0');
         }
         if (tr.params !== undefined && !isObject(tr.params)) fail(`${path}.params`, 'must be an object');
+        if (tr.samples !== undefined) {
+          if (!isObject(tr.samples)) {
+            fail(`${path}.samples`, 'must be an object with "max"');
+          } else {
+            checkKeys(tr.samples, SAMPLES_KEYS, `${path}.samples`);
+            const max = tr.samples.max;
+            if (typeof max !== 'number' || !Number.isInteger(max) || max < 1) {
+              fail(`${path}.samples.max`, 'must be an integer >= 1');
+            }
+          }
+        }
         if (tr.brief !== undefined && typeof tr.brief !== 'string') fail(`${path}.brief`, 'must be a string');
       });
     }

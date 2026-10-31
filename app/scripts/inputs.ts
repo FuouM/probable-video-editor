@@ -3,8 +3,9 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { normalizePath } from 'vite';
+import { LyricMap } from '@pve/core';
 import { loadSong, type Song } from '@pve/core/load';
-import type { LyricsInputLine } from '@pve/engine/lyrics';
+import type { LineWritten, LyricsInputLine } from '@pve/engine/lyrics';
 
 /**
  * Replacements of engine defaults in video/assets/: palette.json (colours by key) and the files in fonts/
@@ -29,22 +30,37 @@ export function projectAssets(dir: string, fontUrl: (rel: string) => string) {
 
 /**
  * Calibrated lyric lines in the engine's input shape (LyricsInputLine). A one-syllable word gets no `syl`:
- * scenes test `syl` for a real syllable split.
+ * scenes test `syl` for a real syllable split. With a lyric map, each line also gets `written` (JP glyphs, EN phrases).
  */
-export function engineLines(lines: Song['lyrics']['lines']): LyricsInputLine[] {
-  return lines.map((l) => ({
-    i: l.i,
-    text: l.text,
-    start: l.start,
-    end: l.end,
-    words: l.words.map((w) => ({
-      w: w.w,
-      start: w.start,
-      end: w.end,
-      ...(typeof w.conf === 'number' ? { conf: w.conf } : {}),
-      ...(w.syl.length > 1 ? { syl: w.syl, sylText: w.sylText } : {}),
-    })),
-  }));
+export function engineLines(song: Song): LyricsInputLine[] {
+  const map = song.lyricMap ? new LyricMap(song.lyricMap.doc, song.timing) : undefined;
+  const written = new Map<number, LineWritten>();
+  for (const l of map?.lines ?? []) {
+    written.set(l.i, {
+      jp: l.jp,
+      units: l.jpUnits.map(({ glyph, from, to, start, end }) => ({ glyph, from, to, start, end })),
+      en: l.enText,
+      phrases: l.en.map(({ text, from, to, loose, start, end }) => ({ text, from, to, loose, start, end })),
+      ghosts: l.syl.filter((s) => s.ghost).map((s) => s.k),
+    });
+  }
+  return song.lyrics.lines.map((l) => {
+    const w = written.get(l.i);
+    return {
+      i: l.i,
+      text: l.text,
+      start: l.start,
+      end: l.end,
+      words: l.words.map((w) => ({
+        w: w.w,
+        start: w.start,
+        end: w.end,
+        ...(typeof w.conf === 'number' ? { conf: w.conf } : {}),
+        ...(w.syl.length > 1 ? { syl: w.syl, sylText: w.sylText } : {}),
+      })),
+      ...(w ? { written: w } : {}),
+    };
+  });
 }
 
 /** How the page reaches the files of a project: `mix` is the URL of the mix, `font` the URL of a font file. */
@@ -61,7 +77,7 @@ export async function projectInputs(id: string, dir: string, urls: InputUrls) {
     video: JSON.parse(readFileSync(path.join(dir, 'video/video.json'), 'utf8')) as unknown,
     timing: song.timing,
     features: song.features,
-    lines: engineLines(song.lyrics.lines),
+    lines: engineLines(song),
     mix: urls.mix(song),
     assets: projectAssets(dir, urls.font),
   };

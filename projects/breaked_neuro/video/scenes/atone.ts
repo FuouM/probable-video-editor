@@ -9,9 +9,10 @@
 import type { Frame } from '@pve/engine/scene';
 import { mark } from '@pve/engine/marks';
 import { W } from '@pve/engine/gl';
-import { ease, prog } from '@pve/engine/util';
+import { ease, lastBefore, pad0, prog, stepT } from '@pve/engine/util';
+import { sylAt } from '@pve/engine/lyrics';
 import {
-  BAR, BEAT, BOX_H, INK, Life, PAPER, PrintScene, brickRect, drawBars, genAt, lastBefore, readout, rebate, stepT, sylAt, sylLine,
+  BAR, BEAT, BOX_H, INK, Life, PAPER, PrintScene, brickRect, drawBars, genAt, readout, rebate, sylLine,
   wrapLine, type Placed, type PrintOpts, type SylLine,
 } from './_kit';
 import { LEDGER, ledgerRules, pageCreases } from './_motifs';
@@ -124,7 +125,7 @@ export default class Atone extends PrintScene {
     // margin: an entry number per line; a finished line is struck through, slowly, still readable
     this.lines.forEach((l, i) => {
       if (tl < l.sl.line.start) return;
-      rebate(c, String(i + 48).padStart(4, '0'), (X0 - 4) * CELL, BAR + (l.oy + 5) * CELL, 'right', 0);
+      rebate(c, pad0(i + 48, 4), (X0 - 4) * CELL, BAR + (l.oy + 5) * CELL, 'right', 0);
       const ps = prog(tl, l.sl.line.end, l.sl.line.end + 0.5, ease.inOutCubic);
       if (ps <= 0) return;
       c.fillStyle = INK;
@@ -147,13 +148,13 @@ export default class Atone extends PrintScene {
         c.restore();
       }
     }
-    rebate(c, `DAYS ${String(beats).padStart(3, '0')}`, tx0, BAR + BOX_H - 24, 'left', 0);
+    rebate(c, `DAYS ${pad0(beats, 3)}`, tx0, BAR + BOX_H - 24, 'left', 0);
     drawBars(c);
     // readouts: the Life of the ledger, and the syllables seeded into it so far
     let pop = 0;
     for (let i = 0; i < board.length; i++) pop += board[i]!;
-    readout(c, `CHORUS 1 · LEDGER GEN ${String(this.gen).padStart(3, '0')} · POP ${String(pop).padStart(4, '0')}`, 'left');
-    readout(c, `SEEDS ${String(this.seeds.filter((sd) => sd.g <= this.gen).length).padStart(2, '0')}/${this.seeds.length}`, 'right');
+    readout(c, `CHORUS 1 · LEDGER GEN ${pad0(this.gen, 3)} · POP ${pad0(pop, 4)}`, 'left');
+    readout(c, `SEEDS ${pad0(this.seeds.filter((sd) => sd.g <= this.gen).length)}/${this.seeds.length}`, 'right');
     return { plane: 0 };
   }
 }

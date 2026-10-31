@@ -28,6 +28,10 @@ export interface SceneCtx {
    * draws it whole. A no-op outside masked sub-frames.
    */
   mapTileMask(rt: THREE.WebGLRenderTarget, map: THREE.Vector4 | null): void;
+  /** Ensure timeline entry `id` is loaded and initialized (for transitions/scenes that render a neighbor clip). */
+  ensureClip(id: string): Promise<void>;
+  /** Render already-loaded timeline entry `id` at song time `t` into `target` and return `target.texture`. */
+  renderClip(id: string, t: number, target: THREE.WebGLRenderTarget, dt?: number): THREE.Texture | null;
 }
 
 export interface Frame {

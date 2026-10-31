@@ -3,7 +3,8 @@
 // posts go by faster, the alley in front fastest. mirror takes the same wall on from the cut.
 // Rates: wall and lyric 15 fps, mid 15, alley 12.
 import type { Frame } from '@pve/engine/scene';
-import { PrintScene, drawBars, readout, stepT, type PrintOpts } from './_kit';
+import { stepT } from '@pve/engine/util';
+import { PrintScene, drawBars, readout, type PrintOpts } from './_kit';
 import { MID_SPEED, NEAR_SPEED, WALL_SPEED, WallWorld } from './_wall';
 
 export default class Walls extends PrintScene {

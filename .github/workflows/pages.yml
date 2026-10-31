@@ -47,10 +47,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          file=$(bun -e "console.log(JSON.parse(require('fs').readFileSync('projects/breaked_neuro/site/manifest.json','utf8')).audio.file)")
-          tag=$(bun -e "console.log(JSON.parse(require('fs').readFileSync('projects/breaked_neuro/site/manifest.json','utf8')).audio.release)")
-          gh release download "$tag" --pattern "$file" --dir "$RUNNER_TEMP/audio"
-          echo "PVE_SITE_AUDIO=$RUNNER_TEMP/audio/$file" >> "$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/audio"
+          for m in projects/*/site/manifest.json; do
+            file=$(bun -e "console.log(JSON.parse(require('fs').readFileSync('$m','utf8')).audio.file)")
+            tag=$(bun -e "console.log(JSON.parse(require('fs').readFileSync('$m','utf8')).audio.release)")
+            gh release download "$tag" --pattern "$file" --dir "$RUNNER_TEMP/audio" --clobber
+          done
+          echo "PVE_SITE_AUDIO_DIR=$RUNNER_TEMP/audio" >> "$GITHUB_ENV"
       # fails when the snapshot is older than video.json, the lyrics or the timing, or the audio is not the snapshot's
       - run: bun run site:build
       - uses: actions/configure-pages@v5

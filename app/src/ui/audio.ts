@@ -28,10 +28,15 @@ export class StudioAudioEngine {
   private isBufferReady = false;
   private fallbackSeeking = false;
 
+  /** Resolves when the mix is decoded to a buffer (or Web Audio failed and the HTML5 element plays on). */
+  readonly ready: Promise<void>;
+
   constructor(
     private url: string,
     private onTimeUpdate?: (t: number) => void,
     private onEndedCb?: () => void,
+    /** Download progress of the mix, 0..1. */
+    private onLoad?: (fraction: number) => void,
   ) {
     this.fallbackAudio = new Audio(url);
     this.fallbackAudio.preload = 'auto';
@@ -46,7 +51,7 @@ export class StudioAudioEngine {
       this.onEndedCb?.();
     });
 
-    this.initWebAudio();
+    this.ready = this.initWebAudio();
   }
 
   private async initWebAudio() {
@@ -61,7 +66,7 @@ export class StudioAudioEngine {
       this.gainNode.connect(this.master);
 
       const res = await fetch(this.url);
-      const arrayBuf = await res.arrayBuffer();
+      const arrayBuf = await this.download(res);
       this.buffer = await this.ctx.decodeAudioData(arrayBuf);
       this.isBufferReady = true;
 
@@ -74,6 +79,33 @@ export class StudioAudioEngine {
     } catch {
       // Keep using fallbackAudio if Web Audio fails
     }
+  }
+
+  /** The body of `res`, read as a stream so that `onLoad` sees the progress (without a Content-Length it reports 1 at the end). */
+  private async download(res: Response): Promise<ArrayBuffer> {
+    const total = Number(res.headers.get('content-length')) || 0;
+    if (!res.body || !total) {
+      const buf = await res.arrayBuffer();
+      this.onLoad?.(1);
+      return buf;
+    }
+    const reader = res.body.getReader();
+    const chunks: Uint8Array[] = [];
+    let n = 0;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      n += value.length;
+      this.onLoad?.(Math.min(1, n / total));
+    }
+    const out = new Uint8Array(n);
+    let at = 0;
+    for (const c of chunks) {
+      out.set(c, at);
+      at += c.length;
+    }
+    return out.buffer;
   }
 
   get duration(): number {

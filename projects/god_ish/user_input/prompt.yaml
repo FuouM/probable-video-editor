@@ -1,0 +1,85 @@
+project_code: god_ish
+song_name: "god_ish"
+timing_mode: ai
+nearest_bpm: 142
+first_downbeat_s: 7.607
+tempo_changes:
+  - at: 92.12
+    bpm: 103
+  - at: 129.395
+    bpm: 142
+beat_pins:
+  - beat: 22
+    at: 9.306
+  - beat: 26
+    at: 10.991
+  - beat: 50
+    at: 21.125
+  - beat: 82
+    at: 34.645
+  - beat: 122
+    at: 51.549
+  - beat: 154
+    at: 65.07
+  - beat: 158
+    at: 66.757
+  - beat: 162
+    at: 68.449
+  - beat: 174
+    at: 73.517
+  - beat: 178
+    at: 75.208
+  - beat: 182
+    at: 76.898
+  - beat: 186
+    at: 78.59
+  - beat: 202
+    at: 85.351
+  - beat: 210
+    at: 88.732
+  - beat: 214
+    at: 90.422
+  - beat: 218
+    at: 92.113
+  - beat: 222
+    at: 94.423
+  - beat: 226
+    at: 96.767
+  - beat: 250
+    at: 110.757
+  - beat: 254
+    at: 113.086
+  - beat: 278
+    at: 127.064
+  - beat: 282
+    at: 129.395
+  - beat: 310
+    at: 141.224
+  - beat: 326
+    at: 147.987
+  - beat: 342
+    at: 154.744
+  - beat: 358
+    at: 161.504
+  - beat: 382
+    at: 171.651
+  - beat: 398
+    at: 178.412
+  - beat: 402
+    at: 180.103
+  - beat: 406
+    at: 181.793
+  - beat: 414
+    at: 185.171
+  - beat: 438
+    at: 195.322
+  - beat: 442
+    at: 197.008
+  - beat: 446
+    at: 198.676
+files:
+  song: "god_ish_master.wav"
+  lyrics: lyrics.txt
+  stems:
+    folder: stems
+    vocal: "God-ish_vocacolle_stem_miku_lead.wav"

@@ -9,10 +9,11 @@
 // fall at the camera, over the bars; the last ones keep falling into dust (the Over transition `tiles`).
 import type { Frame } from '@pve/engine/scene';
 import { H, W } from '@pve/engine/gl';
-import { ease, prog } from '@pve/engine/util';
-import { BAR, BEAT, BEAT0, INK, PAPER, PrintScene, brickRect, drawBars, hashI, lastBefore, readout, stepT, sylAt, sylLine, sylOfChar, type PrintOpts, type SylLine } from './_kit';
+import { ease, lastBefore, prog, stepT } from '@pve/engine/util';
+import { sylAt } from '@pve/engine/lyrics';
+import { BAR, BEAT, INK, PAPER, PrintScene, brickRect, drawBars, hashI, readout, sylLine, sylOfChar, type PrintOpts, type SylLine } from './_kit';
 import { CeilingFall, WORD_SYMBOL, quad, tileSymbol, tileWord } from './_ceiling';
-import { ceilingGrid, ceilingProj, headOffset } from './_motifs';
+import { ceilingGrid, ceilingProj } from './_motifs';
 import { mark } from '@pve/engine/marks';
 
 const CELL = 7;
@@ -30,8 +31,6 @@ interface SymTile { at: number; sym: string; n: number }
 
 export default class Ceiling extends PrintScene {
   private lines: SylLine[] = [];
-  /** song time of "reason": from there the line stands on black boxes */
-  private tReason = Infinity;
   private fall!: CeilingFall;
   private syms: SymTile[] = [];
   private drumHits: number[] = [];
@@ -46,8 +45,6 @@ export default class Ceiling extends PrintScene {
       const sym = WORD_SYMBOL[w.w.toLowerCase().replace(/[^a-z]/g, '')];
       if (sym) this.syms.push({ at: w.start, sym, n: sl.line.i * 17 + wi });
     }));
-    const reason = this.lines.flatMap((sl) => sl.line.words).find((w) => w.w.toLowerCase() === 'reason');
-    this.tReason = reason?.start ?? Infinity;
 
     // detect drum hits from the drums stem envelope
     this.drumHits = [];
@@ -147,7 +144,6 @@ export default class Ceiling extends PrintScene {
     const proj = ceilingGrid(c, tc, W / 2, H / 2 + 140, 0.5, 1.8);
     const fall = this.fall;
     const flat = () => 0;
-    const bar = Math.floor((tc - BEAT0 + 1e-4) / (4 * BEAT));
 
     // the holes the fallen tiles leave: dark
     c.fillStyle = INK;

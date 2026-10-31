@@ -470,6 +470,7 @@ export function resolveVideo(video: VideoJson, timing: TimingData): ResolvedVide
       end: Math.min(timing.duration, at + tr.post),
     };
     if (tr.params !== undefined) resolved.params = tr.params;
+    if (tr.samples !== undefined) resolved.samples = tr.samples;
     if (tr.brief !== undefined) resolved.brief = tr.brief;
     return resolved;
   });
@@ -478,7 +479,7 @@ export function resolveVideo(video: VideoJson, timing: TimingData): ResolvedVide
     title: video.title,
     fps: video.fps,
     size: video.size,
-    duration: timing.duration,
+    duration: clips[clips.length - 1]!.end,
     bpm: timing.bpm,
     markers,
     clips,

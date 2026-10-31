@@ -1,7 +1,7 @@
 // Wall calendar on the right in broken (final chorus): timelapse tear, twisting 3D pages.
 import { SCALE, W } from '@pve/engine/gl';
-import { clamp, ease } from '@pve/engine/util';
-import { INK, Life, PAPER, bricks, hashI, stepT } from './_kit';
+import { clamp, ease, stepT } from '@pve/engine/util';
+import { INK, Life, PAPER, bricks, hashI } from './_kit';
 import { ACOLS, AH, AROWS, AW, type Ascii } from './_ascii';
 
 export const PAGE = { cols: 38, rows: 24 };

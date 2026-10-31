@@ -115,4 +115,28 @@ export const bench: EffectBench[] = [
       s.rt.dispose();
     },
   }),
+  defineBench({
+    id: 'glsl.halftone',
+    kind: 'helper',
+    async setup() {
+      const { FSPass, makeRT } = await import('../gl');
+      const pass = new FSPass(/* glsl */ `
+        uniform float time;
+        void main() {
+          vec2 p = FRAG_PX;
+          float dark = 0.5 + 0.4 * sin(p.x * 0.01 + time);
+          float d = halftoneDots(p, 6.0, 0.785, dark);
+          fragColor = vec4(vec3(d), 1.0);
+        }`, { time: { value: 0 } });
+      return { pass, rt: makeRT() };
+    },
+    run({ renderer }, s) {
+      s.pass.u.time!.value += 1 / 60;
+      s.pass.render(renderer, s.rt);
+    },
+    dispose(_, s) {
+      s.pass.mat.dispose();
+      s.rt.dispose();
+    },
+  }),
 ];

@@ -112,6 +112,10 @@ export class NotesEditor {
 
     this.bindEvents();
     this.loadNotes();
+    try {
+      const saved = localStorage.getItem('pve.studio.notes');
+      if (saved === 'false') this.close();
+    } catch {}
   }
 
   private bindEvents() {
@@ -517,6 +521,9 @@ export class NotesEditor {
     this.isOpen = true;
     this.paneEl.classList.remove('hidden');
     document.getElementById('menu-notes')?.classList.add('active');
+    try {
+      localStorage.setItem('pve.studio.notes', 'true');
+    } catch {}
   }
 
   close() {
@@ -524,6 +531,9 @@ export class NotesEditor {
     this.paneEl.classList.add('hidden');
     this.setSnippetMode(false);
     document.getElementById('menu-notes')?.classList.remove('active');
+    try {
+      localStorage.setItem('pve.studio.notes', 'false');
+    } catch {}
   }
 
   toggle() {

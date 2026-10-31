@@ -2,7 +2,7 @@
 // A scene fills a Grid (a character and a tone per cell) and draws it; glyphs come from atlases of one
 // monospace face, one per tone, pre-drawn once. Text can be laid into the grid as brick letters whose every
 // sub-cell is a block of cells spelling the letter it belongs to (bricks breaking into code).
-import { SCALE } from '@pve/engine/gl';
+import { makeCanvas, SCALE } from '@pve/engine/gl';
 import { F, font } from '@pve/engine/type';
 import { INK, PAPER, bricks, gray } from './_kit';
 
@@ -36,11 +36,7 @@ export class Ascii {
   constructor() {
     [...CHARS].forEach((ch, i) => this.idx.set(ch, i));
     this.atlases = [gray(0.42), PAPER].map((color) => {
-      const cv = document.createElement('canvas');
-      cv.width = Math.ceil(CHARS.length * AW * SCALE);
-      cv.height = Math.ceil(AH * SCALE);
-      const c = cv.getContext('2d')!;
-      c.scale(SCALE, SCALE);
+      const { cv, c } = makeCanvas(CHARS.length * AW, AH);
       c.font = font(F.mono(700), 17);
       c.textAlign = 'center';
       c.textBaseline = 'middle';

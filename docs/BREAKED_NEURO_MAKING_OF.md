@@ -416,6 +416,20 @@ Analyzing assistant tool logs across the four sessions reveals that the agent ex
 | **Geometric Bounding Box Probes** | 27+ | Instantiating scene classes (`MirrorGeom`) in Node to evaluate screen intersections | `pve probe --scene <name> --at <time> --bounds` |
 | **Multi-Stem Drum Envelope Sync** | 25+ | Shell scripts running `beatsync` with 10 CLI arguments across individual stem files | `pve audio sync -p <id>` |
 
+**Status of the proposals:**
+
+| Proposal | Status |
+|---|---|
+| `pve gate` | Built. It also runs the `tsc` projects of `bun run typecheck` at the same time, and the golden stills only when the work tree changes the engine or `pdoom_original`. |
+| `pve check --watch` | Built. It watches `video/` and `user_input/` and runs the check again 150 ms after the last change. |
+| `pve lyrics query`, `pve time` | Not built. `pve at` already does both (`pve at "bar:129+2b"`, `pve at "bar 38..42" --syl`, `pve at "<lyric text>"`). |
+| `pve still --range` | Built as `pve still <from>..<to> --step s` and `pve still --transition <id> --count n`. The stills render one after the other, not in parallel: all renders share one Chrome profile. |
+| `pve render join` | Not built. `pve render --name <name> --encode-only` joins the segments of an earlier render and names the first missing segment. |
+| `pve look --board` | Built as `pve look clips` (one tile per clip), `pve look <from>..<to>` and `pve look --transition <id>`. `pve look` already draws the time, clip and `bar.beat` on each tile. |
+| `pve commit` | Built. It commits `projects/<id>/` and `--paths` only, after the gate. The rest of the work tree stays as it is, so a second agent can work in it. |
+| `pve probe --bounds` | Not built. `pve probe` already lists and tracks the boxes of the objects that scenes mark. |
+| `pve audio sync` | Not built. pve does no audio analysis (`AGENTS.md`). The stem envelopes come from Lyric-Sync. |
+
 ### 2. Detailed Harness Feature Proposals
 
 #### A. Unified Verification Gate (`pve gate`)

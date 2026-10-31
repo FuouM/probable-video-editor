@@ -1,10 +1,11 @@
 // Entry: preview player (default) or export mode (?export=1, driven by scripts/render.ts).
-import { Engine, type AdaptiveSampling } from '@pve/engine/engine';
+import { Engine, type AdaptiveSampling, type InitProgress } from '@pve/engine/engine';
 import { PW, PH, SCALE } from '@pve/engine/gl';
 import { marks } from '@pve/engine/marks';
 import type { BenchOptions } from '@pve/engine/bench/types';
 import { inputs, loadProject, project } from './project';
 import { NleStudio } from './ui/nle';
+import { Loader } from './ui/loader';
 
 const params = new URLSearchParams(location.search);
 const EXPORT = params.has('export');
@@ -26,12 +27,33 @@ declare global {
 let TIMELINE: typeof engine.timeline = [];
 
 async function boot() {
+  const host = document.getElementById('monitor-loading');
+  if (EXPORT && host) host.style.display = 'none';
+  const loader = host && !EXPORT ? new Loader(host, { title: params.get('project') ?? 'pve', steps: ['data', 'fonts', 'scenes', 'audio'], diag: `${PW}\u00d7${PH} \u00b7 WebGL2` }) : null;
+  const onProgress = (p: InitProgress) => {
+    if (project?.title) loader?.setTitle(project.title);
+    loader?.engine(p);
+  };
+
   const onlySet = ONLY ? new Set(ONLY.split(',')) : null;
-  await engine.init(onlySet ? (e) => onlySet.has(e.id) : undefined);
+  try {
+    await engine.init(onlySet ? (e) => onlySet.has(e.id) : undefined, onProgress);
+  } catch (e) {
+    loader?.fail(String((e as Error)?.message ?? e));
+    throw e;
+  }
   TIMELINE = engine.timeline;
   document.title = project.title;
-  if (EXPORT) setupExport();
-  else setupPlayer();
+
+  if (EXPORT) return setupExport();
+  const studio = setupPlayer((f) => loader?.audio(f));
+  // the overlay stays until the mix is decoded: before that the studio cannot play
+  await studio.audioReady;
+  loader?.audio(1, true);
+  if (host && loader) {
+    host.classList.add('fading');
+    setTimeout(() => host.remove(), 250);
+  }
 }
 
 // ------------------------------------------------------------------ export API
@@ -131,20 +153,17 @@ function setupExport() {
      * the same `ws` reuse its connection, so a renderer can be handed several ranges; a range that goes on
      * where the last one ended skips the warm-up.
      */
-    async stream(opts: { from: number; to: number; fps: number; ws: string; samples?: number | AdaptiveSampling; shutter?: number; inflight?: number }) {
-      const snd = await sender(opts.ws, opts.inflight ?? 4);
+    async stream(opts: { from: number; to: number; fps: number; ws: string; samples?: number | AdaptiveSampling; shutter?: number; inflight?: number; webcodecs?: boolean }) {
       const dt = 1 / opts.fps;
       const n0 = Math.round(opts.from * opts.fps), n1 = Math.round(opts.to * opts.fps);
       const S = opts.samples ?? 1, SH = opts.shutter ?? 0.5;
-      // warm-up: render one frame before the range so the first frame is sequential for stateful scenes
-      // (adaptive sampling only runs stateless scenes: one sample is enough for the warm-up)
       if (n0 > 0 && lastStreamed !== n0 - 1) engine.render((n0 - 1) * dt, dt, false, typeof S === 'number' ? S : 1, SH);
       const gl = engine.renderer.getContext() as WebGL2RenderingContext;
       const ext = gl.getExtension('EXT_disjoint_timer_query_webgl2') as { TIME_ELAPSED_EXT: number; GPU_DISJOINT_EXT: number } | null;
-      if (ext) gl.getParameter(ext.GPU_DISJOINT_EXT); // (reading the flag clears it)
+      if (ext) gl.getParameter(ext.GPU_DISJOINT_EXT);
+
       const frames: { n: number; samples: number; gpuMs: number | null; wallMs: number }[] = [];
       const queries: { i: number; q: WebGLQuery }[] = [];
-      // collects the queries whose results are in (in order: a later query is never ready before an earlier one)
       const collect = () => {
         while (queries.length && gl.getQueryParameter(queries[0]!.q, gl.QUERY_RESULT_AVAILABLE)) {
           const { i, q } = queries.shift()!;
@@ -152,20 +171,79 @@ function setupExport() {
           gl.deleteQuery(q);
         }
       };
-      let pending = -1;
-      for (let n = n0; n < n1; n++) {
-        const w0 = performance.now();
-        const q = ext ? gl.createQuery() : null;
-        if (ext && q) gl.beginQuery(ext.TIME_ELAPSED_EXT, q);
-        const k = engine.render(n * dt, dt, false, S, SH);
-        if (ext && q) { gl.endQuery(ext.TIME_ELAPSED_EXT); queries.push({ i: frames.length, q }); }
-        engine.readStart(n & 1);
-        if (pending >= 0) await snd.send((buf) => engine.readFinish(pending & 1, buf));
-        pending = n;
-        frames.push({ n, samples: k, gpuMs: null, wallMs: performance.now() - w0 });
-        collect();
+
+      if (opts.webcodecs && typeof VideoEncoder !== 'undefined') {
+        const ws = new WebSocket(opts.ws);
+        ws.binaryType = 'arraybuffer';
+        await new Promise<void>((res, rej) => {
+          ws.onopen = () => res();
+          ws.onerror = () => rej(new Error('webcodecs ws open failed'));
+        });
+        let acked = 0;
+        ws.onmessage = (e) => { acked = Math.max(acked, +e.data || 0); };
+        const encoder = new VideoEncoder({
+          output: (chunk) => {
+            const b = new Uint8Array(chunk.byteLength);
+            chunk.copyTo(b);
+            ws.send(b);
+          },
+          error: (e) => console.error('VideoEncoder error:', e),
+        });
+        const targetW = PW, targetH = PH;
+        const codec = SCALE >= 2 ? 'avc1.640033' : 'avc1.640028';
+        const bitrate = SCALE >= 2 ? 50_000_000 : Math.round(16_000_000 * (SCALE === 1 ? 1 : 0.6));
+        encoder.configure({
+          codec,
+          width: targetW,
+          height: targetH,
+          bitrate,
+          framerate: opts.fps,
+          avc: { format: 'annexb' },
+          hardwareAcceleration: 'prefer-hardware',
+        });
+
+        for (let n = n0; n < n1; n++) {
+          while (n - n0 - acked >= (opts.inflight ?? 8)) {
+            await new Promise((r) => setTimeout(r, 1));
+          }
+          const w0 = performance.now();
+          const q = ext ? gl.createQuery() : null;
+          if (ext && q) gl.beginQuery(ext.TIME_ELAPSED_EXT, q);
+          const k = engine.render(n * dt, dt, true, S, SH);
+          if (ext && q) { gl.endQuery(ext.TIME_ELAPSED_EXT); queries.push({ i: frames.length, q }); }
+          const vf = new VideoFrame(canvas, { timestamp: Math.round(n * (1_000_000 / opts.fps)) });
+          encoder.encode(vf, { keyFrame: (n - n0) % 30 === 0 });
+          vf.close();
+          frames.push({ n, samples: k, gpuMs: null, wallMs: performance.now() - w0 });
+          collect();
+        }
+        await encoder.flush();
+        encoder.close();
+        ws.close();
+      } else {
+        const snd = await sender(opts.ws, opts.inflight ?? 4);
+        const PBO_SLOTS = 3;
+        const pending: number[] = [];
+        for (let n = n0; n < n1; n++) {
+          const w0 = performance.now();
+          const q = ext ? gl.createQuery() : null;
+          if (ext && q) gl.beginQuery(ext.TIME_ELAPSED_EXT, q);
+          const k = engine.render(n * dt, dt, false, S, SH);
+          if (ext && q) { gl.endQuery(ext.TIME_ELAPSED_EXT); queries.push({ i: frames.length, q }); }
+          engine.readStart(n % PBO_SLOTS);
+          pending.push(n);
+          if (pending.length >= PBO_SLOTS) {
+            const fn = pending.shift()!;
+            await snd.send((buf) => engine.readFinish(fn % PBO_SLOTS, buf));
+          }
+          frames.push({ n, samples: k, gpuMs: null, wallMs: performance.now() - w0 });
+          collect();
+        }
+        while (pending.length) {
+          const fn = pending.shift()!;
+          await snd.send((buf) => engine.readFinish(fn % PBO_SLOTS, buf));
+        }
       }
-      if (pending >= 0) await snd.send((buf) => engine.readFinish(pending & 1, buf));
       for (let tries = 0; queries.length && tries < 1000; tries++) {
         collect();
         if (!queries.length) break;
@@ -185,7 +263,7 @@ function setupExport() {
 }
 
 // ------------------------------------------------------------------ preview player
-function setupPlayer() {
+function setupPlayer(onAudioLoad: (fraction: number) => void) {
   const errs = document.getElementById('errs');
   if (errs && engine.errors.length) {
     errs.textContent = engine.errors.join('\n\n');
@@ -195,7 +273,7 @@ function setupPlayer() {
   const projLabel = document.getElementById('project-name');
   if (projLabel) projLabel.textContent = project.id;
 
-  new NleStudio(engine, inputs, TIMELINE, canvas, FROM);
+  return new NleStudio(engine, inputs, TIMELINE, canvas, FROM, onAudioLoad);
 }
 
 boot().catch((e) => {

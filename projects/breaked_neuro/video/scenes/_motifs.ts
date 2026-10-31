@@ -5,7 +5,8 @@
 import { H, W } from '@pve/engine/gl';
 import { mark } from '@pve/engine/marks';
 import { clamp, ease, prog } from '@pve/engine/util';
-import { BAR, BLUE, BOX_H, INK, PAPER, brickRect, bricks, gray, hashI, sylAt, type Syl, type SylLine } from './_kit';
+import { sylAt, type Syl } from '@pve/engine/lyrics';
+import { BAR, BLUE, BOX_H, INK, PAPER, brickRect, bricks, gray, hashI, type SylLine } from './_kit';
 
 /**
  * The first sung "i" (Verse 1, on the wall): the brick "i" (2x10 sub-cells, chamfered) at 4x4 micro-cells

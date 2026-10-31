@@ -9,9 +9,9 @@
 // and on "at" it shatters; the shards fly at the camera and on into the chorus (the Over transition `shards`).
 // Rates: zoom 24 fps, typing 30 fps, wall 15 fps, alley 12.
 import type { Frame } from '@pve/engine/scene';
-import { ease, prog } from '@pve/engine/util';
-import { SCALE, W } from '@pve/engine/gl';
-import { BAR, BEAT, BEAT0, BOX_H, INK, PAPER, PrintScene, brickRect, bricks, damagedBrick, drawBars, gray, hashI, readout, stepT, type PrintOpts } from './_kit';
+import { ease, pad0, prog, stepT } from '@pve/engine/util';
+import { W } from '@pve/engine/gl';
+import { BAR, BEAT, BEAT0, BOX_H, INK, PAPER, PrintScene, brickRect, bricks, damagedBrick, drawBars, gray, hashI, readout, type PrintOpts } from './_kit';
 import { MirrorGeom, MirrorGlass, TEXT_X, TEXT_Y, type MirrorAt } from './_mirror';
 import { WALL_SPEED } from './_wall';
 import { mark } from '@pve/engine/marks';
@@ -146,7 +146,7 @@ export default class Mirror extends PrintScene {
   private readouts(c: CanvasRenderingContext2D, s: number, cracks: number, t30: number, barH: number) {
     if (barH <= 0) return;
     const dy = BAR - barH;
-    readout(c, `VERSE 1 · MIRROR ${s.toFixed(2)}× · CRACKS ${String(cracks).padStart(2, '0')}`, 'left', false, dy);
+    readout(c, `VERSE 1 · MIRROR ${s.toFixed(2)}× · CRACKS ${pad0(cracks)}`, 'left', false, dy);
     readout(c, `${((this.glass.t0Walls * WALL_SPEED + this.glass.wallShift(t30)) / 100).toFixed(1)} M`, 'right', false, dy);
   }
 }

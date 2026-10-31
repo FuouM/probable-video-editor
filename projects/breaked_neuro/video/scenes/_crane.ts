@@ -1,7 +1,7 @@
 // 3D Crane Game: simulated physical prize bodies, 3D primitive meshes, cabinet box, and claw motion.
-import { clamp, ease, prog } from '@pve/engine/util';
+import { clamp, ease, prog, stepT } from '@pve/engine/util';
 import { sylAt } from '@pve/engine/lyrics';
-import { BEAT, BEAT0, BLUE, INK, PAPER, gray, hashI, rebate, stepT, type Placed, type SylLine } from './_kit';
+import { BEAT, BEAT0, BLUE, INK, PAPER, gray, hashI, rebate, type Placed, type SylLine } from './_kit';
 
 export type V3 = [number, number, number];
 

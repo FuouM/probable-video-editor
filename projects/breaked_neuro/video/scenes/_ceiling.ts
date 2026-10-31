@@ -3,7 +3,8 @@
 // (from "ceiling" a tile every eighth comes loose, tilts and drops at the camera).
 import { H, W } from '@pve/engine/gl';
 import type { Lyrics } from '@pve/engine/lyrics';
-import { BEAT, INK, PAPER, brickRect, bricks, hashI, stepT, sylLine, sylOfChar, type SylLine } from './_kit';
+import { stepT } from '@pve/engine/util';
+import { BEAT, INK, PAPER, brickRect, bricks, hashI, sylLine, sylOfChar, type SylLine } from './_kit';
 import { ceilingProj, headOffset, type CeilProj } from './_motifs';
 
 const GRAVITY = 7; // tile units / s², down from the ceiling

@@ -126,6 +126,12 @@ html, body {
   border-color: var(--sys-border);
 }
 
+.nle-menu-item.active {
+  background: #1e1b4b;
+  border-color: var(--sys-accent);
+  color: #a5b4fc;
+}
+
 .nle-menubar-right {
   margin-left: auto;
   display: flex;
@@ -286,6 +292,146 @@ html, body {
   white-space: nowrap;
 }
 
+/* ── Performance Pane (Outside Preview Dock) ───────────────────────────── */
+
+.nle-perf-pane {
+  flex: 0 0 280px;
+  width: 280px;
+  background: var(--sys-panel);
+  border-left: 1px solid var(--sys-border-dark);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  user-select: none;
+  font-family: var(--sys-mono);
+}
+
+.nle-perf-pane.hidden {
+  display: none;
+}
+
+.nle-perf-header {
+  height: 28px;
+  background: var(--sys-panel-alt);
+  border-bottom: 1px solid var(--sys-border-dark);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+}
+
+.nle-perf-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--sys-text);
+}
+
+.nle-perf-mode-btn {
+  font-size: 9px;
+  padding: 0 5px;
+  height: 22px;
+  background: var(--sys-raised);
+  border: 1px solid var(--sys-border);
+  color: var(--sys-control-text);
+  cursor: pointer;
+  line-height: 20px;
+  font-family: var(--sys-mono);
+  box-sizing: border-box;
+}
+
+.nle-perf-mode-btn:hover {
+  background: var(--sys-raised-hover);
+  border-color: var(--sys-border-light);
+  color: #ffffff;
+}
+
+.nle-perf-header-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nle-perf-chip {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 0 5px;
+  height: 22px;
+  line-height: 20px;
+  background: #0f1217;
+  border: 1px solid var(--sys-border-dark);
+  box-sizing: border-box;
+}
+
+.nle-perf-chip--ok {
+  color: #4ade80;
+}
+.nle-perf-chip--warn {
+  color: #fbbf24;
+}
+.nle-perf-chip--bad {
+  color: #f87171;
+}
+
+.nle-perf-canvas-wrap {
+  width: 100%;
+  height: 110px;
+  background: #0b0d11;
+  border-bottom: 1px solid var(--sys-border-dark);
+  box-sizing: border-box;
+}
+
+.nle-perf-canvas-wrap canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.nle-perf-stats-grid {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--sys-panel);
+  border-bottom: 1px solid var(--sys-border-dark);
+}
+
+.nle-perf-stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10px;
+  padding: 2px 4px;
+  background: #15181f;
+  border: 1px solid var(--sys-border-dark);
+}
+
+.nle-perf-stat-label {
+  color: var(--sys-text-muted);
+}
+
+.nle-perf-stat-val {
+  color: var(--sys-text);
+  font-weight: 600;
+}
+
+.nle-perf-footer {
+  margin-top: auto;
+  padding: 4px 8px;
+  font-size: 9px;
+  color: var(--sys-text-muted);
+  background: var(--sys-panel-alt);
+  border-top: 1px solid var(--sys-border-dark);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  line-height: 18px;
+}
+
 /* ── Notes Pane ────────────────────────────────────────────────────────── */
 
 .nle-notes-pane {
@@ -302,6 +448,7 @@ html, body {
 .nle-notes-pane.hidden {
   display: none;
 }
+.nle-perf-pane button,
 .nle-notes-pane button {
   display: inline-flex;
   align-items: center;
@@ -323,12 +470,15 @@ html, body {
   flex: none;
 }
 
+.nle-perf-pane button:hover,
 .nle-notes-pane button:hover {
   background: var(--sys-raised-hover);
   border-color: var(--sys-border-light);
   color: #ffffff;
 }
 
+.nle-perf-pane button:active,
+.nle-perf-pane button.active,
 .nle-notes-pane button:active,
 .nle-notes-pane button.active {
   background: #1e1b4b !important;
@@ -336,6 +486,7 @@ html, body {
   color: #a5b4fc !important;
 }
 
+.nle-perf-pane button.nle-btn-icon,
 .nle-notes-pane button.nle-btn-icon {
   width: 22px;
   padding: 0;
@@ -821,7 +972,8 @@ body.export .nle-timeline-dock,
 body.export .nle-err-strip,
 body.export .nle-monitor-hud,
 body.export .nle-notes-pane,
-body.export .nle-snippet-overlay {
+body.export .nle-snippet-overlay,
+body.export .nle-perf-pane {
   display: none !important;
 }
 
@@ -1383,4 +1535,70 @@ select option:checked,
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+/* ── Program Monitor In-Screen Loading Display ─────────────────────────── */
+
+.nle-monitor-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(12, 13, 16, 0.94);
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+
+.nle-monitor-loading.fading {
+  opacity: 0;
+}
+
+/* ── Loading screen (ui/loader.ts), in the studio's monitor and in the player's start dialog ── */
+
+.ld {
+  width: min(460px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font: 11px/1.3 var(--sys-font);
+  color: var(--sys-text);
+}
+.nle-monitor-loading > .ld {
+  padding: 14px 16px;
+  background: var(--sys-panel);
+  border: 1px solid var(--sys-border);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+.ld-head { display: flex; align-items: center; gap: 6px; }
+.ld-badge { background: var(--sys-accent); color: #fff; }
+.ld-title { letter-spacing: 0.5px; }
+.ld-muted { color: var(--sys-text-muted); }
+.ld-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+.ld-step { display: grid; grid-template-columns: 12px 1fr auto; align-items: center; gap: 8px; font-family: var(--sys-mono); color: var(--sys-text-dim); }
+.ld-dot { width: 8px; height: 8px; border: 1px solid var(--sys-border-light); background: transparent; }
+.ld-info { color: var(--sys-text-muted); font-variant-numeric: tabular-nums; }
+.ld-step[data-s='run'] { color: var(--sys-text); }
+.ld-step[data-s='run'] .ld-dot { background: var(--sys-accent); border-color: var(--sys-accent); animation: ld-pulse 0.9s steps(2, jump-none) infinite; }
+.ld-step[data-s='done'] { color: var(--sys-text-muted); }
+.ld-step[data-s='done'] .ld-dot { background: #4ade80; border-color: #4ade80; }
+.ld-step[data-s='error'] { color: #f87171; }
+.ld-step[data-s='error'] .ld-dot { background: #f87171; border-color: #f87171; }
+@keyframes ld-pulse { 50% { opacity: 0.35; } }
+.ld-chips { display: flex; flex-wrap: wrap; gap: 3px; max-height: 58px; overflow: hidden; }
+.ld-chips:empty { display: none; }
+.ld-chip { font: normal 9px/1 var(--sys-mono); padding: 2px 4px; color: var(--sys-text-dim); background: #111215; border: 1px solid var(--sys-border-dark); }
+.ld-chip.ok { color: #4ade80; border-color: #25643c; }
+.ld-status { font: 11px/1.3 var(--sys-mono); color: #38bdf8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 1.3em; }
+.ld-status.error { color: #f87171; white-space: normal; }
+.ld-track { width: 100%; height: 10px; background: #111215; border: 1px solid var(--sys-border-dark); overflow: hidden; }
+.ld-bar { height: 100%; width: 0; background: var(--sys-accent); transition: width 0.12s linear; }
+.ld-foot { display: flex; gap: 12px; align-items: center; font: 9px/1 var(--sys-mono); color: var(--sys-text-muted); }
+.ld-diag { flex: 1 1 auto; }
+.ld-time { font-variant-numeric: tabular-nums; }
+.ld-pct { color: #4ade80; min-width: 3ch; text-align: right; }
+
+body.export .nle-monitor-loading {
+  display: none !important;
 }

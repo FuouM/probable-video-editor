@@ -11,10 +11,11 @@
 // Rates: images 15 fps, type 24 fps, the crane 24 fps.
 import type { Frame } from '@pve/engine/scene';
 import { W } from '@pve/engine/gl';
-import { clamp, ease, prog } from '@pve/engine/util';
+import { clamp, ease, lastBefore, pad0, prog, stepT } from '@pve/engine/util';
+import { sylAt } from '@pve/engine/lyrics';
 import {
-  BAR, BEAT, BEAT0, BLUE, BOX_H, GlyphAtlas, INK, PAPER, PrintScene, brickRect, bricks, drawBars, gray, hashI, lastBefore, readout, rebate, stepT,
-  sylAt, sylLine, wrapLine, type Placed, type PrintOpts, type SylLine,
+  BAR, BEAT, BEAT0, BLUE, BOX_H, GlyphAtlas, INK, PAPER, PrintScene, brickRect, drawBars, gray, hashI, readout, rebate,
+  sylLine, wrapLine, type Placed, type PrintOpts, type SylLine,
 } from './_kit';
 import { BAR_RECT, DIALOG, STUCK } from './_dialog';
 import { mark } from '@pve/engine/marks';
@@ -28,7 +29,6 @@ const CELL = 4; // px per letter sub-cell
 const PAD = 24;
 const CRANE = 2; // the cell with the crane game
 const SAVE_CELL = 13, SAVE_X = 120; // "is there something to save": sub-cell px and left margin
-const G = 1600; // px/s² for falling prizes and letters
 
 interface Cell { sl: SylLine; placed: Placed[]; rows: number; x: number; y: number }
 
@@ -242,7 +242,7 @@ export default class Without extends PrintScene {
           c.beginPath(); c.rect(x, y, w, h); c.clip();
           this.image(c, i, cell, stepT(t, 24));
           c.restore();
-          rebate(c, String(cell.sl.line.i).padStart(2, '0'), cell.x + CW - 16, cell.y + CH - 14, 'right', 1);
+          rebate(c, pad0(cell.sl.line.i), cell.x + CW - 16, cell.y + CH - 14, 'right', 1);
         }
         if (cellReveal < 1) {
           const bw = w * (1 - ease.inOutCubic(cellReveal));
@@ -265,7 +265,7 @@ export default class Without extends PrintScene {
     // readouts: the cells open, and the number of the line on screen (the number in the corner of its cell)
     const line = this.save && t >= this.save.line.start ? this.save.line : lastBefore(this.cells, (cl) => cl.sl.line.start <= t).sl.line;
     readout(c, `CHORUS 2 · CELLS ${close < 1 ? this.cells.filter((cl) => t >= cl.sl.line.start).length : 0}/${this.cells.length}`, 'left');
-    readout(c, `LINE ${String(line.i).padStart(2, '0')}`, 'right');
+    readout(c, `LINE ${pad0(line.i)}`, 'right');
     if (runOn) this.fall.drawWords(c, tz, true);
     return { plane: 0 }; // no Life plane here: the Droste before it has none either
   }

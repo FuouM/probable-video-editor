@@ -1,7 +1,8 @@
 // Over transition ceiling -> dust: the last tiles of the ceiling keep falling at the camera across the
 // cut, over the bars, until they have passed it (the same tiles and the same fall as in the ceiling plate).
 import type { Frame } from '@pve/engine/scene';
-import { OverScene, stepT, type PrintOpts } from './_kit';
+import { stepT } from '@pve/engine/util';
+import { OverScene, type PrintOpts } from './_kit';
 import { CeilingFall } from './_ceiling';
 
 export default class OverTiles extends OverScene {

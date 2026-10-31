@@ -13,4 +13,18 @@ export const bench: EffectBench[] = [
     },
     run: (_, s) => { s.layout(s.line, s.family, 96); },
   }),
+  defineBench({
+    id: 'type.drawV',
+    kind: 'helper',
+    async setup() {
+      const [{ drawV, F }, { Layer2D }] = await Promise.all([import('./type'), import('./gl')]);
+      const layer = new Layer2D();
+      return { drawV, layer, family: F.archivo(100, 700), text: '神っぽいなそれ卑怯…！' };
+    },
+    run: (_, s) => {
+      s.layer.clear();
+      s.drawV(s.layer.ctx, s.text, 500, 100, 48, s.family);
+    },
+    dispose: (_, s) => { s.layer.dispose(); },
+  }),
 ];

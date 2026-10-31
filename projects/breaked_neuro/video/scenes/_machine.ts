@@ -25,9 +25,6 @@ const GUN: Pat = [
   '............OO......................',
 ];
 const EATER: Pat = ['OO..', 'O.O.', '..O.', '..OO'];
-const LWSS: Pat = ['.O..O', 'O....', 'O...O', 'OOOO.'];
-const MWSS: Pat = ['...O..', '.O...O', 'O.....', 'O....O', 'OOOOO.'];
-const HWSS: Pat = ['...OO..', '.O....O', 'O......', 'O.....O', 'OOOOOO.'];
 const PULSAR: Pat = [
   '..OOO...OOO..', '.............', 'O....O.O....O', 'O....O.O....O', 'O....O.O....O', '..OOO...OOO..',
   '.............', '..OOO...OOO..', 'O....O.O....O', 'O....O.O....O', 'O....O.O....O', '.............',
@@ -42,8 +39,6 @@ const QBS: Pat = [
   '.........O............', '.......O.O............', '......O.O.............', 'OO...O..O...........OO',
   'OO....O.O...........OO', '.......O.O............', '.........O............',
 ];
-/** Loafer: c/7 orthogonal ship, moves left. */
-const LOAFER: Pat = ['.OO..O.OO', 'O..O..OO.', '.O.O.....', '..O......', '........O', '......OOO', '.....O...', '......O..', '.......OO'];
 
 type Cell = [number, number];
 function cellsOf(p: Pat): Cell[] {

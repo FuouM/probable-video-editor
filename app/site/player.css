@@ -8,7 +8,7 @@ a.nle-menu-item { text-decoration: none; }
 
 /* ---- the frame: picture on top, transport underneath. Fullscreen takes the frame. */
 .pl-frame { flex: 1 1 auto; min-width: 0; min-height: 0; display: flex; flex-direction: column; background: var(--sys-panel); }
-.pl-view { position: relative; flex: 1 1 auto; min-height: 0; background: #000; }
+.pl-view { position: relative; flex: 1 1 auto; min-height: 0; background: #000; container-type: size; }
 .pl-view canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; }
 
 .pl-controls { flex: none; background: var(--sys-panel); border-top: 1px solid var(--sys-border); }
@@ -17,12 +17,21 @@ a.nle-menu-item { text-decoration: none; }
 .pl-field { display: inline-flex; align-items: center; gap: 6px; font: 11px var(--sys-mono); }
 .pl-select { width: auto; height: 26px; }
 
-/* fullscreen: the picture fills the screen, the transport floats over it and hides when idle */
+/* fullscreen: the picture fills the screen. The transport floats over it, hidden at all times; it shows only while the pointer is over it */
 .pl-frame:fullscreen { background: #000; }
 .pl-frame:fullscreen .pl-view { flex: 1 1 100%; }
-.pl-frame:fullscreen .pl-controls { position: absolute; left: 0; right: 0; bottom: 0; opacity: 0.96; transition: opacity 0.15s; }
-.pl-frame.idle:fullscreen { cursor: none; }
-.pl-frame.idle:fullscreen .pl-controls { opacity: 0; pointer-events: none; }
+.pl-frame:fullscreen .pl-controls { position: absolute; left: 0; right: 0; bottom: 0; opacity: 0; transition: opacity 0.08s; }
+.pl-frame:fullscreen .pl-controls:hover { opacity: 0.96; }
+.pl-stat { display: none; font: 11px var(--sys-mono); color: var(--sys-text-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pl-frame:fullscreen .pl-stat { display: block; }
+.pl-cc { font: 700 11px var(--sys-mono); width: auto; min-width: 28px; padding: 0 6px; }
+
+/* ---- subtitles: a line over the foot of the picture, the word that is sung now lit */
+.pl-subs { position: absolute; left: 50%; bottom: 5cqh; transform: translateX(-50%); max-width: 90%; text-align: center; pointer-events: none; z-index: 2;
+  padding: 0.25em 0.7em; background: rgba(0, 0, 0, 0.62); font: 600 clamp(13px, 3.6cqh, 52px) / 1.35 'Yu Gothic', 'Hiragino Sans', 'Noto Sans JP', 'Segoe UI', system-ui, sans-serif; color: #fff; }
+.pl-subs .tk { color: rgba(255, 255, 255, 0.5); }
+.pl-subs .tk.s2 { color: #fff; }
+.pl-subs .tk.s1 { color: #ffd84a; }
 
 /* ---- seek bar: a flat WinForms track with a blue fill and a tick at each section start */
 .pl-seek { position: relative; height: 14px; margin: 6px 8px 0; background: #111; border: 1px solid var(--sys-border); cursor: pointer; touch-action: none; }
@@ -41,7 +50,19 @@ a.nle-menu-item { text-decoration: none; }
 
 /* ---- start dialog: a WinForms message box over the picture */
 .pl-dialog-wrap { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0, 0, 0, 0.6); padding: 12px; }
-.pl-dialog { width: min(420px, 100%); background: var(--sys-panel); border: 1px solid var(--sys-border-light); }
+.pl-dialog { width: min(480px, 100%); max-height: 100%; overflow: auto; background: var(--sys-panel); border: 1px solid var(--sys-border-light); }
+.pl-cover { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: #000; border-bottom: 1px solid var(--sys-border); }
+.pl-dialog.loading .pl-cover { display: none; }
+.pl-videos { display: flex; gap: 8px; margin: 0 0 10px; }
+.pl-card { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 4px; padding: 4px; color: var(--sys-text-muted); text-decoration: none; border: 1px solid var(--sys-border); background: var(--sys-raised); font: 11px var(--sys-mono); }
+.pl-card:hover { border-color: var(--sys-border-light); color: var(--sys-text); }
+.pl-card.current { border-color: var(--sys-accent); color: var(--sys-text); }
+.pl-card img, .pl-card-blank { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: #000; }
+/* no video chosen yet: only the cards, no transport */
+.pl-frame.choose .pl-controls { display: none; }
+.pl-frame.choose .pl-dialog { width: min(760px, 100%); }
+.pl-frame.choose .pl-dialog-body { padding-bottom: 12px; }
+.pl-frame.choose .pl-status { display: none; }
 .pl-dialog-title { height: 24px; line-height: 22px; padding: 0 8px; background: var(--sys-panel-alt); border-bottom: 1px solid var(--sys-border); font-weight: 600; }
 .pl-dialog-body { padding: 12px 14px 4px; }
 .pl-dialog-body p { margin: 0 0 10px; }

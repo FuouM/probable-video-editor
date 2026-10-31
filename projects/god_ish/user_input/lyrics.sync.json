@@ -1,0 +1,4469 @@
+{
+  "language": "ja",
+  "lines": [
+    {
+      "section": "Intro",
+      "text": "ai no netabare wakare ppoi na",
+      "words": [
+        {
+          "w": "ai",
+          "syllables": [
+            "a",
+            "i"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "no",
+          "syllables": [
+            "no"
+          ]
+        },
+        {
+          "w": "netabare",
+          "syllables": [
+            "ne",
+            "ta",
+            "ba",
+            "re"
+          ]
+        },
+        {
+          "w": "wakare",
+          "syllables": [
+            "wa",
+            "ka",
+            "re"
+          ]
+        },
+        {
+          "w": "ppoi",
+          "syllables": [
+            "p",
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "na",
+          "syllables": [
+            "na"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Intro",
+      "text": "jinsei no netabare shinu ppoi na",
+      "words": [
+        {
+          "w": "jinsei",
+          "syllables": [
+            "ji",
+            "n",
+            "se",
+            "i"
+          ],
+          "sylJoin": [
+            true,
+            false,
+            true
+          ]
+        },
+        {
+          "w": "no",
+          "syllables": [
+            "no"
+          ]
+        },
+        {
+          "w": "netabare",
+          "syllables": [
+            "ne",
+            "ta",
+            "ba",
+            "re"
+          ]
+        },
+        {
+          "w": "shinu",
+          "syllables": [
+            "shi",
+            "nu"
+          ]
+        },
+        {
+          "w": "ppoi",
+          "syllables": [
+            "p",
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "na",
+          "syllables": [
+            "na"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Intro",
+      "text": "nani sore imishin de kakkoii jan",
+      "words": [
+        {
+          "w": "nani",
+          "syllables": [
+            "na",
+            "ni"
+          ]
+        },
+        {
+          "w": "sore",
+          "syllables": [
+            "so",
+            "re"
+          ]
+        },
+        {
+          "w": "imishin",
+          "syllables": [
+            "i",
+            "mi",
+            "shi",
+            "n"
+          ],
+          "sylJoin": [
+            false,
+            false,
+            true
+          ]
+        },
+        {
+          "w": "de",
+          "syllables": [
+            "de"
+          ]
+        },
+        {
+          "w": "kakkoii",
+          "syllables": [
+            "ka",
+            "k",
+            "ko",
+            "i",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            true,
+            true,
+            false
+          ]
+        },
+        {
+          "w": "jan",
+          "syllables": [
+            "ja",
+            "n"
+          ],
+          "sylJoin": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Intro",
+      "text": "soreppoi tangoshuu de odotten da shikkei",
+      "words": [
+        {
+          "w": "soreppoi",
+          "syllables": [
+            "so",
+            "re",
+            "p",
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "tangoshuu",
+          "syllables": [
+            "ta",
+            "n",
+            "go",
+            "shu",
+            "u"
+          ],
+          "sylJoin": [
+            true,
+            false,
+            false,
+            false
+          ]
+        },
+        {
+          "w": "de",
+          "syllables": [
+            "de"
+          ]
+        },
+        {
+          "w": "odotten",
+          "syllables": [
+            "o",
+            "do",
+            "t",
+            "te",
+            "n"
+          ],
+          "sylJoin": [
+            false,
+            true,
+            false,
+            true
+          ]
+        },
+        {
+          "w": "da",
+          "syllables": [
+            "da"
+          ]
+        },
+        {
+          "w": "shikkei",
+          "syllables": [
+            "shi",
+            "k",
+            "ke",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            true,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Hook",
+      "text": "tu turu tu tu turu fuu",
+      "words": [
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "fuu",
+          "syllables": [
+            "fu",
+            "u"
+          ],
+          "sylJoin": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Hook",
+      "text": "tu turu tu tu turu fuu",
+      "words": [
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "fuu",
+          "syllables": [
+            "fu",
+            "u"
+          ],
+          "sylJoin": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Hook",
+      "text": "tu turu tu tu turu fuu",
+      "words": [
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "fuu",
+          "syllables": [
+            "fu",
+            "u"
+          ],
+          "sylJoin": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Hook",
+      "text": "poi jan poi jan",
+      "words": [
+        {
+          "w": "poi",
+          "syllables": [
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "jan",
+          "syllables": [
+            "ja",
+            "n"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "poi",
+          "syllables": [
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "jan",
+          "syllables": [
+            "ja",
+            "n"
+          ],
+          "sylJoin": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Hook",
+      "text": "tu turu tu tu turu fuu",
+      "words": [
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "fuu",
+          "syllables": [
+            "fu",
+            "u"
+          ],
+          "sylJoin": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Hook",
+      "text": "tu turu tu tu turu fuu",
+      "words": [
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "fuu",
+          "syllables": [
+            "fu",
+            "u"
+          ],
+          "sylJoin": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Hook",
+      "text": "tu turu tu tu turu",
+      "words": [
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Hook",
+      "text": "kamippoi na",
+      "words": [
+        {
+          "w": "kamippoi",
+          "syllables": [
+            "ka",
+            "mi",
+            "p",
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "na",
+          "syllables": [
+            "na"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Pre-Chorus",
+      "text": "mou ii ze mou ii ze sore",
+      "words": [
+        {
+          "w": "mou",
+          "syllables": [
+            "mo",
+            "u"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "ii",
+          "syllables": [
+            "i",
+            "i"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "ze",
+          "syllables": [
+            "ze"
+          ]
+        },
+        {
+          "w": "mou",
+          "syllables": [
+            "mo",
+            "u"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "ii",
+          "syllables": [
+            "i",
+            "i"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "ze",
+          "syllables": [
+            "ze"
+          ]
+        },
+        {
+          "w": "sore",
+          "syllables": [
+            "so",
+            "re"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Pre-Chorus",
+      "text": "mou ii ze mou ii ze gyaku ni koufun shite kita naa",
+      "words": [
+        {
+          "w": "mou",
+          "syllables": [
+            "mo",
+            "u"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "ii",
+          "syllables": [
+            "i",
+            "i"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "ze",
+          "syllables": [
+            "ze"
+          ]
+        },
+        {
+          "w": "mou",
+          "syllables": [
+            "mo",
+            "u"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "ii",
+          "syllables": [
+            "i",
+            "i"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "ze",
+          "syllables": [
+            "ze"
+          ]
+        },
+        {
+          "w": "gyaku",
+          "syllables": [
+            "gya",
+            "ku"
+          ]
+        },
+        {
+          "w": "ni",
+          "syllables": [
+            "ni"
+          ]
+        },
+        {
+          "w": "koufun",
+          "syllables": [
+            "ko",
+            "u",
+            "fu",
+            "n"
+          ],
+          "sylJoin": [
+            true,
+            false,
+            true
+          ]
+        },
+        {
+          "w": "shite",
+          "syllables": [
+            "shi",
+            "te"
+          ]
+        },
+        {
+          "w": "kita",
+          "syllables": [
+            "ki",
+            "ta"
+          ]
+        },
+        {
+          "w": "naa",
+          "syllables": [
+            "na",
+            "a"
+          ],
+          "sylJoin": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Pre-Chorus",
+      "text": "okkii ne okkii ne yume",
+      "words": [
+        {
+          "w": "okkii",
+          "syllables": [
+            "o",
+            "k",
+            "ki",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "ne",
+          "syllables": [
+            "ne"
+          ]
+        },
+        {
+          "w": "okkii",
+          "syllables": [
+            "o",
+            "k",
+            "ki",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "ne",
+          "syllables": [
+            "ne"
+          ]
+        },
+        {
+          "w": "yume",
+          "syllables": [
+            "yu",
+            "me"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Pre-Chorus",
+      "text": "okkii ne okkii ne",
+      "words": [
+        {
+          "w": "okkii",
+          "syllables": [
+            "o",
+            "k",
+            "ki",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "ne",
+          "syllables": [
+            "ne"
+          ]
+        },
+        {
+          "w": "okkii",
+          "syllables": [
+            "o",
+            "k",
+            "ki",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "ne",
+          "syllables": [
+            "ne"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Pre-Chorus",
+      "text": "keiki ii kedo hinsei wa di en",
+      "words": [
+        {
+          "w": "keiki",
+          "syllables": [
+            "ke",
+            "i",
+            "ki"
+          ]
+        },
+        {
+          "w": "ii",
+          "syllables": [
+            "i",
+            "i"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "kedo",
+          "syllables": [
+            "ke",
+            "do"
+          ]
+        },
+        {
+          "w": "hinsei",
+          "syllables": [
+            "hi",
+            "n",
+            "se",
+            "i"
+          ],
+          "sylJoin": [
+            true,
+            false,
+            true
+          ]
+        },
+        {
+          "w": "wa",
+          "syllables": [
+            "wa"
+          ]
+        },
+        {
+          "w": "di",
+          "syllables": [
+            "di"
+          ]
+        },
+        {
+          "w": "en",
+          "syllables": [
+            "e",
+            "n"
+          ],
+          "sylJoin": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Pre-Chorus",
+      "text": "ueei ueei",
+      "words": [
+        {
+          "w": "ueei",
+          "syllables": [
+            "u",
+            "e",
+            "e",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "ueei",
+          "syllables": [
+            "u",
+            "e",
+            "e",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            true,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Chorus",
+      "text": "kamippoi na sore hikyou kamippoi na sore",
+      "words": [
+        {
+          "w": "kamippoi",
+          "syllables": [
+            "ka",
+            "mi",
+            "p",
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "na",
+          "syllables": [
+            "na"
+          ]
+        },
+        {
+          "w": "sore",
+          "syllables": [
+            "so",
+            "re"
+          ]
+        },
+        {
+          "w": "hikyou",
+          "syllables": [
+            "hi",
+            "kyo",
+            "u"
+          ],
+          "sylJoin": [
+            false,
+            true
+          ]
+        },
+        {
+          "w": "kamippoi",
+          "syllables": [
+            "ka",
+            "mi",
+            "p",
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "na",
+          "syllables": [
+            "na"
+          ]
+        },
+        {
+          "w": "sore",
+          "syllables": [
+            "so",
+            "re"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Chorus",
+      "text": "ai wonchuu wonchuu ai ku ga sagatte iku kanji",
+      "words": [
+        {
+          "w": "ai",
+          "syllables": [
+            "a",
+            "i"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "wonchuu",
+          "syllables": [
+            "wo",
+            "n",
+            "chu",
+            "u"
+          ],
+          "sylJoin": [
+            true,
+            false,
+            true
+          ]
+        },
+        {
+          "w": "wonchuu",
+          "syllables": [
+            "wo",
+            "n",
+            "chu",
+            "u"
+          ],
+          "sylJoin": [
+            true,
+            false,
+            true
+          ]
+        },
+        {
+          "w": "ai",
+          "syllables": [
+            "a",
+            "i"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "ku",
+          "syllables": [
+            "ku"
+          ]
+        },
+        {
+          "w": "ga",
+          "syllables": [
+            "ga"
+          ]
+        },
+        {
+          "w": "sagatte",
+          "syllables": [
+            "sa",
+            "ga",
+            "t",
+            "te"
+          ],
+          "sylJoin": [
+            false,
+            false,
+            true
+          ]
+        },
+        {
+          "w": "iku",
+          "syllables": [
+            "i",
+            "ku"
+          ]
+        },
+        {
+          "w": "kanji",
+          "syllables": [
+            "ka",
+            "n",
+            "ji"
+          ],
+          "sylJoin": [
+            true,
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Chorus",
+      "text": "jashin poi na sore hikkyou jashin poi na sore",
+      "words": [
+        {
+          "w": "jashin",
+          "syllables": [
+            "ja",
+            "shi",
+            "n"
+          ],
+          "sylJoin": [
+            false,
+            true
+          ]
+        },
+        {
+          "w": "poi",
+          "syllables": [
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "na",
+          "syllables": [
+            "na"
+          ]
+        },
+        {
+          "w": "sore",
+          "syllables": [
+            "so",
+            "re"
+          ]
+        },
+        {
+          "w": "hikkyou",
+          "syllables": [
+            "hi",
+            "k",
+            "kyo",
+            "u"
+          ],
+          "sylJoin": [
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "jashin",
+          "syllables": [
+            "ja",
+            "shi",
+            "n"
+          ],
+          "sylJoin": [
+            false,
+            true
+          ]
+        },
+        {
+          "w": "poi",
+          "syllables": [
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "na",
+          "syllables": [
+            "na"
+          ]
+        },
+        {
+          "w": "sore",
+          "syllables": [
+            "so",
+            "re"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Chorus",
+      "text": "aiheichuu heichuu gaichuu wa docchi",
+      "words": [
+        {
+          "w": "aiheichuu",
+          "syllables": [
+            "a",
+            "i",
+            "he",
+            "i",
+            "chu",
+            "u"
+          ],
+          "sylJoin": [
+            true,
+            false,
+            true,
+            false,
+            true
+          ]
+        },
+        {
+          "w": "heichuu",
+          "syllables": [
+            "he",
+            "i",
+            "chu",
+            "u"
+          ],
+          "sylJoin": [
+            true,
+            false,
+            true
+          ]
+        },
+        {
+          "w": "gaichuu",
+          "syllables": [
+            "ga",
+            "i",
+            "chu",
+            "u"
+          ],
+          "sylJoin": [
+            true,
+            false,
+            true
+          ]
+        },
+        {
+          "w": "wa",
+          "syllables": [
+            "wa"
+          ]
+        },
+        {
+          "w": "docchi",
+          "syllables": [
+            "do",
+            "c",
+            "chi"
+          ],
+          "sylJoin": [
+            false,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Chorus",
+      "text": "sono kamigata sono me sono kuchimoto",
+      "words": [
+        {
+          "w": "sono",
+          "syllables": [
+            "so",
+            "no"
+          ]
+        },
+        {
+          "w": "kamigata",
+          "syllables": [
+            "ka",
+            "mi",
+            "ga",
+            "ta"
+          ]
+        },
+        {
+          "w": "sono",
+          "syllables": [
+            "so",
+            "no"
+          ]
+        },
+        {
+          "w": "me",
+          "syllables": [
+            "me"
+          ]
+        },
+        {
+          "w": "sono",
+          "syllables": [
+            "so",
+            "no"
+          ]
+        },
+        {
+          "w": "kuchimoto",
+          "syllables": [
+            "ku",
+            "chi",
+            "mo",
+            "to"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Chorus",
+      "text": "sono kousui sono fuku sono meiku",
+      "words": [
+        {
+          "w": "sono",
+          "syllables": [
+            "so",
+            "no"
+          ]
+        },
+        {
+          "w": "kousui",
+          "syllables": [
+            "ko",
+            "u",
+            "su",
+            "i"
+          ],
+          "sylJoin": [
+            true,
+            false,
+            true
+          ]
+        },
+        {
+          "w": "sono",
+          "syllables": [
+            "so",
+            "no"
+          ]
+        },
+        {
+          "w": "fuku",
+          "syllables": [
+            "fu",
+            "ku"
+          ]
+        },
+        {
+          "w": "sono",
+          "syllables": [
+            "so",
+            "no"
+          ]
+        },
+        {
+          "w": "meiku",
+          "syllables": [
+            "me",
+            "i",
+            "ku"
+          ],
+          "sylJoin": [
+            true,
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Chorus",
+      "text": "areppoi na sore hikyou areppoi na sore",
+      "words": [
+        {
+          "w": "areppoi",
+          "syllables": [
+            "a",
+            "re",
+            "p",
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "na",
+          "syllables": [
+            "na"
+          ]
+        },
+        {
+          "w": "sore",
+          "syllables": [
+            "so",
+            "re"
+          ]
+        },
+        {
+          "w": "hikyou",
+          "syllables": [
+            "hi",
+            "kyo",
+            "u"
+          ],
+          "sylJoin": [
+            false,
+            true
+          ]
+        },
+        {
+          "w": "areppoi",
+          "syllables": [
+            "a",
+            "re",
+            "p",
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "na",
+          "syllables": [
+            "na"
+          ]
+        },
+        {
+          "w": "sore",
+          "syllables": [
+            "so",
+            "re"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Chorus",
+      "text": "sono meigen sono iken sono hihyou",
+      "words": [
+        {
+          "w": "sono",
+          "syllables": [
+            "so",
+            "no"
+          ]
+        },
+        {
+          "w": "meigen",
+          "syllables": [
+            "me",
+            "i",
+            "ge",
+            "n"
+          ],
+          "sylJoin": [
+            true,
+            false,
+            true
+          ]
+        },
+        {
+          "w": "sono",
+          "syllables": [
+            "so",
+            "no"
+          ]
+        },
+        {
+          "w": "iken",
+          "syllables": [
+            "i",
+            "ke",
+            "n"
+          ],
+          "sylJoin": [
+            false,
+            true
+          ]
+        },
+        {
+          "w": "sono",
+          "syllables": [
+            "so",
+            "no"
+          ]
+        },
+        {
+          "w": "hihyou",
+          "syllables": [
+            "hi",
+            "hyo",
+            "u"
+          ],
+          "sylJoin": [
+            false,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Chorus",
+      "text": "sono karisuma sono gyagu sono sensu",
+      "words": [
+        {
+          "w": "sono",
+          "syllables": [
+            "so",
+            "no"
+          ]
+        },
+        {
+          "w": "karisuma",
+          "syllables": [
+            "ka",
+            "ri",
+            "su",
+            "ma"
+          ]
+        },
+        {
+          "w": "sono",
+          "syllables": [
+            "so",
+            "no"
+          ]
+        },
+        {
+          "w": "gyagu",
+          "syllables": [
+            "gya",
+            "gu"
+          ]
+        },
+        {
+          "w": "sono",
+          "syllables": [
+            "so",
+            "no"
+          ]
+        },
+        {
+          "w": "sensu",
+          "syllables": [
+            "se",
+            "n",
+            "su"
+          ],
+          "sylJoin": [
+            true,
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Chorus",
+      "text": "kamippoi na sore hikyou",
+      "words": [
+        {
+          "w": "kamippoi",
+          "syllables": [
+            "ka",
+            "mi",
+            "p",
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "na",
+          "syllables": [
+            "na"
+          ]
+        },
+        {
+          "w": "sore",
+          "syllables": [
+            "so",
+            "re"
+          ]
+        },
+        {
+          "w": "hikyou",
+          "syllables": [
+            "hi",
+            "kyo",
+            "u"
+          ],
+          "sylJoin": [
+            false,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Chorus",
+      "text": "poi na poi na poi akogarechau",
+      "words": [
+        {
+          "w": "poi",
+          "syllables": [
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "na",
+          "syllables": [
+            "na"
+          ]
+        },
+        {
+          "w": "poi",
+          "syllables": [
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "na",
+          "syllables": [
+            "na"
+          ]
+        },
+        {
+          "w": "poi",
+          "syllables": [
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "akogarechau",
+          "syllables": [
+            "a",
+            "ko",
+            "ga",
+            "re",
+            "cha",
+            "u"
+          ],
+          "sylJoin": [
+            false,
+            false,
+            false,
+            false,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Post-Chorus",
+      "text": "tu turu tu tu turu fuu",
+      "words": [
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "fuu",
+          "syllables": [
+            "fu",
+            "u"
+          ],
+          "sylJoin": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Post-Chorus",
+      "text": "tu turu tu tu turu fuu",
+      "words": [
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "fuu",
+          "syllables": [
+            "fu",
+            "u"
+          ],
+          "sylJoin": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Post-Chorus",
+      "text": "tu turu tu tu turu fuu",
+      "words": [
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "fuu",
+          "syllables": [
+            "fu",
+            "u"
+          ],
+          "sylJoin": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Post-Chorus",
+      "text": "poi jan poi jan",
+      "words": [
+        {
+          "w": "poi",
+          "syllables": [
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "jan",
+          "syllables": [
+            "ja",
+            "n"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "poi",
+          "syllables": [
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "jan",
+          "syllables": [
+            "ja",
+            "n"
+          ],
+          "sylJoin": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Post-Chorus",
+      "text": "tu turu tu tu turu fuu",
+      "words": [
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "fuu",
+          "syllables": [
+            "fu",
+            "u"
+          ],
+          "sylJoin": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Post-Chorus",
+      "text": "tu turu tu tu turu fuu",
+      "words": [
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "fuu",
+          "syllables": [
+            "fu",
+            "u"
+          ],
+          "sylJoin": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Post-Chorus",
+      "text": "tu turu tu tu turu",
+      "words": [
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Post-Chorus",
+      "text": "kamippoi na",
+      "words": [
+        {
+          "w": "kamippoi",
+          "syllables": [
+            "ka",
+            "mi",
+            "p",
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "na",
+          "syllables": [
+            "na"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Interlude",
+      "text": "meta shikou suru honshitsu wa akui? hito o kobaka ni shita you na sakui",
+      "words": [
+        {
+          "w": "meta",
+          "syllables": [
+            "me",
+            "ta"
+          ]
+        },
+        {
+          "w": "shikou",
+          "syllables": [
+            "shi",
+            "ko",
+            "u"
+          ],
+          "sylJoin": [
+            false,
+            true
+          ]
+        },
+        {
+          "w": "suru",
+          "syllables": [
+            "su",
+            "ru"
+          ]
+        },
+        {
+          "w": "honshitsu",
+          "syllables": [
+            "ho",
+            "n",
+            "shi",
+            "tsu"
+          ],
+          "sylJoin": [
+            true,
+            false,
+            false
+          ]
+        },
+        {
+          "w": "wa",
+          "syllables": [
+            "wa"
+          ]
+        },
+        {
+          "w": "akui?",
+          "syllables": [
+            "a",
+            "ku",
+            "i?"
+          ],
+          "sylJoin": [
+            false,
+            true
+          ]
+        },
+        {
+          "w": "hito",
+          "syllables": [
+            "hi",
+            "to"
+          ]
+        },
+        {
+          "w": "o",
+          "syllables": [
+            "o"
+          ]
+        },
+        {
+          "w": "kobaka",
+          "syllables": [
+            "ko",
+            "ba",
+            "ka"
+          ]
+        },
+        {
+          "w": "ni",
+          "syllables": [
+            "ni"
+          ]
+        },
+        {
+          "w": "shita",
+          "syllables": [
+            "shi",
+            "ta"
+          ]
+        },
+        {
+          "w": "you",
+          "syllables": [
+            "yo",
+            "u"
+          ]
+        },
+        {
+          "w": "na",
+          "syllables": [
+            "na"
+          ]
+        },
+        {
+          "w": "sakui",
+          "syllables": [
+            "sa",
+            "ku",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Interlude",
+      "text": "mui ni ikinobiru no wa muzukashii kenryoku ni nomarete yuragu akari",
+      "words": [
+        {
+          "w": "mui",
+          "syllables": [
+            "mu",
+            "i"
+          ]
+        },
+        {
+          "w": "ni",
+          "syllables": [
+            "ni"
+          ]
+        },
+        {
+          "w": "ikinobiru",
+          "syllables": [
+            "i",
+            "ki",
+            "no",
+            "bi",
+            "ru"
+          ]
+        },
+        {
+          "w": "no",
+          "syllables": [
+            "no"
+          ]
+        },
+        {
+          "w": "wa",
+          "syllables": [
+            "wa"
+          ]
+        },
+        {
+          "w": "muzukashii",
+          "syllables": [
+            "mu",
+            "zu",
+            "ka",
+            "shi",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            false,
+            false,
+            true
+          ]
+        },
+        {
+          "w": "kenryoku",
+          "syllables": [
+            "ke",
+            "n",
+            "ryo",
+            "ku"
+          ]
+        },
+        {
+          "w": "ni",
+          "syllables": [
+            "ni"
+          ]
+        },
+        {
+          "w": "nomarete",
+          "syllables": [
+            "no",
+            "ma",
+            "re",
+            "te"
+          ]
+        },
+        {
+          "w": "yuragu",
+          "syllables": [
+            "yu",
+            "ra",
+            "gu"
+          ]
+        },
+        {
+          "w": "akari",
+          "syllables": [
+            "a",
+            "ka",
+            "ri"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Interlude",
+      "text": "kami o hitei shi kami ni narikawari gyokuza de hyouhen suru komonotachi",
+      "words": [
+        {
+          "w": "kami",
+          "syllables": [
+            "ka",
+            "mi"
+          ]
+        },
+        {
+          "w": "o",
+          "syllables": [
+            "o"
+          ]
+        },
+        {
+          "w": "hitei",
+          "syllables": [
+            "hi",
+            "te",
+            "i"
+          ]
+        },
+        {
+          "w": "shi",
+          "syllables": [
+            "shi"
+          ]
+        },
+        {
+          "w": "kami",
+          "syllables": [
+            "ka",
+            "mi"
+          ]
+        },
+        {
+          "w": "ni",
+          "syllables": [
+            "ni"
+          ]
+        },
+        {
+          "w": "narikawari",
+          "syllables": [
+            "na",
+            "ri",
+            "ka",
+            "wa",
+            "ri"
+          ]
+        },
+        {
+          "w": "gyokuza",
+          "syllables": [
+            "gyo",
+            "ku",
+            "za"
+          ]
+        },
+        {
+          "w": "de",
+          "syllables": [
+            "de"
+          ]
+        },
+        {
+          "w": "hyouhen",
+          "syllables": [
+            "hyo",
+            "u",
+            "he",
+            "n"
+          ],
+          "sylJoin": [
+            true,
+            false,
+            false
+          ]
+        },
+        {
+          "w": "suru",
+          "syllables": [
+            "su",
+            "ru"
+          ]
+        },
+        {
+          "w": "komonotachi",
+          "syllables": [
+            "ko",
+            "mo",
+            "no",
+            "ta",
+            "chi"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Interlude",
+      "text": "hihan ni misekake jikai no inori",
+      "words": [
+        {
+          "w": "hihan",
+          "syllables": [
+            "hi",
+            "ha",
+            "n"
+          ]
+        },
+        {
+          "w": "ni",
+          "syllables": [
+            "ni"
+          ]
+        },
+        {
+          "w": "misekake",
+          "syllables": [
+            "mi",
+            "se",
+            "ka",
+            "ke"
+          ]
+        },
+        {
+          "w": "jikai",
+          "syllables": [
+            "ji",
+            "ka",
+            "i"
+          ]
+        },
+        {
+          "w": "no",
+          "syllables": [
+            "no"
+          ]
+        },
+        {
+          "w": "inori",
+          "syllables": [
+            "i",
+            "no",
+            "ri"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Verse",
+      "text": "nani itten no? sore uzai nani itten no? sore",
+      "words": [
+        {
+          "w": "nani",
+          "syllables": [
+            "na",
+            "ni"
+          ]
+        },
+        {
+          "w": "itten",
+          "syllables": [
+            "i",
+            "t",
+            "te",
+            "n"
+          ],
+          "sylJoin": [
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "no?",
+          "syllables": [
+            "no?"
+          ]
+        },
+        {
+          "w": "sore",
+          "syllables": [
+            "so",
+            "re"
+          ]
+        },
+        {
+          "w": "uzai",
+          "syllables": [
+            "u",
+            "za",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            true
+          ]
+        },
+        {
+          "w": "nani",
+          "syllables": [
+            "na",
+            "ni"
+          ]
+        },
+        {
+          "w": "itten",
+          "syllables": [
+            "i",
+            "t",
+            "te",
+            "n"
+          ],
+          "sylJoin": [
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "no?",
+          "syllables": [
+            "no?"
+          ]
+        },
+        {
+          "w": "sore",
+          "syllables": [
+            "so",
+            "re"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Verse",
+      "text": "imi ga yoku wakannai shi nemucchau yo maji",
+      "words": [
+        {
+          "w": "imi",
+          "syllables": [
+            "i",
+            "mi"
+          ]
+        },
+        {
+          "w": "ga",
+          "syllables": [
+            "ga"
+          ]
+        },
+        {
+          "w": "yoku",
+          "syllables": [
+            "yo",
+            "ku"
+          ]
+        },
+        {
+          "w": "wakannai",
+          "syllables": [
+            "wa",
+            "ka",
+            "n",
+            "na",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            true,
+            false,
+            true
+          ]
+        },
+        {
+          "w": "shi",
+          "syllables": [
+            "shi"
+          ]
+        },
+        {
+          "w": "nemucchau",
+          "syllables": [
+            "ne",
+            "mu",
+            "c",
+            "cha",
+            "u"
+          ],
+          "sylJoin": [
+            false,
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "yo",
+          "syllables": [
+            "yo"
+          ]
+        },
+        {
+          "w": "maji",
+          "syllables": [
+            "ma",
+            "ji"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Verse",
+      "text": "akippoi nda ookee minna akippoi nda ookee",
+      "words": [
+        {
+          "w": "akippoi",
+          "syllables": [
+            "a",
+            "ki",
+            "p",
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "nda",
+          "syllables": [
+            "n",
+            "da"
+          ]
+        },
+        {
+          "w": "ookee",
+          "syllables": [
+            "o",
+            "o",
+            "ke",
+            "e"
+          ],
+          "sylJoin": [
+            true,
+            false,
+            true
+          ]
+        },
+        {
+          "w": "minna",
+          "syllables": [
+            "mi",
+            "n",
+            "na"
+          ],
+          "sylJoin": [
+            true,
+            false
+          ]
+        },
+        {
+          "w": "akippoi",
+          "syllables": [
+            "a",
+            "ki",
+            "p",
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "nda",
+          "syllables": [
+            "n",
+            "da"
+          ]
+        },
+        {
+          "w": "ookee",
+          "syllables": [
+            "o",
+            "o",
+            "ke",
+            "e"
+          ],
+          "sylJoin": [
+            true,
+            false,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Verse",
+      "text": "odoreru yatsu choudai choudai biimu",
+      "words": [
+        {
+          "w": "odoreru",
+          "syllables": [
+            "o",
+            "do",
+            "re",
+            "ru"
+          ]
+        },
+        {
+          "w": "yatsu",
+          "syllables": [
+            "ya",
+            "tsu"
+          ]
+        },
+        {
+          "w": "choudai",
+          "syllables": [
+            "cho",
+            "u",
+            "da",
+            "i"
+          ],
+          "sylJoin": [
+            true,
+            false,
+            true
+          ]
+        },
+        {
+          "w": "choudai",
+          "syllables": [
+            "cho",
+            "u",
+            "da",
+            "i"
+          ],
+          "sylJoin": [
+            true,
+            false,
+            true
+          ]
+        },
+        {
+          "w": "biimu",
+          "syllables": [
+            "bi",
+            "i",
+            "mu"
+          ],
+          "sylJoin": [
+            true,
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Pre-Chorus",
+      "text": "kisshoi ne kisshoi ne sore",
+      "words": [
+        {
+          "w": "kisshoi",
+          "syllables": [
+            "ki",
+            "s",
+            "sho",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "ne",
+          "syllables": [
+            "ne"
+          ]
+        },
+        {
+          "w": "kisshoi",
+          "syllables": [
+            "ki",
+            "s",
+            "sho",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "ne",
+          "syllables": [
+            "ne"
+          ]
+        },
+        {
+          "w": "sore",
+          "syllables": [
+            "so",
+            "re"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Pre-Chorus",
+      "text": "kisshoi ne kisshoi ne",
+      "words": [
+        {
+          "w": "kisshoi",
+          "syllables": [
+            "ki",
+            "s",
+            "sho",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "ne",
+          "syllables": [
+            "ne"
+          ]
+        },
+        {
+          "w": "kisshoi",
+          "syllables": [
+            "ki",
+            "s",
+            "sho",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "ne",
+          "syllables": [
+            "ne"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Pre-Chorus",
+      "text": "gyaku ni fan ni natte kita jan",
+      "words": [
+        {
+          "w": "gyaku",
+          "syllables": [
+            "gya",
+            "ku"
+          ]
+        },
+        {
+          "w": "ni",
+          "syllables": [
+            "ni"
+          ]
+        },
+        {
+          "w": "fan",
+          "syllables": [
+            "fa",
+            "n"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "ni",
+          "syllables": [
+            "ni"
+          ]
+        },
+        {
+          "w": "natte",
+          "syllables": [
+            "na",
+            "t",
+            "te"
+          ],
+          "sylJoin": [
+            false,
+            true
+          ]
+        },
+        {
+          "w": "kita",
+          "syllables": [
+            "ki",
+            "ta"
+          ]
+        },
+        {
+          "w": "jan",
+          "syllables": [
+            "ja",
+            "n"
+          ],
+          "sylJoin": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Pre-Chorus",
+      "text": "chicchai ne chicchai ne utsuwa",
+      "words": [
+        {
+          "w": "chicchai",
+          "syllables": [
+            "chi",
+            "c",
+            "cha",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "ne",
+          "syllables": [
+            "ne"
+          ]
+        },
+        {
+          "w": "chicchai",
+          "syllables": [
+            "chi",
+            "c",
+            "cha",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "ne",
+          "syllables": [
+            "ne"
+          ]
+        },
+        {
+          "w": "utsuwa",
+          "syllables": [
+            "u",
+            "tsu",
+            "wa"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Pre-Chorus",
+      "text": "chicchai ne chicchai ne",
+      "words": [
+        {
+          "w": "chicchai",
+          "syllables": [
+            "chi",
+            "c",
+            "cha",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "ne",
+          "syllables": [
+            "ne"
+          ]
+        },
+        {
+          "w": "chicchai",
+          "syllables": [
+            "chi",
+            "c",
+            "cha",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "ne",
+          "syllables": [
+            "ne"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Pre-Chorus",
+      "text": "tensaiyue kodoku desu ne kakkee kakkee",
+      "words": [
+        {
+          "w": "tensaiyue",
+          "syllables": [
+            "te",
+            "n",
+            "sa",
+            "i",
+            "yu",
+            "e"
+          ]
+        },
+        {
+          "w": "kodoku",
+          "syllables": [
+            "ko",
+            "do",
+            "ku"
+          ]
+        },
+        {
+          "w": "desu",
+          "syllables": [
+            "de",
+            "su"
+          ]
+        },
+        {
+          "w": "ne",
+          "syllables": [
+            "ne"
+          ]
+        },
+        {
+          "w": "kakkee",
+          "syllables": [
+            "ka",
+            "k",
+            "ke",
+            "e"
+          ],
+          "sylJoin": [
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "kakkee",
+          "syllables": [
+            "ka",
+            "k",
+            "ke",
+            "e"
+          ],
+          "sylJoin": [
+            false,
+            true,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Chorus",
+      "text": "kamippoi na sore hikyou kamippoi na sore",
+      "words": [
+        {
+          "w": "kamippoi",
+          "syllables": [
+            "ka",
+            "mi",
+            "p",
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "na",
+          "syllables": [
+            "na"
+          ]
+        },
+        {
+          "w": "sore",
+          "syllables": [
+            "so",
+            "re"
+          ]
+        },
+        {
+          "w": "hikyou",
+          "syllables": [
+            "hi",
+            "kyo",
+            "u"
+          ],
+          "sylJoin": [
+            false,
+            true
+          ]
+        },
+        {
+          "w": "kamippoi",
+          "syllables": [
+            "ka",
+            "mi",
+            "p",
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "na",
+          "syllables": [
+            "na"
+          ]
+        },
+        {
+          "w": "sore",
+          "syllables": [
+            "so",
+            "re"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Chorus",
+      "text": "chou kenkou kenkou iihatte kutabatte iku kanji",
+      "words": [
+        {
+          "w": "chou",
+          "syllables": [
+            "cho",
+            "u"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "kenkou",
+          "syllables": [
+            "ke",
+            "n",
+            "ko",
+            "u"
+          ],
+          "sylJoin": [
+            true,
+            false,
+            true
+          ]
+        },
+        {
+          "w": "kenkou",
+          "syllables": [
+            "ke",
+            "n",
+            "ko",
+            "u"
+          ],
+          "sylJoin": [
+            true,
+            false,
+            true
+          ]
+        },
+        {
+          "w": "iihatte",
+          "syllables": [
+            "i",
+            "i",
+            "ha",
+            "t",
+            "te"
+          ],
+          "sylJoin": [
+            true,
+            false,
+            false,
+            true
+          ]
+        },
+        {
+          "w": "kutabatte",
+          "syllables": [
+            "ku",
+            "ta",
+            "ba",
+            "t",
+            "te"
+          ],
+          "sylJoin": [
+            false,
+            false,
+            false,
+            true
+          ]
+        },
+        {
+          "w": "iku",
+          "syllables": [
+            "i",
+            "ku"
+          ]
+        },
+        {
+          "w": "kanji",
+          "syllables": [
+            "ka",
+            "n",
+            "ji"
+          ],
+          "sylJoin": [
+            true,
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Chorus",
+      "text": "yakeppoi na sore hikkyou yakeppoi na sore",
+      "words": [
+        {
+          "w": "yakeppoi",
+          "syllables": [
+            "ya",
+            "ke",
+            "p",
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "na",
+          "syllables": [
+            "na"
+          ]
+        },
+        {
+          "w": "sore",
+          "syllables": [
+            "so",
+            "re"
+          ]
+        },
+        {
+          "w": "hikkyou",
+          "syllables": [
+            "hi",
+            "k",
+            "kyo",
+            "u"
+          ],
+          "sylJoin": [
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "yakeppoi",
+          "syllables": [
+            "ya",
+            "ke",
+            "p",
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "na",
+          "syllables": [
+            "na"
+          ]
+        },
+        {
+          "w": "sore",
+          "syllables": [
+            "so",
+            "re"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Chorus",
+      "text": "mou aishuu aishuu epigoonen no hiiru",
+      "words": [
+        {
+          "w": "mou",
+          "syllables": [
+            "mo",
+            "u"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "aishuu",
+          "syllables": [
+            "a",
+            "i",
+            "shu",
+            "u"
+          ],
+          "sylJoin": [
+            true,
+            false,
+            true
+          ]
+        },
+        {
+          "w": "aishuu",
+          "syllables": [
+            "a",
+            "i",
+            "shu",
+            "u"
+          ],
+          "sylJoin": [
+            true,
+            false,
+            true
+          ]
+        },
+        {
+          "w": "epigoonen",
+          "syllables": [
+            "e",
+            "pi",
+            "go",
+            "o",
+            "ne",
+            "n"
+          ],
+          "sylJoin": [
+            false,
+            false,
+            true,
+            false,
+            true
+          ]
+        },
+        {
+          "w": "no",
+          "syllables": [
+            "no"
+          ]
+        },
+        {
+          "w": "hiiru",
+          "syllables": [
+            "hi",
+            "i",
+            "ru"
+          ],
+          "sylJoin": [
+            true,
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Chorus",
+      "text": "sono taitoru sono e sono sutoorii",
+      "words": [
+        {
+          "w": "sono",
+          "syllables": [
+            "so",
+            "no"
+          ]
+        },
+        {
+          "w": "taitoru",
+          "syllables": [
+            "ta",
+            "i",
+            "to",
+            "ru"
+          ],
+          "sylJoin": [
+            true,
+            false,
+            false
+          ]
+        },
+        {
+          "w": "sono",
+          "syllables": [
+            "so",
+            "no"
+          ]
+        },
+        {
+          "w": "e",
+          "syllables": [
+            "e"
+          ]
+        },
+        {
+          "w": "sono",
+          "syllables": [
+            "so",
+            "no"
+          ]
+        },
+        {
+          "w": "sutoorii",
+          "syllables": [
+            "su",
+            "to",
+            "o",
+            "ri",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            true,
+            false,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Chorus",
+      "text": "sono ongaku sono uta sono merodi",
+      "words": [
+        {
+          "w": "sono",
+          "syllables": [
+            "so",
+            "no"
+          ]
+        },
+        {
+          "w": "ongaku",
+          "syllables": [
+            "o",
+            "n",
+            "ga",
+            "ku"
+          ],
+          "sylJoin": [
+            true,
+            false,
+            true
+          ]
+        },
+        {
+          "w": "sono",
+          "syllables": [
+            "so",
+            "no"
+          ]
+        },
+        {
+          "w": "uta",
+          "syllables": [
+            "u",
+            "ta"
+          ]
+        },
+        {
+          "w": "sono",
+          "syllables": [
+            "so",
+            "no"
+          ]
+        },
+        {
+          "w": "merodi",
+          "syllables": [
+            "me",
+            "ro",
+            "di"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Chorus",
+      "text": "areppoi na sore hikyou areppoi na sore",
+      "words": [
+        {
+          "w": "areppoi",
+          "syllables": [
+            "a",
+            "re",
+            "p",
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "na",
+          "syllables": [
+            "na"
+          ]
+        },
+        {
+          "w": "sore",
+          "syllables": [
+            "so",
+            "re"
+          ]
+        },
+        {
+          "w": "hikyou",
+          "syllables": [
+            "hi",
+            "kyo",
+            "u"
+          ],
+          "sylJoin": [
+            false,
+            true
+          ]
+        },
+        {
+          "w": "areppoi",
+          "syllables": [
+            "a",
+            "re",
+            "p",
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "na",
+          "syllables": [
+            "na"
+          ]
+        },
+        {
+          "w": "sore",
+          "syllables": [
+            "so",
+            "re"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Chorus",
+      "text": "sono meigen sono iken sono hihyou",
+      "words": [
+        {
+          "w": "sono",
+          "syllables": [
+            "so",
+            "no"
+          ]
+        },
+        {
+          "w": "meigen",
+          "syllables": [
+            "me",
+            "i",
+            "ge",
+            "n"
+          ],
+          "sylJoin": [
+            true,
+            false,
+            true
+          ]
+        },
+        {
+          "w": "sono",
+          "syllables": [
+            "so",
+            "no"
+          ]
+        },
+        {
+          "w": "iken",
+          "syllables": [
+            "i",
+            "ke",
+            "n"
+          ],
+          "sylJoin": [
+            false,
+            true
+          ]
+        },
+        {
+          "w": "sono",
+          "syllables": [
+            "so",
+            "no"
+          ]
+        },
+        {
+          "w": "hihyou",
+          "syllables": [
+            "hi",
+            "hyo",
+            "u"
+          ],
+          "sylJoin": [
+            false,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Chorus",
+      "text": "sono karisuma sono gyagu sono sensu",
+      "words": [
+        {
+          "w": "sono",
+          "syllables": [
+            "so",
+            "no"
+          ]
+        },
+        {
+          "w": "karisuma",
+          "syllables": [
+            "ka",
+            "ri",
+            "su",
+            "ma"
+          ]
+        },
+        {
+          "w": "sono",
+          "syllables": [
+            "so",
+            "no"
+          ]
+        },
+        {
+          "w": "gyagu",
+          "syllables": [
+            "gya",
+            "gu"
+          ]
+        },
+        {
+          "w": "sono",
+          "syllables": [
+            "so",
+            "no"
+          ]
+        },
+        {
+          "w": "sensu",
+          "syllables": [
+            "se",
+            "n",
+            "su"
+          ],
+          "sylJoin": [
+            true,
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Chorus",
+      "text": "kamippoi na sore hikyou",
+      "words": [
+        {
+          "w": "kamippoi",
+          "syllables": [
+            "ka",
+            "mi",
+            "p",
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "na",
+          "syllables": [
+            "na"
+          ]
+        },
+        {
+          "w": "sore",
+          "syllables": [
+            "so",
+            "re"
+          ]
+        },
+        {
+          "w": "hikyou",
+          "syllables": [
+            "hi",
+            "kyo",
+            "u"
+          ],
+          "sylJoin": [
+            false,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Chorus",
+      "text": "poi na poi na poi akogarechau wa!",
+      "words": [
+        {
+          "w": "poi",
+          "syllables": [
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "na",
+          "syllables": [
+            "na"
+          ]
+        },
+        {
+          "w": "poi",
+          "syllables": [
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "na",
+          "syllables": [
+            "na"
+          ]
+        },
+        {
+          "w": "poi",
+          "syllables": [
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "akogarechau",
+          "syllables": [
+            "a",
+            "ko",
+            "ga",
+            "re",
+            "cha",
+            "u"
+          ],
+          "sylJoin": [
+            false,
+            false,
+            false,
+            false,
+            true
+          ]
+        },
+        {
+          "w": "wa!",
+          "syllables": [
+            "wa!"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Post-Chorus",
+      "text": "tu turu tu tu turu fuu",
+      "words": [
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "fuu",
+          "syllables": [
+            "fu",
+            "u"
+          ],
+          "sylJoin": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Post-Chorus",
+      "text": "tu turu tu tu turu fuu",
+      "words": [
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "fuu",
+          "syllables": [
+            "fu",
+            "u"
+          ],
+          "sylJoin": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Post-Chorus",
+      "text": "tu turu tu tu turu fuu",
+      "words": [
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "fuu",
+          "syllables": [
+            "fu",
+            "u"
+          ],
+          "sylJoin": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Post-Chorus",
+      "text": "poi jan poi jan",
+      "words": [
+        {
+          "w": "poi",
+          "syllables": [
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "jan",
+          "syllables": [
+            "ja",
+            "n"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "poi",
+          "syllables": [
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "jan",
+          "syllables": [
+            "ja",
+            "n"
+          ],
+          "sylJoin": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Post-Chorus",
+      "text": "tu turu tu tu turu fuu",
+      "words": [
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "fuu",
+          "syllables": [
+            "fu",
+            "u"
+          ],
+          "sylJoin": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Post-Chorus",
+      "text": "tu turu tu tu turu fuu",
+      "words": [
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "fuu",
+          "syllables": [
+            "fu",
+            "u"
+          ],
+          "sylJoin": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Post-Chorus",
+      "text": "tu turu tu tu turu",
+      "words": [
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "tu",
+          "syllables": [
+            "tu"
+          ]
+        },
+        {
+          "w": "turu",
+          "syllables": [
+            "tu",
+            "ru"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Post-Chorus",
+      "text": "kamippoi na",
+      "words": [
+        {
+          "w": "kamippoi",
+          "syllables": [
+            "ka",
+            "mi",
+            "p",
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            false,
+            false,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "na",
+          "syllables": [
+            "na"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Outro",
+      "text": "ai no netabare wakare ppoi na",
+      "words": [
+        {
+          "w": "ai",
+          "syllables": [
+            "a",
+            "i"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "no",
+          "syllables": [
+            "no"
+          ]
+        },
+        {
+          "w": "netabare",
+          "syllables": [
+            "ne",
+            "ta",
+            "ba",
+            "re"
+          ]
+        },
+        {
+          "w": "wakare",
+          "syllables": [
+            "wa",
+            "ka",
+            "re"
+          ]
+        },
+        {
+          "w": "ppoi",
+          "syllables": [
+            "p",
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "na",
+          "syllables": [
+            "na"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Outro",
+      "text": "jinsei no netabare shinu ppoi na",
+      "words": [
+        {
+          "w": "jinsei",
+          "syllables": [
+            "ji",
+            "n",
+            "se",
+            "i"
+          ],
+          "sylJoin": [
+            true,
+            false,
+            true
+          ]
+        },
+        {
+          "w": "no",
+          "syllables": [
+            "no"
+          ]
+        },
+        {
+          "w": "netabare",
+          "syllables": [
+            "ne",
+            "ta",
+            "ba",
+            "re"
+          ]
+        },
+        {
+          "w": "shinu",
+          "syllables": [
+            "shi",
+            "nu"
+          ]
+        },
+        {
+          "w": "ppoi",
+          "syllables": [
+            "p",
+            "po",
+            "i"
+          ],
+          "sylJoin": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "na",
+          "syllables": [
+            "na"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Outro",
+      "text": "subete rikai shite wazuratta",
+      "words": [
+        {
+          "w": "subete",
+          "syllables": [
+            "su",
+            "be",
+            "te"
+          ]
+        },
+        {
+          "w": "rikai",
+          "syllables": [
+            "ri",
+            "ka",
+            "i"
+          ]
+        },
+        {
+          "w": "shite",
+          "syllables": [
+            "shi",
+            "te"
+          ]
+        },
+        {
+          "w": "wazuratta",
+          "syllables": [
+            "wa",
+            "zu",
+            "ra",
+            "t",
+            "ta"
+          ],
+          "sylJoin": [
+            false,
+            false,
+            false,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "section": "Outro",
+      "text": "mujaki ni odo (o) tte itakatta jinsei",
+      "words": [
+        {
+          "w": "mujaki",
+          "syllables": [
+            "mu",
+            "ja",
+            "ki"
+          ]
+        },
+        {
+          "w": "ni",
+          "syllables": [
+            "ni"
+          ]
+        },
+        {
+          "w": "odo",
+          "syllables": [
+            "o",
+            "do"
+          ]
+        },
+        {
+          "w": "(o)",
+          "syllables": [
+            "(o)"
+          ]
+        },
+        {
+          "w": "tte",
+          "syllables": [
+            "t",
+            "te"
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "itakatta",
+          "syllables": [
+            "i",
+            "ta",
+            "ka",
+            "t",
+            "ta"
+          ],
+          "sylJoin": [
+            false,
+            false,
+            false,
+            true
+          ]
+        },
+        {
+          "w": "jinsei",
+          "syllables": [
+            "ji",
+            "n",
+            "se",
+            "i"
+          ],
+          "sylJoin": [
+            true,
+            false,
+            true
+          ]
+        }
+      ]
+    }
+  ]
+}

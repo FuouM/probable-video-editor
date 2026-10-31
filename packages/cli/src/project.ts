@@ -3,13 +3,15 @@
 // nearest folder above it that has video/video.json.
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import { resolveAnchor, resolveVideo, ResolveError, TimingData, validateVideo, type ResolvedClip, type ResolvedVideo, type VideoJson } from '@pve/core';
-import { loadSong, type Song } from '@pve/core/load';
+import { checkLyricMap, LyricMap, resolveAnchor, resolveVideo, ResolveError, TimingData, validateVideo, type ResolvedClip, type ResolvedVideo, type VideoJson } from '@pve/core';
+import { LYRIC_MAP_FILE, loadSong, type Song } from '@pve/core/load';
 import { CliError, type Problem } from './out';
 
 /** projects/ of this repository. */
 export const PROJECTS = path.resolve(import.meta.dir, '../../../projects');
 export const VIDEO_FILE = 'video/video.json';
+/** A song folder that Lyric-Sync finished has this file. The locator commands work on it without an edit. */
+export const SONG_FILE = 'user_input/lyrics.calibrated.json';
 export const SCENES_DIR = 'video/scenes';
 
 export interface ProjectRef {
@@ -18,36 +20,44 @@ export interface ProjectRef {
   dir: string;
 }
 
-/** Ids of the folders in projects/ that have video/video.json. */
-export function listProjects(projectsDir = PROJECTS): string[] {
+/** Ids of the folders in projects/ that have the file `needs` (the edit by default). */
+export function listProjects(projectsDir = PROJECTS, needs = VIDEO_FILE): string[] {
   if (!existsSync(projectsDir)) return [];
   return readdirSync(projectsDir, { withFileTypes: true })
-    .filter((d) => d.isDirectory() && existsSync(path.join(projectsDir, d.name, VIDEO_FILE)))
+    .filter((d) => d.isDirectory() && existsSync(path.join(projectsDir, d.name, needs)))
     .map((d) => d.name)
     .sort();
 }
 
-/** Finds the project folder. Throws a CliError that lists the projects when there is none. */
-export function findProject(arg: string | undefined, cwd = process.cwd(), env = process.env.PVE_PROJECT): ProjectRef {
-  const fix = `pass --project <id> (projects: ${listProjects().join(', ') || 'none'}), or run pve init <song folder>`;
+/** Finds the project folder: the one with the file `needs`. Throws a CliError that lists the projects when there is none. */
+export function findProject(arg: string | undefined, cwd = process.cwd(), env = process.env.PVE_PROJECT, needs = VIDEO_FILE): ProjectRef {
+  const fix = `pass --project <id> (projects: ${listProjects(PROJECTS, needs).join(', ') || 'none'}), or run pve init <song folder>`;
   const given = arg ?? env;
   if (given) {
     for (const dir of [path.resolve(cwd, given), path.join(PROJECTS, given)]) {
-      if (existsSync(path.join(dir, VIDEO_FILE))) return { id: path.basename(dir), dir };
+      if (existsSync(path.join(dir, needs))) return { id: path.basename(dir), dir };
     }
-    throw new CliError({ rule: 'project', message: `no project '${given}': no ${VIDEO_FILE} in ${path.resolve(cwd, given)} or projects/${given}`, fix });
+    throw new CliError({ rule: 'project', message: `no project '${given}': no ${needs} in ${path.resolve(cwd, given)} or projects/${given}`, fix });
   }
   for (let dir = path.resolve(cwd); ; dir = path.dirname(dir)) {
-    if (existsSync(path.join(dir, VIDEO_FILE))) return { id: path.basename(dir), dir };
+    if (existsSync(path.join(dir, needs))) return { id: path.basename(dir), dir };
     if (path.dirname(dir) === dir) break;
   }
   throw new CliError({ rule: 'project', message: `no project in ${cwd}`, fix });
 }
 
-/** A project with its song loaded and its edit resolved. */
-export interface Project extends ProjectRef {
+/** A song with its beat grid and lyrics, and the edit when the project has one. What the locator commands need. */
+export interface View extends ProjectRef {
   song: Song;
   timing: TimingData;
+  /** The lyric map joined with the calibrated lyrics. Undefined when the song has no lyrics.map.json. */
+  lyrics?: LyricMap;
+  /** The resolved edit. A song folder without video/video.json has no markers and no clips. */
+  resolved: Pick<ResolvedVideo, 'fps' | 'markers' | 'clips'>;
+}
+
+/** A project with its song loaded and its edit resolved. */
+export interface Project extends View {
   video: VideoJson;
   resolved: ResolvedVideo;
 }
@@ -61,11 +71,10 @@ const RESOLVE_FIX: Record<string, string> = {
   CIRCULAR_REFERENCE: 'make one of the values in the cycle a time that does not refer back',
 };
 
-/**
- * Loads the song and the edit. Every failure becomes problems (never an exception), so `pve check` can
- * report them. `project` is undefined when the inputs or the edit do not load.
- */
-export async function loadProject(ref: ProjectRef): Promise<{ project?: Project; problems: Problem[] }> {
+interface Inputs { song: Song; timing: TimingData; lyrics?: LyricMap }
+
+/** Loads the song, its beat grid and its lyric map. Every failure becomes problems. */
+async function loadInputs(ref: ProjectRef): Promise<{ inputs?: Inputs; problems: Problem[] }> {
   let song: Song;
   try {
     song = await loadSong(ref.dir);
@@ -78,6 +87,25 @@ export async function loadProject(ref: ProjectRef): Promise<{ project?: Project;
   } catch (e) {
     return { problems: [{ severity: 'error', rule: 'song-input', file: 'generated/timing.ai.json', message: String(e instanceof Error ? e.message : e), fix: 'run the beat tracking again in Lyric-Sync' }] };
   }
+  let lyrics: LyricMap | undefined;
+  if (song.lyricMap) {
+    const bad = checkLyricMap(song.lyricMap.doc, song.timing, song.lyricMap.raw);
+    if (bad.length) {
+      return { problems: bad.map((p) => ({ severity: 'error' as const, rule: 'lyric-map', file: `user_input/${LYRIC_MAP_FILE}`, at: p.at, message: p.message, fix: 'edit the map by hand to fit the calibrated lyrics and the raw files (docs/LYRICMAP.md)' })) };
+    }
+    lyrics = new LyricMap(song.lyricMap.doc, song.timing);
+  }
+  return { inputs: { song, timing, lyrics }, problems: [] };
+}
+
+/**
+ * Loads the song and the edit. Every failure becomes problems (never an exception), so `pve check` can
+ * report them. `project` is undefined when the inputs or the edit do not load.
+ */
+export async function loadProject(ref: ProjectRef): Promise<{ project?: Project; problems: Problem[] }> {
+  const { inputs, problems: inputProblems } = await loadInputs(ref);
+  if (!inputs) return { problems: inputProblems };
+  const { song, timing, lyrics } = inputs;
 
   let json: unknown;
   try {
@@ -99,7 +127,7 @@ export async function loadProject(ref: ProjectRef): Promise<{ project?: Project;
     const message = e.path ? e.message.slice(e.path.length + 2) : e.message;
     return { problems: [{ severity: 'error', rule: 'expression', file: VIDEO_FILE, at: e.path, message, fix: RESOLVE_FIX[e.code] }] };
   }
-  return { project: { ...ref, song, timing, video: checked.video, resolved }, problems: [] };
+  return { project: { ...ref, song, timing, lyrics, video: checked.video, resolved }, problems: [] };
 }
 
 /** Loads the project or throws a CliError with its first problem. For commands that need a valid project. */
@@ -109,8 +137,22 @@ export async function openProject(arg: string | undefined): Promise<Project> {
   return project;
 }
 
+/**
+ * The song of a project, with its edit when video/video.json exists. A song folder that Lyric-Sync finished
+ * works without an edit. Throws a CliError with the first problem.
+ */
+export async function openView(arg: string | undefined): Promise<View> {
+  const ref = findProject(arg, process.cwd(), process.env.PVE_PROJECT, SONG_FILE);
+  if (existsSync(path.join(ref.dir, VIDEO_FILE))) return openProject(ref.dir);
+  const { inputs, problems } = await loadInputs(ref);
+  if (!inputs) throw new CliError({ ...problems[0]!, message: `${problems[0]!.message} (pve check lists every problem)` });
+  const fps = inputs.song.lyrics.fps;
+  if (typeof fps !== 'number') throw new CliError({ rule: 'song-input', file: SONG_FILE, message: 'the calibrated lyrics have no "fps"', fix: 'save the song again in Lyric-Sync' });
+  return { ...ref, ...inputs, resolved: { fps, markers: {}, clips: [] } };
+}
+
 /** Seconds of a number or a time expression of the project. Throws a CliError that says how to find one. */
-export function timeOf(p: Project, expr: string): number {
+export function timeOf(p: View, expr: string): number {
   const r = p.resolved;
   try {
     return resolveAnchor(expr.trim() !== '' && !Number.isNaN(Number(expr)) ? Number(expr) : expr, {
@@ -134,8 +176,39 @@ export function timeOf(p: Project, expr: string): number {
 }
 
 /** The clip on screen at t: the last clip that starts at or before t. Undefined before the first clip. */
-export function clipAt(p: Project, t: number): ResolvedClip | undefined {
+export function clipAt(p: View, t: number): ResolvedClip | undefined {
   return [...p.resolved.clips].reverse().find((c) => c.start <= t + 1e-9);
+}
+
+/**
+ * The times of `specs`. A time or expression gives one time. `a..b` gives a, a+step, a+2 step, up to b
+ * (both ends can be expressions), or `{ n }` times spread evenly from a to b, both ends included. Throws a
+ * CliError when there are more than `max` times.
+ */
+export function expandTimes(p: View, specs: string[], spread: number | { n: number }, max = Infinity): number[] {
+  const times = specs.flatMap((x) => {
+    const i = x.indexOf('..');
+    if (i < 0) return [timeOf(p, x)];
+    const t0 = timeOf(p, x.slice(0, i)), t1 = timeOf(p, x.slice(i + 2));
+    if (t1 < t0) throw new CliError({ rule: 'range', message: `'${x}' ends before it starts (${t1} < ${t0})`, fix: 'write the range as from..to with from <= to' });
+    if (typeof spread === 'object') return spread.n <= 1 ? [t0] : Array.from({ length: spread.n }, (_, k) => t0 + ((t1 - t0) * k) / (spread.n - 1));
+    return Array.from({ length: Math.floor((t1 - t0) / spread + 1e-6) + 1 }, (_, k) => t0 + k * spread);
+  });
+  if (times.length > max) throw new CliError({ rule: 'range', message: `${times.length} times: more than ${max}`, fix: 'give a larger --step or a shorter range' });
+  return times;
+}
+
+/** `count` times from the start to the end of the Over transition `id`, both ends included. */
+export function transitionTimes(p: Project, id: string, count: number): number[] {
+  const tr = p.resolved.transitions.find((x) => x.id === id);
+  if (!tr) {
+    const ids = p.resolved.transitions.map((x) => x.id);
+    throw new CliError({ rule: 'transition', message: `no transition '${id}'`, fix: ids.length ? `use one of: ${ids.join(', ')}` : 'video.json has no "transitions"' });
+  }
+  if (!Number.isInteger(count) || count < 2) throw new CliError({ rule: 'transition', message: '--count takes a whole number of at least 2', fix: 'for example --count 6' });
+  // the last frame of the transition is the one before its end (a transition is drawn for t < end)
+  const last = tr.end - 1 / p.resolved.fps;
+  return Array.from({ length: count }, (_, k) => tr.start + ((last - tr.start) * k) / (count - 1));
 }
 
 /** The dev server serves projects/<id>/ only: commands that render need the project there. */

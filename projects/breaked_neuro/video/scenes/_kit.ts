@@ -2,16 +2,13 @@
 // the letterbox walls and the syllable timeline. Every plate draws its layers with Canvas2D in
 // paper / ink / grays with alpha, then runs Print over them.
 import * as THREE from 'three';
-import { FSPass, H, Layer2D, SCALE, W, makeRT } from '@pve/engine/gl';
-import { lastBefore, stepN, stepT } from '@pve/engine/util';
-export { lastBefore, stepN, stepT };
-import { syllables, sylAt, type Line, type Lyrics, type Syl, type Word } from '@pve/engine/lyrics';
-export { syllables, sylAt, type Syl };
+import { FSPass, H, Layer2D, makeCanvas, W } from '@pve/engine/gl';
+import { stepN, stepT } from '@pve/engine/util';
+import { syllables, type Line, type Lyrics, type Syl } from '@pve/engine/lyrics';
 import { Scene, type Frame, type PostOverrides } from '@pve/engine/scene';
 import { marks, pushMarks, type Mark } from '@pve/engine/marks';
 import { F, font } from '@pve/engine/type';
 import { GPULife, MACHINE_H, MACHINE_W, MACHINE_WARM, planeSeed } from './_machine';
-export { GPULife };
 
 // ---------- colours (sRGB strings for Canvas2D; the print pass reads tone and coverage) ----------
 export const PAPER = '#f3f0ea';
@@ -260,11 +257,7 @@ export class GlyphAtlas {
     if (!g) {
       const bt = bricks(ch);
       const w = Math.max(1, bt.cols) * this.cell, h = ROWS * this.cell;
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.ceil(w * SCALE);
-      canvas.height = Math.ceil(h * SCALE);
-      const c = canvas.getContext('2d')!;
-      c.scale(SCALE, SCALE);
+      const { cv: canvas, c } = makeCanvas(w, h);
       c.fillStyle = this.color;
       drawBricks(c, bt, 0, 0, this.cell, undefined, this.mortar);
       g = { canvas, w };

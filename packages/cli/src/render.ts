@@ -96,6 +96,7 @@ export interface RenderManifest {
   from: number;
   to: number;
   clips: Segment[];
+  webcodecs?: boolean;
 }
 
 export interface FrameLine extends StreamFrame {
@@ -131,6 +132,7 @@ export interface FramesOptions {
   headed?: boolean;
   url?: string;
   segmentCodec?: SegmentCodec;
+  webcodecs?: boolean;
   onProgress?: (p: {
     status: 'rendering' | 'encoding' | 'complete' | 'error';
     totalFrames: number;
@@ -199,27 +201,39 @@ export interface RenderResult {
  */
 export async function renderFrames(o: FramesOptions): Promise<RenderResult> {
   const framesFile = path.join(o.dir, 'frames.jsonl');
+  const f0 = Math.round(o.from * o.fps), f1 = Math.round(o.to * o.fps);
+  if (f1 <= f0) throw new Error(`empty range: ${o.from} to ${o.to}`);
+  const currentManifest: RenderManifest = {
+    project: o.project, name: o.name, fps: o.fps, scale: o.scale, samples: o.samples, shutter: o.shutter,
+    from: f0 / o.fps, to: f1 / o.fps, clips: segmentsOf(f0, f1, o.fps, o.clips),
+    webcodecs: o.webcodecs,
+  };
   let manifest: RenderManifest;
   let todo: Segment[];
-  if (o.mode === 'new') {
-    const f0 = Math.round(o.from * o.fps), f1 = Math.round(o.to * o.fps);
-    if (f1 <= f0) throw new Error(`empty range: ${o.from} to ${o.to}`);
-    rmSync(o.dir, { recursive: true, force: true });
-    rmSync(o.framesDir, { recursive: true, force: true });
-    manifest = {
-      project: o.project, name: o.name, fps: o.fps, scale: o.scale, samples: o.samples, shutter: o.shutter,
-      from: f0 / o.fps, to: f1 / o.fps, clips: segmentsOf(f0, f1, o.fps, o.clips),
-    };
-    todo = manifest.clips;
+  if (o.mode === 'new' || !existsSync(path.join(o.dir, 'render.json'))) {
+    if (o.mode === 'new') {
+      rmSync(o.dir, { recursive: true, force: true });
+      rmSync(o.framesDir, { recursive: true, force: true });
+    }
+    manifest = currentManifest;
+    todo = o.mode === 'clips'
+      ? manifest.clips.filter((s) => o.redo!.includes(s.clip))
+      : o.mode === 'resume'
+      ? manifest.clips.filter((s) => !existsSync(segmentFile(o.framesDir, s)))
+      : manifest.clips;
   } else {
-    manifest = readManifest(o.dir);
-    const want = JSON.stringify({ fps: o.fps, scale: o.scale, samples: o.samples, shutter: o.shutter });
-    const had = JSON.stringify({ fps: manifest.fps, scale: manifest.scale, samples: manifest.samples, shutter: manifest.shutter });
-    if (want !== had) throw new Error(`--${o.mode}: the render in ${o.dir} has ${had}, this command ${want}`);
+    const oldManifest = readManifest(o.dir);
+    const sameFormat = oldManifest.fps === o.fps && oldManifest.scale === o.scale;
+    if (!sameFormat) {
+      rmSync(o.framesDir, { recursive: true, force: true });
+    }
+    manifest = currentManifest;
     if (o.mode === 'clips') {
       todo = manifest.clips.filter((s) => o.redo!.includes(s.clip));
       if (!todo.length) throw new Error(`--clips: no segment of ${o.redo!.join(', ')} in ${o.dir} (clips: ${[...new Set(manifest.clips.map((s) => s.clip))].join(', ')})`);
-    } else todo = manifest.clips.filter((s) => !existsSync(segmentFile(o.framesDir, s)));
+    } else {
+      todo = manifest.clips.filter((s) => !existsSync(segmentFile(o.framesDir, s)));
+    }
   }
   mkdirSync(o.dir, { recursive: true });
   mkdirSync(o.framesDir, { recursive: true });
@@ -253,6 +267,12 @@ async function streamFrames(o: FramesOptions, segs: Segment[], stats: FrameLine[
   // the final pass): convert with the BT.709 matrix and tag the stream, otherwise ffmpeg converts with BT.601
   // while players and YouTube decode untagged HD as BT.709. FFV1 with 24 slices encodes on every core.
   const writerArgs = (file: string) => {
+    if (o.webcodecs) {
+      return [
+        'ffmpeg', '-y', '-loglevel', 'error', '-f', 'h264', '-r', String(o.fps), '-i', 'pipe:0',
+        '-c:v', 'copy', '-f', 'matroska', file,
+      ];
+    }
     const codecArgs = o.segmentCodec === 'nvenc'
       ? ['-c:v', 'h264_nvenc', '-preset', 'p1', '-tune', 'ull', '-qp', '0']
       : o.segmentCodec === 'x264'
@@ -265,7 +285,6 @@ async function streamFrames(o: FramesOptions, segs: Segment[], stats: FrameLine[
       ...codecArgs, '-f', 'matroska', file,
     ];
   };
-  // (set and cleared inside the drain and signal closures: typed so that TypeScript does not narrow it to null)
   let writer = null as { seg: Segment; part: string; ff: Bun.Subprocess<'pipe', 'inherit', 'inherit'> } | null;
   const closing: Promise<void>[] = [];
 
@@ -375,7 +394,7 @@ async function streamFrames(o: FramesOptions, segs: Segment[], stats: FrameLine[
           const k = ws.data.k, n = queue[k]!.shift();
           if (typeof msg === 'string') throw new Error(`worker ${k} sent text`);
           if (n === undefined) throw new Error(`worker ${k} sent a frame it was not given`);
-          if (msg.length !== frameBytes) throw new Error(`worker ${k} sent ${msg.length} bytes for frame ${n}`);
+          if (!o.webcodecs && msg.length !== frameBytes) throw new Error(`worker ${k} sent ${msg.length} bytes for frame ${n}`);
           waiting.set(n, msg);
           if (waiting.size <= cap || n === order[idx]) ack(k);
           else owed.set(n, k);
@@ -413,7 +432,7 @@ async function streamFrames(o: FramesOptions, segs: Segment[], stats: FrameLine[
       for (let r = take(); r && !failure; r = take()) {
         for (let n = r[0]; n < r[1]; n++) queue[k]!.push(n);
         const fr = await page.evaluate((a) => (window as unknown as PveWindow).__pve!.stream(a), {
-          from: r[0] / o.fps, to: r[1] / o.fps, fps: o.fps, ws: `ws://localhost:${server.port}/?w=${k}`, samples: o.samples, shutter: o.shutter, inflight: 4,
+          from: r[0] / o.fps, to: r[1] / o.fps, fps: o.fps, ws: `ws://localhost:${server.port}/?w=${k}`, samples: o.samples, shutter: o.shutter, inflight: o.webcodecs ? 8 : 4, webcodecs: o.webcodecs,
         });
         for (const f of fr) stats.push({ ...f, t: f.n / o.fps, clip: segOf(f.n).clip });
       }
@@ -472,14 +491,18 @@ export function encodeVideo(dir: string, framesDir: string, e: EncodeOptions): {
   writeFileSync(list, m.clips.map((s) => `file '${path.basename(segmentFile(framesDir, s))}'`).join('\n') + '\n');
   const args = ['ffmpeg', '-y', '-loglevel', 'error', '-stats', '-f', 'concat', '-safe', '0', '-i', list];
   if (e.mix) args.push('-ss', String(m.from), '-t', String(m.to - m.from), '-i', e.mix, '-map', '0:v', '-map', '1:a', '-c:a', 'aac', '-b:a', '320k', '-af', 'apad', '-shortest');
-  const video = e.encoder === 'nvenc'
-    ? ['-c:v', 'h264_nvenc', '-preset', 'p7', '-tune', 'hq', '-rc', 'vbr', '-cq', e.quality, '-b:v', '0', '-spatial-aq', '1', '-temporal-aq', '1', '-bf', '3', '-profile:v', 'high']
-    : ['-c:v', 'libx264', '-preset', e.preset, '-crf', e.quality, '-tune', 'grain', '-x264-params', e.x264];
-  args.push(
-    '-frames:v', String(Math.round(m.to * m.fps) - Math.round(m.from * m.fps)), '-pix_fmt', 'yuv420p', ...video,
-    '-color_primaries', 'bt709', '-color_trc', 'bt709', '-colorspace', 'bt709', '-color_range', 'tv',
-    '-movflags', '+faststart', out,
-  );
+  if (m.webcodecs) {
+    args.push('-c:v', 'copy', '-movflags', '+faststart', out);
+  } else {
+    const video = e.encoder === 'nvenc'
+      ? ['-c:v', 'h264_nvenc', '-preset', 'p7', '-tune', 'hq', '-rc', 'vbr', '-cq', e.quality, '-b:v', '0', '-spatial-aq', '1', '-temporal-aq', '1', '-bf', '3', '-profile:v', 'high']
+      : ['-c:v', 'libx264', '-preset', e.preset, '-crf', e.quality, '-tune', 'grain', '-x264-params', e.x264];
+    args.push(
+      '-frames:v', String(Math.round(m.to * m.fps) - Math.round(m.from * m.fps)), '-pix_fmt', 'yuv420p', ...video,
+      '-color_primaries', 'bt709', '-color_trc', 'bt709', '-colorspace', 'bt709', '-color_range', 'tv',
+      '-movflags', '+faststart', out,
+    );
+  }
   mkdirSync(path.dirname(out), { recursive: true });
   const t0 = performance.now();
   const r = Bun.spawnSync(args, { stdout: 'inherit', stderr: 'inherit' });

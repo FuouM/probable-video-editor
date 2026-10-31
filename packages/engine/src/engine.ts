@@ -50,6 +50,9 @@ export interface EngineProject {
 
 interface Loaded { entry: TimelineEntry; scene: Scene | null; error?: string; lastT: number }
 
+/** What Engine.init reports: count of total is the percent. `ids` (once, as the scenes start) lists every entry that loads; `scene` names one that has finished. */
+export interface InitProgress { phase: string; count: number; total: number; detail: string; ids?: string[]; scene?: string }
+
 /**
  * Per-frame adaptive motion-blur sampling (see Engine.render): the sub-frame count steps through
  * 4, 12, 36, 108, 324 … from `min` up to at most `max` (both rounded to that series) until the
@@ -256,7 +259,7 @@ export class Engine {
         fragColor = vec4(c.rgb, c.a) * texelFetch(gain, ivec2(gl_FragCoord.xy) / ${TP}, 0).r;
       }`, { tex: { value: null }, tint: { value: new THREE.Vector3(1, 1, 1) }, uvXform: { value: new THREE.Vector4(1, 1, 0, 0) }, premult: { value: false }, gain: { value: this.gainTex } });
     const gl = this.renderer.getContext() as WebGL2RenderingContext;
-    this.pbos = [gl.createBuffer()!, gl.createBuffer()!];
+    this.pbos = [gl.createBuffer()!, gl.createBuffer()!, gl.createBuffer()!];
     for (const b of this.pbos) {
       gl.bindBuffer(gl.PIXEL_PACK_BUFFER, b);
       gl.bufferData(gl.PIXEL_PACK_BUFFER, Engine.RGB_BYTES, gl.STREAM_READ);
@@ -346,13 +349,23 @@ export class Engine {
     r.setRenderTarget(prev);
   }
 
-  async init(only?: (e: TimelineEntry) => boolean) {
+  async init(
+    only?: (e: TimelineEntry) => boolean,
+    onProgress?: (p: InitProgress) => void,
+  ) {
+    onProgress?.({ phase: 'manifest', count: 5, total: 100, detail: 'Loading manifest & project inputs...' });
     const project = await this.loadProject();
+    onProgress?.({ phase: 'fonts', count: 15, total: 100, detail: 'Loading typographic font faces...' });
     await Promise.all([loadFonts(project.fonts), loadStrokeFonts(project.fonts)]);
     this.audio = project.audio;
     this.lyrics = project.lyrics;
     this.timeline = project.timeline;
-    this.ctx = { renderer: this.renderer, audio: this.audio, lyrics: this.lyrics, comp: this.comp, W, H, id: '', params: {}, start: 0, end: 0, assets: project.assets, mapTileMask: (rt, map) => this.mapTileMask(rt, map) };
+    this.ctx = {
+      renderer: this.renderer, audio: this.audio, lyrics: this.lyrics, comp: this.comp, W, H, id: '', params: {}, start: 0, end: 0, assets: project.assets,
+      mapTileMask: (rt, map) => this.mapTileMask(rt, map),
+      ensureClip: (id) => this.ensureClip(id),
+      renderClip: (id, t, target, dt) => this.renderClip(id, t, target, dt),
+    };
     this.post = new Post();
     let overlay: Overlay | null = null;
     if (project.overlay) {
@@ -373,33 +386,82 @@ export class Engine {
     const entries = picked
       ? [...picked, ...this.timeline.filter((o) => o.over && (only!(o) || picked.some((e) => o.start < e.end && o.end > e.start)))]
       : this.timeline;
-    await Promise.all(entries.map((e) => this.loadEntry(e)));
+    const total = entries.length;
+    let done = 0;
+    onProgress?.({ phase: 'scenes', count: 15, total: 100, detail: `Warming ${total} scenes...`, ids: entries.map((e) => e.id) });
+    await Promise.all(
+      entries.map(async (e) => {
+        await this.loadEntry(e);
+        done++;
+        onProgress?.({
+          phase: 'scenes',
+          count: 15 + Math.round((done / Math.max(1, total)) * 85),
+          total: 100,
+          detail: `Warming ${e.id} (${done}/${total})...`,
+          scene: e.id,
+        });
+      }),
+    );
+    onProgress?.({ phase: 'ready', count: 100, total: 100, detail: 'Ready.' });
   }
 
-  private async loadEntry(e: TimelineEntry) {
-    const rec: Loaded = { entry: e, scene: null, lastT: -1 };
-    this.loaded.set(e.id, rec);
+  private loading = new Map<string, Promise<void>>();
+
+  /** `replace`: a loaded scene is drawn until the new one is ready, then swapped (see reload). */
+  private loadEntry(e: TimelineEntry, replace = false): Promise<void> {
+    const existing = this.loading.get(e.id);
+    if (existing) return existing;
+    const p = (async () => {
+      const prev = replace ? this.loaded.get(e.id) : undefined;
+      const rec: Loaded = { entry: e, scene: null, lastT: -1 };
+      if (!prev?.scene) this.loaded.set(e.id, rec);
+      try {
+        const mod = await e.load();
+        const s = new mod.default({ ...this.ctx, id: e.id, params: e.params ?? {}, start: e.start, end: e.end });
+        await s.init();
+        rec.scene = s;
+        if (prev?.scene) {
+          this.loaded.set(e.id, rec);
+          for (const m of prev.scene.tileMasked) this.maskedRTs.delete(m.rt);
+          prev.scene.dispose();
+        }
+        for (const m of s.tileMasked) this.maskedRTs.set(m.rt, { margin: m.margin, moving: m.moving });
+      } catch (err) {
+        rec.error = String((err as Error)?.stack ?? err);
+        this.errors.push(`[${e.id}] ${rec.error}`);
+        console.error(`scene ${e.id} failed`, err);
+      }
+    })();
+    this.loading.set(e.id, p);
+    return p;
+  }
+
+  /** Ensure timeline entry `id` is loaded and initialized. */
+  async ensureClip(id: string): Promise<void> {
+    const e = this.timeline.find((x) => x.id === id);
+    if (!e) throw new Error(`ensureClip: unknown timeline entry "${id}"`);
+    await this.loadEntry(e);
+  }
+
+  /** Render already-loaded timeline entry `id` at song time `t` into `target`. */
+  renderClip(id: string, t: number, target: THREE.WebGLRenderTarget, dt = 1 / 60): THREE.Texture | null {
+    const rec = this.loaded.get(id);
+    if (!rec?.scene) return null;
+    const prev = markScope(id, true);
     try {
-      const mod = await e.load();
-      const s = new mod.default({ ...this.ctx, id: e.id, params: e.params ?? {}, start: e.start, end: e.end });
-      await s.init();
-      rec.scene = s;
-      for (const m of s.tileMasked) this.maskedRTs.set(m.rt, { margin: m.margin, moving: m.moving });
-    } catch (err) {
-      rec.error = String((err as Error)?.stack ?? err);
-      this.errors.push(`[${e.id}] ${rec.error}`);
-      console.error(`scene ${e.id} failed`, err);
+      this.renderEntry(rec.entry, target, t, dt, false, null, 1, 0, t);
+    } finally {
+      markScope(prev[0], prev[1]);
     }
+    return target.texture;
   }
 
-  /** Hot-swap a scene module (used by Vite HMR in preview). */
+  /** Hot-swap a scene module (Vite HMR in preview, a changed player option): the old scene draws until the new one is ready. */
   async reload(id: string) {
     const e = this.timeline.find((x) => x.id === id);
     if (!e) return;
-    const old = this.loaded.get(id)?.scene;
-    for (const m of old?.tileMasked ?? []) this.maskedRTs.delete(m.rt);
-    old?.dispose();
-    await this.loadEntry(e);
+    this.loading.delete(id);
+    await this.loadEntry(e, true);
     this.lastT = -1;
   }
   /** Hot-swap the project overlay scene. */
@@ -432,6 +494,20 @@ export class Engine {
   }
 
   /**
+   * Cap of the adaptive sample count at time t (shutter width w). While an over transition is on,
+   * only the transitions give a cap (a clip under a sharp plate stays blurred where its transition
+   * says so). Otherwise the clips on screen give it. The lowest cap wins. A cap under 4 means one
+   * sample: no motion blur.
+   */
+  private sampleCap(t: number, w: number, max: number): number {
+    const on = this.timeline.filter((e) => t + w / 2 >= e.start && t - w / 2 < e.end);
+    const over = on.filter((e) => e.over);
+    let cap = max;
+    for (const e of over.length ? over : on) if (e.maxSamples) cap = Math.min(cap, e.maxSamples);
+    return cap;
+  }
+
+  /**
    * Render song time t. `dt` is the nominal frame step (1/fps). A non-sequential t counts as a
    * seek: stateful scenes are reset and fast-forwarded.
    *
@@ -452,20 +528,21 @@ export class Engine {
     let outTex: THREE.Texture;
     let post: PostParams = { ...DEFAULT_POST };
     let n = 1;
-    if (samples === 1) {
+    const sharp = typeof samples !== 'number' && this.sampleCap(t, dt * shutter, samples.max) < 4;
+    if (samples === 1 || sharp) {
       SS_TAP.value = -1;
       FRAME_SKEW.value = 0;
       ({ outTex, post } = this.composite(t, dt, seeked));
     } else {
       const adaptive = typeof samples !== 'number';
-      let maxAdaptive = adaptive ? samples.max : 0;
+      let maxAdaptive = adaptive ? this.sampleCap(t, dt * shutter, samples.max) : 0;
       if (adaptive) {
         // sub-frames are rendered out of time order: fine for pure functions of t, not for scenes that integrate state
         const w = dt * shutter;
         const on = this.timeline.filter((e) => t + w / 2 >= e.start && t - w / 2 < e.end);
         const st = on.find((e) => this.loaded.get(e.id)?.scene?.stateful);
         if (st) throw new Error(`adaptive sampling needs stateless scenes; '${st.id}' is stateful (use a fixed --samples)`);
-        for (const e of on) if (e.maxSamples) maxAdaptive = Math.min(maxAdaptive, e.maxSamples);
+        // (the sample cap comes from sampleCap)
       }
       // shaders that supersample share their 4 taps across the sub-frames when every set holds a multiple
       // of 4 (rotated by k/4 so a tap doesn't always land in the same part of the shutter)
@@ -750,7 +827,6 @@ export class Engine {
     this.rgbPass.render(r, this.rgbRT);
     r.setRenderTarget(this.rgbRT);
     gl.bindBuffer(gl.PIXEL_PACK_BUFFER, buf);
-    gl.bufferData(gl.PIXEL_PACK_BUFFER, Engine.RGB_BYTES, gl.STREAM_READ);
     gl.readPixels(0, 0, this.rgbRT.width, PH, gl.RGBA, gl.UNSIGNED_BYTE, 0);
     gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
     this.packs[slot] = { buf, sync: gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0)! };
@@ -763,7 +839,7 @@ export class Engine {
     if (!p) throw new Error(`readFinish: nothing queued in slot ${slot}`);
     // (a sync object's status only changes between tasks: yield to the event loop between polls)
     for (;;) {
-      const s = gl.clientWaitSync(p.sync, 0, 0);
+      const s = gl.clientWaitSync(p.sync, gl.SYNC_FLUSH_COMMANDS_BIT, 0);
       if (s === gl.ALREADY_SIGNALED || s === gl.CONDITION_SATISFIED) break;
       if (s === gl.WAIT_FAILED) throw new Error('readFinish: fence wait failed');
       await yieldTask();

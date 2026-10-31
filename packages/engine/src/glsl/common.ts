@@ -285,6 +285,16 @@ float engrave(vec2 uv, float darkness, float freq, float angle) {
   return max(a, b);
 }
 
+/**
+ * Halftone dot screen: returns 0..1 dot coverage for darkness at cell size (logical px) and screen angle.
+ * Smooth anti-aliased dot thresholding.
+ */
+float halftoneDots(vec2 p, float cell, float ang, float dark) {
+  vec2 q = rot2(ang) * p / cell;
+  float s = 0.5 + 0.25 * (cos(TAU * q.x) + cos(TAU * q.y));
+  return smoothstep(-0.06, 0.06, dark - s);
+}
+
 // ---- colour ----
 vec3 toSRGB(vec3 c) { return mix(12.92 * c, 1.055 * pow(max(c, 0.0), vec3(1.0 / 2.4)) - 0.055, step(0.0031308, c)); }
 vec3 toLinear(vec3 c) { return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(0.04045, c)); }

@@ -7,11 +7,11 @@
 // own and stands in it, so it comes at us and goes out past the frame with its level. A few arrows (the
 // warheads of the flock) fly down the tunnel with us, round a spiral. From "inner demon" the levels carry
 // Maxwell's two sealed chambers either side, the blue and paper particles never sorted.
-import type { Lyrics } from '@pve/engine/lyrics';
+import { syllables, type Lyrics } from '@pve/engine/lyrics';
 import { H, W } from '@pve/engine/gl';
 import { mark } from '@pve/engine/marks';
 import { clamp, ease, prog } from '@pve/engine/util';
-import { BAR, BEAT, BEAT0, BLUE, BOX_H, INK, PAPER, brickRect, bricks, gray, hashI, syllables } from './_kit';
+import { BAR, BEAT, BEAT0, BLUE, INK, PAPER, brickRect, bricks, gray, hashI } from './_kit';
 
 export const DROSTE = { cx: 960, cy: 540, box: 700 };
 const R = 0.44; // size ratio of one level to the next

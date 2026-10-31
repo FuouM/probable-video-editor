@@ -7,7 +7,8 @@
 // is a pure function of t, so the cut shows no jump.
 import { H, W } from '@pve/engine/gl';
 import { ease, lerp, prog } from '@pve/engine/util';
-import { BAR, BLUE, BOX_H, INK, PAPER, brickRect, bricks, gray, hashI, rebate, sylAt, type SylLine } from './_kit';
+import { sylAt } from '@pve/engine/lyrics';
+import { BAR, BLUE, BOX_H, INK, PAPER, brickRect, bricks, gray, hashI, rebate, type SylLine } from './_kit';
 
 export type Iso = (x: number, y: number, z: number) => [number, number];
 
@@ -187,7 +188,6 @@ export class CardFold {
     const Ta = (p10[0] - p00[0]) / CARD.w, Tb = (p10[1] - p00[1]) / CARD.w;
     const Tc = (p01[0] - p00[0]) / CARD.h, Td = (p01[1] - p00[1]) / CARD.h;
     const T: Mat = [Ta, Tb, Tc, Td, p00[0] - Ta * CARD.x - Tc * CARD.y, p00[1] - Tb * CARD.x - Td * CARD.y];
-    const mcx = CARD.x + CARD.w / 2, mcy = CARD.y + CARD.h / 2;
 
     interface Tile { j: number; s: number; e: number; m: Mat; x: number; y: number; w: number; h: number }
     const tiles: Tile[] = [];

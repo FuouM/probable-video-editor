@@ -2,8 +2,8 @@
 // the mirror plate (the same `MirrorGlass`), each still carrying its piece of the mirror's picture, turning
 // and growing at the camera until they leave the frame over the bars; the room shows between them.
 import type { Frame } from '@pve/engine/scene';
-import { clamp, lerp } from '@pve/engine/util';
-import { BEAT, BEAT0, OverScene, stepT, type PrintOpts } from './_kit';
+import { clamp, lerp, stepT } from '@pve/engine/util';
+import { BEAT, BEAT0, OverScene, type PrintOpts } from './_kit';
 import { MirrorGlass } from './_mirror';
 
 export default class OverShards extends OverScene {
