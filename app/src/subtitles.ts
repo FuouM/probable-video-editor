@@ -23,8 +23,8 @@ export interface Subtitles {
 }
 
 /** A line shows this long before its first token is sung, and this long after its last. */
-const LEAD = 0.25;
-const TAIL = 0.7;
+export const LEAD = 0.25;
+export const TAIL = 0.7;
 
 /** The line of `track` that shows at song time `t`: the last that has begun, unless it ended long ago. Null: none. */
 export function lineAt(track: SubTrack, t: number): SubLine | null {

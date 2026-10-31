@@ -4,23 +4,29 @@ pve is an engine and studio for code-rendered music videos. Every frame is a det
 
 The agent workflow is in [`skills/pve/SKILL.md`](skills/pve/SKILL.md).
 
-**[Watch `breaked_neuro` live in your browser](https://fuoum.github.io/probable-video-editor/)**
-
-**[Watch `breaked_neuro` on YouTube in 4K](https://www.youtube.com/watch?v=Tzy9nyStei8)**
-
+| Video | Live in your browser | YouTube |
+|---|---|---|
+| `breaked_neuro` | [**Play**](https://fuoum.github.io/probable-video-editor/?project=breaked_neuro) | [**Watch in 4K**](https://www.youtube.com/watch?v=Tzy9nyStei8) |
+| `god_ish` | [**Play**](https://fuoum.github.io/probable-video-editor/?project=god_ish) | [**Watch**](https://www.youtube.com/watch?v=J8DgUCVm_04) |
 
 ## Projects
 
-This repository contains two code-rendered music videos:
+This repository contains three code-rendered music videos:
 
 ### 1. `breaked_neuro`
-- **Watch**: [**Play it in your browser**](https://fuoum.github.io/probable-video-editor/). Your browser draws every frame live to the song, so it is not a video file. It needs WebGL2, and a desktop GPU is best. A resolution list (0.5x, 1x, 2x) and fullscreen are in the player.
+- **Watch**: [**Play it in your browser**](https://fuoum.github.io/probable-video-editor/?project=breaked_neuro) or [watch it on YouTube in 4K](https://www.youtube.com/watch?v=Tzy9nyStei8). Your browser draws every frame live to the song, so it is not a video file. It needs WebGL2, and a desktop GPU is best. A resolution list (0.5x, 1x, 2x) and fullscreen are in the player.
 - **Track**: 200 BPM Neurofunk Drum & Bass (194.261 s duration).
 - **Architecture**: 13 clips and 36 scene modules. Features hybrid GPU torus cellular automata, discrete CPU Conway boards, 3D Voronoi mirror shard fracture geometry, 2D sandstorm displacement particles, Droste recursion, and ASCII DOOM terminal rendering.
 - **Making Of**: Read the comprehensive post-mortem paper in [`docs/BREAKED_NEURO_MAKING_OF.md`](docs/BREAKED_NEURO_MAKING_OF.md).
 - **Web player**: how it is built and deployed is in [`docs/SITE.md`](docs/SITE.md).
 
-### 2. `pdoom_original` - mexicat
+### 2. `god_ish`
+- **Watch**: [**Play it in your browser**](https://fuoum.github.io/probable-video-editor/?project=god_ish) or [watch it on YouTube](https://www.youtube.com/watch?v=J8DgUCVm_04). The player has subtitles (English, romaji and Japanese), a motion blur setting and a choice of face for the small English text.
+- **Track**: "God-ish", 142 BPM with a 103 BPM interlude (3:22 duration).
+- **Idea**: Every copy is a little less god, and the last copy becomes an original. The video moves through the eras of copying: manuscript, movable type, modernist print, risograph, a predicting machine, screens that re-save the page, reposts and text-ish glyphs. At the end the copying makes a script that no era had. Everything is procedural 2D type with rare 3D, and the type moves on syllables only. The treatment is in [`projects/god_ish/video/treatment.md`](projects/god_ish/video/treatment.md).
+- **Architecture**: 13 clips and 6 transitions. Each era is a scene that copies the page of the era before it.
+
+### 3. `pdoom_original` - mexicat
 - **Track**: "I'm Upping My P(doom)" (156.650 s duration).
 - **Architecture**: 22 clips and 42 scene modules with word-synced karaoke typography, GPU line batches, raymarched rooms, and procedural Shoggoth iris shaders.
 - **Treatment**: The creative concept and plate-by-plate treatment are in [`docs/TREATMENT.md`](docs/TREATMENT.md).
@@ -28,10 +34,10 @@ This repository contains two code-rendered music videos:
 
 ## Repository Layout
 
-- `projects/<id>/` — Project workspaces (`breaked_neuro`, `pdoom_original`). Each project holds timing files from Lyric-Sync, edit definitions in `video/video.json`, scene modules in `video/scenes/`, and assets in `video/assets/`.
+- `projects/<id>/` — Project workspaces (`breaked_neuro`, `god_ish`, `pdoom_original`). Each project holds timing files from Lyric-Sync, edit definitions in `video/video.json`, scene modules in `video/scenes/`, and assets in `video/assets/`.
 - `packages/engine/` — `@pve/engine`: Three.js renderer core, post-processing pipeline (bloom, halation, grain, blur), typography, GPU line batches, HUD, and benchmark harness.
 - `packages/core/` — `@pve/core`: Schema validation for `video.json`, time expression resolver, lyric queries, and project loader.
-- `packages/cli/` — `@pve/cli`: Command-line tools for agents and human directors (`init`, `check`, `outline`, `find`, `scene new`, `still`, `look`, `probe`, `bench`, `render`, `notes`, `doctor`).
+- `packages/cli/` — `@pve/cli`: Command-line tools for agents and human directors (`init`, `check`, `outline`, `find`, `scene new`, `still`, `look`, `probe`, `bench`, `render`, `subs`, `notes`, `doctor`).
 - `app/` — Web application: Bun and Vite NLE studio, program monitor, transport with audio metronome, canvas timeline, inspector, notes pins, and WebCodecs export.
 - `tests/` — Golden image regression tests and timeline parity test suites.
 
@@ -93,6 +99,9 @@ bun run pve bench -p breaked_neuro
 # Render video range
 bun run pve render --from @hook1 --to @room -p pdoom_original
 
+# Write the subtitles for YouTube (the highlight of the player, romaji above Japanese for god_ish)
+bun run pve subs -p god_ish
+
 # Render full video with automatic adaptive sampling
 bun run pve render -p breaked_neuro --samples auto --shutter 0.2
 ```
@@ -127,7 +136,8 @@ bun run determinism
 
 - **`breaked_neuro`**: Neurofunk Drum & Bass track, 200 BPM. Video written and directed with autonomous coding agents.
 - **`pdoom_original`**: "I'm Upping My P(doom)". Lyrics by osmarks and MusicPerson. Sung version by deckard.
-- **Fonts**: Archivo, IBM Plex Mono, Cormorant Garamond (SIL Open Font License). Single-stroke EMS and Hershey fonts (OFL and Public Domain).
+- **`god_ish`**: "God-ish". Lyrics are in `projects/god_ish/user_input/` (`lyrics.map.json` holds the hand-written Japanese and English).
+- **Fonts**: Archivo, IBM Plex Mono, Cormorant Garamond, UnifrakturMaguntia, Pirata One, IM Fell English (SIL Open Font License). Single-stroke EMS and Hershey fonts (OFL and Public Domain).
 
 ## License
 

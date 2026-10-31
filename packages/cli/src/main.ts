@@ -2,7 +2,7 @@
 // pve: the command line of the editor (DESIGN 8.2). Exit 0 = success, 1 = error, 2 = usage error.
 // Every command except init works on one project: --project <id|path>, else PVE_PROJECT, else the folder
 // (or the nearest folder above it) that has video/video.json.
-import { existsSync, watch } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, watch, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { parseArgs, type ParseArgsOptionsConfig } from 'node:util';
 import { runBench } from './bench';
@@ -23,6 +23,8 @@ import { doctor } from './doctor';
 import { formatNotes, noteRows, readNotes, resolveNote } from './notes';
 import { formatGate, porcelain, runGate, type GateOptions, type GateResult, type GoldenMode } from './gate';
 import { commitMessage, commitPaths } from './commit';
+import { cues, languages, render } from './subs';
+import type { Subtitles } from '../../../app/src/subtitles';
 
 interface Args {
   positionals: string[];
@@ -268,6 +270,34 @@ const COMMANDS: Record<string, Command> = {
       const out = path.resolve(str(a, 'out', path.join(p.dir, 'out/boards', `${id}.png`)));
       const count = await withPage(servedId(p), { scale: o.scale, only: 'none' }, (page) => renderBoard(page, `/${rel}`, id, out, num(a, 'at', 0.5), o));
       console.log(`${path.relative(process.cwd(), out)}  ${count} sub-frame${count === 1 ? '' : 's'}`);
+      return EXIT.ok;
+    },
+  },
+  subs: {
+    args: '',
+    summary: 'the subtitles of the project for YouTube, with the highlight of the player (sung now: yellow, sung before: white, to come: grey; every change is its own cue): <project>/out/subs/<id>.<lang>.<format>, one file per language, upload each as its own track. en: the English words or phrases. ja (a song with a lyric map): two rows, romaji above Japanese. --lang en,ja (default: all); --format ttml|srt (default ttml); --out dir. Reads <project>/site/subtitles.json (bun run site:data writes it)',
+    options: { ...PROJECT_OPT, lang: { type: 'string' }, format: { type: 'string' }, out: { type: 'string' } },
+    async run(a) {
+      if (a.positionals.length) throw new UsageError('subs takes no arguments');
+      const p = await openProject(projectOf(a));
+      const ref = { dir: p.dir, id: p.id };
+      const file = path.join(ref.dir, 'site/subtitles.json');
+      if (!existsSync(file)) throw new CliError({ rule: 'subs', message: `${path.relative(process.cwd(), file)} does not exist`, fix: 'run bun app/scripts/site-data.ts <project>' });
+      const subs = JSON.parse(readFileSync(file, 'utf8')) as Subtitles;
+      const have = languages(subs);
+      const langs = str(a, 'lang', have.join(',')).split(',').map((s) => s.trim()).filter(Boolean);
+      const bad = langs.filter((l) => !have.includes(l));
+      if (bad.length) throw new UsageError(`no ${bad.join(', ')} subtitles in this project (languages: ${have.join(', ') || 'none'})`);
+      const format = str(a, 'format', 'ttml');
+      if (format !== 'ttml' && format !== 'srt') throw new UsageError(`--format is ttml or srt, not '${format}'`);
+      const dir = path.resolve(str(a, 'out', path.join(ref.dir, 'out/subs')));
+      mkdirSync(dir, { recursive: true });
+      for (const lang of langs) {
+        const cs = cues(subs, lang, p.resolved.duration);
+        const out = path.join(dir, `${ref.id}.${lang}.${format}`);
+        writeFileSync(out, render(cs, format, lang));
+        console.log(`${path.relative(process.cwd(), out)}  ${cs.length} cues  ${fmtTime(cs[0]?.start ?? 0)} - ${fmtTime(cs[cs.length - 1]?.end ?? 0)}`);
+      }
       return EXIT.ok;
     },
   },

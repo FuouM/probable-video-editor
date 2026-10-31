@@ -50,6 +50,17 @@ Cost: each blurred frame draws once per sub-frame. In a transition of god_ish on
 
 The line shows 0.25 s before its first token and 0.7 s after its last. A token that is sung now is yellow, a token that was sung is white, and a token to come is dim. English phrases are in reading order, so their highlight can jump in a line. The choice (on or off, and the language of each video) stays in the browser.
 
+### The files for YouTube
+
+`bun run pve subs -p <id>` writes the same tracks as files for YouTube: `projects/<id>/out/subs/<id>.<lang>.ttml`, one file for each language (`--lang en,ja`, `--format ttml|srt`, `--out <dir>`). It reads `site/subtitles.json`, so run `site:data` after a change of the lyrics. A subtitle file has no running highlight, so every change of state is its own cue: the whole line again, with the next token lit (yellow, white and grey as in the player). The cues start and end as in the player, and none runs past the end of the film.
+
+| Language | Rows |
+|---|---|
+| `en` | The English words (no lyric map) or phrases (lyric map). |
+| `ja` (lyric map only) | Two rows: the romaji above the Japanese. Both are lit by the same time. |
+
+Upload each file in YouTube Studio as its own track. Check the track in the player: YouTube can ignore or restyle the colours.
+
 ## Project options
 
 A project can offer choices to the viewer. It exports `options` from `projects/<id>/video/player.ts` (type `PlayerOption`, `packages/engine/src/options.ts`). The player shows one list for each option and remembers the choice. `apply` changes the state that the scenes read and names the scenes to load again. The engine loads them again with `Engine.reload`: the old scene draws until the new scene is ready.
