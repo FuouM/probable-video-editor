@@ -102,6 +102,9 @@ bun run pve render --from @hook1 --to @room -p pdoom_original
 # Write the subtitles for YouTube (the highlight of the player, romaji above Japanese for god_ish)
 bun run pve subs -p god_ish
 
+# Replace the first frame of a video with an image (the thumbnail of platforms that use the first frame)
+bun run first-frame video.mp4 thumbnail.jpg
+
 # Render full video with automatic adaptive sampling
 bun run pve render -p breaked_neuro --samples auto --shutter 0.2
 ```

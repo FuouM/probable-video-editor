@@ -10,6 +10,7 @@
     "determinism": "bun scripts/determinism.ts",
     "bench": "bun packages/cli/src/main.ts bench -p pdoom_original",
     "verify-export": "bun scripts/verify-full-export.ts",
+    "first-frame": "bun scripts/first-frame.ts",
     "test": "bun test",
     "site:data": "bun app/scripts/site-data.ts",
     "site:build": "bun run --cwd app site:build",
