@@ -31,6 +31,8 @@ One box (`app/src/ui/loader.ts`, `.ld-*` in `daw.css`) in the start dialog of th
 
 A video is a project. The page without `?project=` shows only the cover cards of the videos ("Choose a video") and loads nothing. A card opens `?project=<id>`, which loads that video and shows its Play button. The palette of a project is baked into the engine modules, so a change of video loads the page again. The cover is `projects/<id>/site/thumbnail.jpg`. The page keeps `?scale=`.
 
+The PVE PLAYER mark at the top left is a link to that page, so a visitor can choose again. It keeps `?scale=`.
+
 ## Motion blur
 
 The offline render blurs by drawing sub-frames and averaging them. The player draws one sample by default. The BLUR list asks for 4 or 12 sub-frames (`Engine.render` in adaptive mode, shutter 0.5 of a frame of the film, so the blur is as wide as in the render). The caps in `video.json` still apply: a clip with `samples.max` 1 stays sharp and costs one sample. In god_ish that is every clip, so only the transitions blur (`feed`, `forme`). The choice stays in the browser.

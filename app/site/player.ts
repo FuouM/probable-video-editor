@@ -64,6 +64,13 @@ function videoUrl(id: string): string {
   return u.toString();
 }
 
+// the PVE PLAYER mark leads to the page that lists the videos, at the same output scale
+{
+  const u = new URL(location.href);
+  u.search = SCALE !== 1 ? `?scale=${SCALE}` : '';
+  $<HTMLAnchorElement>('home').href = u.toString();
+}
+
 // the loading screen is up from the first moment; main() fills it
 let loader: Loader | null = null;
 

@@ -102,6 +102,10 @@ html, body {
   gap: 6px;
 }
 
+a.nle-brand {
+  text-decoration: none;
+}
+
 .nle-brand-badge {
   background: var(--sys-accent);
   color: #fff;
