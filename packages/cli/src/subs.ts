@@ -8,10 +8,10 @@ import { LEAD, TAIL, type SubLine, type SubTrack, type Subtitles } from '../../.
 export type State = 'pending' | 'sung' | 'done';
 export type Format = 'ttml' | 'srt';
 
-/** A stretch of a row that has one state. */
+/** A stretch of a row that has one state, or the `gap` (the space between two such stretches), which has no colour. */
 export interface Run {
   text: string;
-  state: State;
+  state: State | 'gap';
 }
 
 /** The text on screen from `start` to `end` (s): one or two rows of runs. */
@@ -51,20 +51,19 @@ function stateOf(from: number, to: number, a: number, b: number): State {
   return from <= m ? 'sung' : 'pending';
 }
 
+/** The runs of a row: the tokens of one state are one run, and the space between two runs is a gap of its own, so no coloured run starts or ends with a space. */
 function rowRuns(r: Row, a: number, b: number): Run[] {
   const runs: Run[] = [];
-  const push = (text: string, state: State) => {
-    const last = runs[runs.length - 1];
-    if (last && last.state === state) last.text += text;
-    else runs.push({ text, state });
-  };
-  let before: State = 'pending';
-  r.line.tokens.forEach(([text, from, to], i) => {
+  r.line.tokens.forEach(([raw, from, to]) => {
+    const text = raw.trim();
+    if (!text) return;
     const state = stateOf(from, to, a, b);
-    // the space between two tokens takes the state of the token before it, so a lit token has no lit space after it
-    if (i > 0 && r.joiner) push(r.joiner, before);
-    push(text, state);
-    before = state;
+    const last = runs[runs.length - 1];
+    if (last && last.state === state) last.text += r.joiner + text;
+    else {
+      if (last && r.joiner) runs.push({ text: r.joiner, state: 'gap' });
+      runs.push({ text, state });
+    }
   });
   return runs;
 }
@@ -117,7 +116,20 @@ export function cues(subs: Subtitles, lang: string, limit = Infinity): Cue[] {
     out.push(...pieces);
     prevEnd = end;
   });
-  return out.filter((c) => c.start < limit).map((c) => (c.end > limit ? { ...c, end: limit } : c));
+  const kept = out.filter((c) => c.start < limit).map((c) => (c.end > limit ? { ...c, end: limit } : c));
+  return quantize(kept);
+}
+
+/**
+ * Every time is a whole number of centiseconds, as in YouTube Studio. A cue that touches the next one keeps the
+ * same time as it, and a gap under 50 ms (a dropped cue leaves one) is closed: a gap makes the subtitle flash.
+ * A cue shorter than two centiseconds is dropped.
+ */
+function quantize(cs: Cue[]): Cue[] {
+  const cs100 = (x: number) => Math.round(x * 100) / 100;
+  const out = cs.map((c) => ({ ...c, start: cs100(c.start), end: cs100(c.end) })).filter((c) => c.end - c.start >= 0.02 - 1e-9);
+  for (let i = 0; i + 1 < out.length; i++) if (out[i + 1]!.start - out[i]!.end < 0.05) out[i]!.end = out[i + 1]!.start;
+  return out;
 }
 
 function stamp(s: number, sep: '.' | ','): string {
@@ -129,11 +141,11 @@ function stamp(s: number, sep: '.' | ','): string {
 const xml = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 const html = (s: string) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]!);
 
-/** SubRip: `<font color>` runs. */
+/** SubRip: `<font color>` runs. For offline players. */
 export function toSrt(cs: Cue[]): string {
   return cs
     .map((c, i) => {
-      const body = c.rows.map((row) => row.map((r) => `<font color="${COLORS[r.state]}">${html(r.text)}</font>`).join('')).join('\n');
+      const body = c.rows.map((row) => row.map((r) => (r.state === 'gap' ? html(r.text) : `<font color="${COLORS[r.state]}">${html(r.text)}</font>`)).join('')).join('\n');
       return `${i + 1}\n${stamp(c.start, ',')} --> ${stamp(c.end, ',')}\n${body}\n`;
     })
     .join('\n');
@@ -142,7 +154,7 @@ export function toSrt(cs: Cue[]): string {
 /** TTML: one `p` per cue, a coloured `span` per run, a `br` between rows. */
 export function toTtml(cs: Cue[], lang: string): string {
   const ps = cs.map((c) => {
-    const body = c.rows.map((row) => row.map((r) => `<span tts:color="${COLORS[r.state]}">${xml(r.text)}</span>`).join('')).join('<br/>');
+    const body = c.rows.map((row) => row.map((r) => (r.state === 'gap' ? xml(r.text) : `<span tts:color="${COLORS[r.state]}">${xml(r.text)}</span>`)).join('')).join('<br/>');
     return `      <p begin="${stamp(c.start, '.')}" end="${stamp(c.end, '.')}" xml:space="preserve">${body}</p>`;
   });
   return [
