@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { commitMessage, commitPaths } from '../src/commit';
-import { goldenNeeded, runSteps, typecheckProjects } from '../src/gate';
+import { gateSteps, goldenNeeded, runSteps, typecheckProjects } from '../src/gate';
 import { CliError } from '../src/out';
 import { expandTimes, loadProject, transitionTimes } from '../src/project';
 import { makeProject, VIDEO } from './fixture';
@@ -51,6 +51,17 @@ describe('pve gate', () => {
     expect(goldenNeeded('?? projects/pdoom_original/video/scenes/x.ts\n')).toBe(true);
     expect(goldenNeeded(' M projects/breaked_neuro/video/video.json\n M packages/cli/src/main.ts\n')).toBe(false);
     expect(goldenNeeded('')).toBe(false);
+  });
+
+  test('gateSteps filters by only and skip', () => {
+    const ref = { id: 'test', dir: '.' };
+    const porcelain = '';
+    const all = gateSteps(ref, { golden: 'never', failFast: true, skip: [] }, porcelain);
+    expect(all.steps.length).toBeGreaterThan(3);
+    const onlyCheck = gateSteps(ref, { golden: 'never', failFast: true, skip: [], only: ['check'] }, porcelain);
+    expect(onlyCheck.steps.map((s) => s.name)).toEqual(['check']);
+    const quick = gateSteps(ref, { golden: 'never', failFast: true, skip: ['test', 'golden'] }, porcelain);
+    expect(quick.steps.some((s) => s.name === 'test' || s.name === 'golden')).toBe(false);
   });
 });
 

@@ -2,7 +2,7 @@
 // pve: the command line of the editor (DESIGN 8.2). Exit 0 = success, 1 = error, 2 = usage error.
 // Every command except init works on one project: --project <id|path>, else PVE_PROJECT, else the folder
 // (or the nearest folder above it) that has video/video.json.
-import { existsSync, mkdirSync, readFileSync, watch, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, unlinkSync, watch, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { parseArgs, type ParseArgsOptionsConfig } from 'node:util';
 import { runBench } from './bench';
@@ -20,10 +20,11 @@ import { encodeVideo, parseSamples, renderFrames, renderRecord, sheet, stills, t
 import { cropStrip, frameState, judgeSyllable, marksAt, nameMatcher, sungSyllables, union, type LyricCheck, type Rect } from './probe';
 import { newScene } from './scene';
 import { doctor } from './doctor';
-import { formatNotes, noteRows, readNotes, resolveNote } from './notes';
+import { formatNotes, noteRows, readNotes, readProjectNotes, resolveNote } from './notes';
 import { formatGate, porcelain, runGate, type GateOptions, type GateResult, type GoldenMode } from './gate';
 import { commitMessage, commitPaths } from './commit';
-import { cues, languages, render } from './subs';
+import { cues, languages, render, type Format } from './subs';
+import { replaceFirstFrame } from './first-frame';
 import type { Subtitles } from '../../../app/src/subtitles';
 
 interface Args {
@@ -110,16 +111,26 @@ async function runCheck(ref: ProjectRef, json: boolean, compact: boolean): Promi
   return errors;
 }
 
-/** --golden, --skip and --keep-going of `gate` and `commit`. */
+/** --golden, --skip, --only, --quick and --keep-going of `gate` and `commit`. */
 function gateOptions(a: Args): GateOptions {
   const golden = str(a, 'golden', 'auto');
   if (golden !== 'auto' && golden !== 'always' && golden !== 'never') throw new UsageError('--golden takes auto, always or never');
   const mode: GoldenMode = golden;
   const skip = str(a, 'skip', '').split(',').map((s) => s.trim()).filter(Boolean);
+  if (a.values.quick) {
+    if (!skip.includes('test')) skip.push('test');
+    if (!skip.includes('golden')) skip.push('golden');
+  }
+  const onlyRaw = str(a, 'only', '').split(',').map((s) => s.trim()).filter(Boolean);
+  const only = onlyRaw.length ? onlyRaw : undefined;
   const known = ['typecheck', 'check', 'test', 'golden'];
-  const bad = skip.filter((s) => !known.includes(s) && !s.startsWith('typecheck:'));
-  if (bad.length) throw new UsageError(`--skip takes ${known.join(', ')} (got ${bad.join(', ')})`);
-  return { golden: mode, failFast: a.values['keep-going'] !== true, skip };
+  const badSkip = skip.filter((s) => !known.includes(s) && !s.startsWith('typecheck:'));
+  if (badSkip.length) throw new UsageError(`--skip takes ${known.join(', ')} (got ${badSkip.join(', ')})`);
+  if (only) {
+    const badOnly = only.filter((s) => !known.includes(s) && !s.startsWith('typecheck:'));
+    if (badOnly.length) throw new UsageError(`--only takes ${known.join(', ')} (got ${badOnly.join(', ')})`);
+  }
+  return { golden: mode, failFast: a.values['keep-going'] !== true, skip, only };
 }
 
 const COMMANDS: Record<string, Command> = {
@@ -182,7 +193,7 @@ const COMMANDS: Record<string, Command> = {
       if (a.positionals.length) {
         try { o = focusOutline(o, a.positionals); } catch (e) { throw new UsageError(e instanceof Error ? e.message : String(e)); }
       }
-      const notes = noteRows(p, readNotes(p).notes.filter((n) => !n.resolved && (!a.positionals.length || o.clips.some((c) => n.t >= c.start && n.t < c.end))));
+      const notes = noteRows(p, readProjectNotes(p).filter((n) => !n.resolved && (!a.positionals.length || o.clips.some((c) => n.t >= c.start && n.t < c.end))));
       if (a.values.json) print({ ...o, notes });
       else console.log(`${formatOutline(o)}\n\nopen notes (${notes.length})\n${notes.length ? formatNotes(notes) : '  none'}`);
       return EXIT.ok;
@@ -275,28 +286,39 @@ const COMMANDS: Record<string, Command> = {
   },
   subs: {
     args: '',
-    summary: 'the subtitles of the project for YouTube, with the highlight of the player (sung now: yellow, sung before: white, to come: grey; every change is its own cue): <project>/out/subs/<id>.<lang>.<format>, one file per language, upload each as its own track. en: the English words or phrases. ja (a song with a lyric map): two rows, romaji above Japanese. --lang en,ja (default: all); --format ttml|srt (default ttml); --out dir. Reads <project>/site/subtitles.json (bun run site:data writes it)',
+    summary: 'the subtitles of the project for YouTube, with the highlight of the player (sung now: yellow, sung before: white, to come: grey; every change is its own cue): <project>/out/subs/<id>.<lang>.<format>, one file per language, upload each as its own track. en: the English words or phrases. ja (a song with a lyric map): two rows, romaji above Japanese. --lang en,ja (default: all); --format ttml|srt|all (default ttml); --out dir. Reads <project>/site/subtitles.json (generates it if missing)',
     options: { ...PROJECT_OPT, lang: { type: 'string' }, format: { type: 'string' }, out: { type: 'string' } },
     async run(a) {
       if (a.positionals.length) throw new UsageError('subs takes no arguments');
       const p = await openProject(projectOf(a));
       const ref = { dir: p.dir, id: p.id };
       const file = path.join(ref.dir, 'site/subtitles.json');
-      if (!existsSync(file)) throw new CliError({ rule: 'subs', message: `${path.relative(process.cwd(), file)} does not exist`, fix: 'run bun app/scripts/site-data.ts <project>' });
+      if (!existsSync(file)) {
+        console.log(`${path.relative(process.cwd(), file)} is missing; generating site data...`);
+        const r = Bun.spawnSync(['bun', 'app/scripts/site-data.ts', ref.id, '--keep-audio'], { cwd: ROOT, stdout: 'pipe', stderr: 'pipe' });
+        if (!existsSync(file)) {
+          throw new CliError({ rule: 'subs', message: `${path.relative(process.cwd(), file)} does not exist and could not be generated:\n${r.stderr.toString().trim()}`, fix: 'run bun app/scripts/site-data.ts <project>' });
+        }
+      }
       const subs = JSON.parse(readFileSync(file, 'utf8')) as Subtitles;
       const have = languages(subs);
       const langs = str(a, 'lang', have.join(',')).split(',').map((s) => s.trim()).filter(Boolean);
       const bad = langs.filter((l) => !have.includes(l));
       if (bad.length) throw new UsageError(`no ${bad.join(', ')} subtitles in this project (languages: ${have.join(', ') || 'none'})`);
-      const format = str(a, 'format', 'ttml');
-      if (format !== 'ttml' && format !== 'srt') throw new UsageError(`--format is ttml or srt, not '${format}'`);
+      const rawFmt = str(a, 'format', 'ttml');
+      const fmts = (rawFmt === 'all' ? ['ttml', 'srt'] : rawFmt.split(',').map((s) => s.trim()).filter(Boolean)) as Format[];
+      for (const fmt of fmts) {
+        if (fmt !== 'ttml' && fmt !== 'srt') throw new UsageError(`--format is ttml, srt or all (got '${fmt}')`);
+      }
       const dir = path.resolve(str(a, 'out', path.join(ref.dir, 'out/subs')));
       mkdirSync(dir, { recursive: true });
-      for (const lang of langs) {
-        const cs = cues(subs, lang, p.resolved.duration);
-        const out = path.join(dir, `${ref.id}.${lang}.${format}`);
-        writeFileSync(out, render(cs, format, lang));
-        console.log(`${path.relative(process.cwd(), out)}  ${cs.length} cues  ${fmtTime(cs[0]?.start ?? 0)} - ${fmtTime(cs[cs.length - 1]?.end ?? 0)}`);
+      for (const format of fmts) {
+        for (const lang of langs) {
+          const cs = cues(subs, lang, p.resolved.duration);
+          const out = path.join(dir, `${ref.id}.${lang}.${format}`);
+          writeFileSync(out, render(cs, format, lang));
+          console.log(`${path.relative(process.cwd(), out)}  ${cs.length} cues  ${fmtTime(cs[0]?.start ?? 0)} - ${fmtTime(cs[cs.length - 1]?.end ?? 0)}`);
+        }
       }
       return EXIT.ok;
     },
@@ -479,7 +501,7 @@ const COMMANDS: Record<string, Command> = {
       'segment-codec': { type: 'string' }, webcodecs: { type: 'boolean' },
       encoder: { type: 'string' }, quality: { type: 'string' }, preset: { type: 'string' }, x264: { type: 'string' }, workers: { type: 'string' }, chunk: { type: 'string' },
       'mem-gb': { type: 'string' }, noaudio: { type: 'boolean' }, out: { type: 'string' }, headed: { type: 'boolean' },
-      'progress-json': { type: 'boolean' },
+      'progress-json': { type: 'boolean' }, 'first-frame': { type: 'string' }, thumbnail: { type: 'string' },
     },
     async run(a) {
       const p = await openProject(projectOf(a));
@@ -534,12 +556,39 @@ const COMMANDS: Record<string, Command> = {
       if (a.values['progress-json']) {
         process.stdout.write(`\nPROGRESS: ${JSON.stringify({ status: 'complete', outputFile: path.relative(process.cwd(), e.out) })}\n`);
       }
+      const thumb = (a.values['first-frame'] ?? a.values.thumbnail) as string | undefined;
+      if (thumb) {
+        console.log(`replacing frame 0 with ${thumb}...`);
+        const tmpOut = path.join(path.dirname(e.out), `${path.basename(e.out, path.extname(e.out))}.thumb-tmp${path.extname(e.out)}`);
+        replaceFirstFrame({ video: e.out, image: path.resolve(thumb), out: tmpOut });
+        copyFileSync(tmpOut, e.out);
+        try { unlinkSync(tmpOut); } catch {}
+        console.log(`replaced frame 0 with ${path.relative(process.cwd(), path.resolve(thumb))}`);
+      }
+      return EXIT.ok;
+    },
+  },
+  'first-frame': {
+    args: '<video> <image>',
+    summary: 'replace the first frame of a video with an image (thumbnail for video platforms), copying audio untouched and re-encoding video with x264 (--out file; --crf 14; --preset slow)',
+    options: { out: { type: 'string', short: 'o' }, crf: { type: 'string' }, preset: { type: 'string' } },
+    async run(a) {
+      if (a.positionals.length !== 2) throw new UsageError('first-frame takes <video> <image>');
+      const [video, image] = a.positionals as [string, string];
+      const out = replaceFirstFrame({
+        video,
+        image,
+        out: typeof a.values.out === 'string' ? a.values.out : undefined,
+        crf: typeof a.values.crf === 'string' ? a.values.crf : undefined,
+        preset: typeof a.values.preset === 'string' ? a.values.preset : undefined,
+      });
+      console.log(`wrote ${path.relative(process.cwd(), out)}`);
       return EXIT.ok;
     },
   },
   notes: {
-    args: '[resolve <id>]',
-    summary: 'the open director notes (video/notes.json) with time, bar.beat, clip and position; resolve marks one done',
+    args: '[<filter> | resolve <id>]',
+    summary: 'the open director notes (from video/notes.json and video/notes/*.md) with time, bar.beat, clip and position; <filter> filters by note id or text; resolve marks a JSON note done',
     options: { ...PROJECT_OPT, ...JSON_OPT, all: { type: 'boolean' } },
     async run(a) {
       const [sub, id, ...rest] = a.positionals;
@@ -549,9 +598,13 @@ const COMMANDS: Record<string, Command> = {
         console.log(`resolved ${n.id} (${fmtTime(n.t)}): ${n.text}`);
         return EXIT.ok;
       }
-      if (sub !== undefined) throw new UsageError(`unknown notes command '${sub}'`);
       const p = await openProject(projectOf(a));
-      const rows = noteRows(p, readNotes(p).notes.filter((n) => a.values.all || !n.resolved));
+      let allNotes = readProjectNotes(p).filter((n) => a.values.all || !n.resolved);
+      if (sub !== undefined) {
+        const q = sub.toLowerCase();
+        allNotes = allNotes.filter((n) => n.id.toLowerCase().includes(q) || n.text.toLowerCase().includes(q));
+      }
+      const rows = noteRows(p, allNotes);
       if (a.values.json) print(rows);
       else console.log(formatNotes(rows));
       return EXIT.ok;
@@ -559,8 +612,8 @@ const COMMANDS: Record<string, Command> = {
   },
   gate: {
     args: '',
-    summary: 'every pre-commit check at once: tsc of each project of `bun run typecheck`, pve check, bun test, and the golden stills when the work tree changes the engine or pdoom_original. Stops at the first failure and prints its first lines (--keep-going runs all; --golden auto|always|never; --skip typecheck,check,test,golden)',
-    options: { ...PROJECT_OPT, ...JSON_OPT, golden: { type: 'string' }, skip: { type: 'string' }, 'keep-going': { type: 'boolean' } },
+    summary: 'every pre-commit check at once: tsc of each project of `bun run typecheck`, pve check, bun test, and the golden stills when the work tree changes the engine or pdoom_original. Stops at the first failure and prints its first lines (--keep-going; --quick skips test & golden; --only typecheck,check; --golden auto|always|never; --skip ...)',
+    options: { ...PROJECT_OPT, ...JSON_OPT, golden: { type: 'string' }, skip: { type: 'string' }, only: { type: 'string' }, quick: { type: 'boolean' }, 'keep-going': { type: 'boolean' } },
     async run(a) {
       const ref = findProject(projectOf(a));
       const report = await runGate(ref, gateOptions(a), porcelain());
@@ -571,8 +624,8 @@ const COMMANDS: Record<string, Command> = {
   },
   commit: {
     args: '-m "<summary>"',
-    summary: 'run the gate, then commit projects/<id>/ and the --paths (comma-separated) and nothing else, with a Ran: list of the steps that passed (--no-gate skips the gate). Run it only when the human asks for a commit',
-    options: { ...PROJECT_OPT, message: { type: 'string', short: 'm' }, paths: { type: 'string' }, 'no-gate': { type: 'boolean' }, golden: { type: 'string' }, skip: { type: 'string' } },
+    summary: 'run the gate, then commit projects/<id>/ and the --paths (comma-separated) and nothing else, with a Ran: list of the steps that passed (--no-gate skips the gate; --push pushes to origin after commit). Run it only when the human asks for a commit',
+    options: { ...PROJECT_OPT, message: { type: 'string', short: 'm' }, paths: { type: 'string' }, 'no-gate': { type: 'boolean' }, golden: { type: 'string' }, skip: { type: 'string' }, only: { type: 'string' }, quick: { type: 'boolean' }, push: { type: 'boolean' } },
     async run(a) {
       const summary = typeof a.values.message === 'string' ? a.values.message.trim() : '';
       if (!summary) throw new UsageError('commit needs -m "<summary>"');
@@ -589,6 +642,13 @@ const COMMANDS: Record<string, Command> = {
       }
       const r = commitPaths(ROOT, commitMessage(summary, ran, a.values['no-gate'] ? ['gate skipped (--no-gate)'] : []), [own, ...extra]);
       console.log(`committed ${r.commit}: ${r.files.length} file${r.files.length === 1 ? '' : 's'} in ${[own, ...extra].join(', ')}`);
+      if (a.values.push) {
+        const branchProc = Bun.spawnSync(['git', 'branch', '--show-current'], { cwd: ROOT });
+        const branch = branchProc.stdout.toString().trim() || 'main';
+        console.log(`pushing to origin/${branch}...`);
+        const p = Bun.spawnSync(['git', 'push', 'origin', branch], { cwd: ROOT, stdout: 'inherit', stderr: 'inherit' });
+        if (p.exitCode !== 0) throw new CliError({ rule: 'commit', message: `git push failed (exit ${p.exitCode})` });
+      }
       return EXIT.ok;
     },
   },

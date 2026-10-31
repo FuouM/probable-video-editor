@@ -103,6 +103,8 @@ export interface GateOptions {
   failFast: boolean;
   /** Step names to leave out: `typecheck` (all `typecheck:*`), `check`, `test`, `golden`. */
   skip: string[];
+  /** Optional step names to run exclusively: `typecheck`, `check`, `test`, `golden`. */
+  only?: string[];
 }
 
 export interface GateReport {
@@ -132,7 +134,10 @@ export function gateSteps(ref: ProjectRef, o: GateOptions, porcelain: string): {
   const needed = goldenNeeded(porcelain);
   const golden = o.golden === 'always' ? 'always' : o.golden === 'never' ? 'off (--golden never)' : needed ? 'on: the work tree changes the engine or pdoom_original' : 'off: no change in ' + GOLDEN_PATHS.join(', ');
   if (o.golden === 'always' || (o.golden === 'auto' && needed)) steps.push({ name: 'golden', cmd: ['bun', 'scripts/golden.ts'] });
-  return { steps: steps.filter((s) => !o.skip.some((k) => s.name === k || s.name.startsWith(`${k}:`))), golden };
+  let active = steps;
+  if (o.only?.length) active = active.filter((s) => o.only!.some((k) => s.name === k || s.name.startsWith(`${k}:`)));
+  active = active.filter((s) => !o.skip.some((k) => s.name === k || s.name.startsWith(`${k}:`)));
+  return { steps: active, golden };
 }
 
 export async function runGate(ref: ProjectRef, o: GateOptions, porcelain: string): Promise<GateReport> {

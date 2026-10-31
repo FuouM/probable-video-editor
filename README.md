@@ -17,7 +17,7 @@ This repository contains three code-rendered music videos:
 - **Watch**: [**Play it in your browser**](https://fuoum.github.io/probable-video-editor/?project=breaked_neuro) or [watch it on YouTube in 4K](https://www.youtube.com/watch?v=Tzy9nyStei8). Your browser draws every frame live to the song, so it is not a video file. It needs WebGL2, and a desktop GPU is best. A resolution list (0.5x, 1x, 2x) and fullscreen are in the player.
 - **Track**: 200 BPM Neurofunk Drum & Bass (194.261 s duration).
 - **Architecture**: 13 clips and 36 scene modules. Features hybrid GPU torus cellular automata, discrete CPU Conway boards, 3D Voronoi mirror shard fracture geometry, 2D sandstorm displacement particles, Droste recursion, and ASCII DOOM terminal rendering.
-- **Making Of**: Read the comprehensive post-mortem paper in [`docs/BREAKED_NEURO_MAKING_OF.md`](docs/BREAKED_NEURO_MAKING_OF.md).
+- **Making Of**: Read the comprehensive post-mortem paper in [`docs/making_of/breaked.md`](docs/making_of/breaked.md).
 - **Web player**: how it is built and deployed is in [`docs/SITE.md`](docs/SITE.md).
 
 ### 2. `god_ish`
@@ -25,6 +25,7 @@ This repository contains three code-rendered music videos:
 - **Track**: "God-ish", 142 BPM with a 103 BPM interlude (3:22 duration).
 - **Idea**: Every copy is a little less god, and the last copy becomes an original. The video moves through the eras of copying: manuscript, movable type, modernist print, risograph, a predicting machine, screens that re-save the page, reposts and text-ish glyphs. At the end the copying makes a script that no era had. Everything is procedural 2D type with rare 3D, and the type moves on syllables only. The treatment is in [`projects/god_ish/video/treatment.md`](projects/god_ish/video/treatment.md).
 - **Architecture**: 13 clips and 6 transitions. Each era is a scene that copies the page of the era before it.
+- **Making Of**: Read the comprehensive post-mortem paper in [`docs/making_of/god_ish.md`](docs/making_of/god_ish.md).
 
 ### 3. `pdoom_original` - mexicat
 - **Track**: "I'm Upping My P(doom)" (156.650 s duration).
@@ -37,7 +38,7 @@ This repository contains three code-rendered music videos:
 - `projects/<id>/` — Project workspaces (`breaked_neuro`, `god_ish`, `pdoom_original`). Each project holds timing files from Lyric-Sync, edit definitions in `video/video.json`, scene modules in `video/scenes/`, and assets in `video/assets/`.
 - `packages/engine/` — `@pve/engine`: Three.js renderer core, post-processing pipeline (bloom, halation, grain, blur), typography, GPU line batches, HUD, and benchmark harness.
 - `packages/core/` — `@pve/core`: Schema validation for `video.json`, time expression resolver, lyric queries, and project loader.
-- `packages/cli/` — `@pve/cli`: Command-line tools for agents and human directors (`init`, `check`, `outline`, `find`, `scene new`, `still`, `look`, `probe`, `bench`, `render`, `subs`, `notes`, `doctor`).
+- `packages/cli/` — `@pve/cli`: Command-line tools for agents and human directors (`init`, `check`, `outline`, `find`, `at`, `scene new`, `still`, `look`, `board`, `probe`, `bench`, `perf`, `render`, `subs`, `notes`, `first-frame`, `gate`, `commit`, `doctor`).
 - `app/` — Web application: Bun and Vite NLE studio, program monitor, transport with audio metronome, canvas timeline, inspector, notes pins, and WebCodecs export.
 - `tests/` — Golden image regression tests and timeline parity test suites.
 
@@ -99,14 +100,17 @@ bun run pve bench -p breaked_neuro
 # Render video range
 bun run pve render --from @hook1 --to @room -p pdoom_original
 
-# Write the subtitles for YouTube (the highlight of the player, romaji above Japanese for god_ish)
-bun run pve subs -p god_ish
+# Write the subtitles for YouTube (TTML and SRT; --format all writes both)
+bun run pve subs -p god_ish --format all
 
-# Replace the first frame of a video with an image (the thumbnail of platforms that use the first frame)
-bun run first-frame video.mp4 thumbnail.jpg
+# Replace the first frame of a video with an image (thumbnail for video platforms)
+bun run pve first-frame video.mp4 thumbnail.jpg
 
-# Render full video with automatic adaptive sampling
-bun run pve render -p breaked_neuro --samples auto --shutter 0.2
+# Render full video with automatic adaptive sampling and thumbnail replacement
+bun run pve render -p god_ish --samples auto --first-frame projects/god_ish/site/thumbnail.jpg
+
+# Run unified pre-commit checks (--quick runs typecheck and check in ~1.5s)
+bun run pve gate -p god_ish --quick
 ```
 
 ## Render Pipeline

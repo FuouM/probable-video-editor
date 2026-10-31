@@ -3,7 +3,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { validateNotes } from '@pve/core';
 import { checkProject } from '../src/check';
-import { noteRows, readNotes, resolveNote } from '../src/notes';
+import { noteRows, readMarkdownNotes, readNotes, readProjectNotes, resolveNote } from '../src/notes';
 import { openProject } from '../src/project';
 import { makeProject } from './fixture';
 
@@ -55,4 +55,28 @@ test('pve check reports an invalid notes file', async () => {
   const dir = project({ v: 1, notes: [{ id: 'x', t: 1, clip: 'intro', text: '', created: 'now' }] });
   const r = await checkProject({ id: 'song', dir });
   expect(r.problems.map((x) => [x.rule, x.file, x.at])).toEqual([['schema', 'video/notes.json', 'notes[0].text']]);
+});
+
+test('readMarkdownNotes parses pvemd blocks from video/notes/*.md and readProjectNotes merges them', async () => {
+  const dir = project(NOTES);
+  const notesDir = path.join(dir, 'video/notes');
+  const { mkdirSync, writeFileSync } = await import('node:fs');
+  mkdirSync(notesDir, { recursive: true });
+  const md = [
+    '# Note #test1',
+    '```pvemd',
+    JSON.stringify({ note: 'test1', time: '00:02.10', seconds: 2.1, clip: 'verse', rect: [100, 200, 50, 50] }),
+    '```',
+    '- text is misaligned here',
+  ].join('\n');
+  writeFileSync(path.join(notesDir, 'test1.md'), md);
+  const mdNotes = readMarkdownNotes({ id: 'song', dir });
+  expect(mdNotes.length).toBe(1);
+  expect(mdNotes[0]!.id).toBe('test1#1');
+  expect(mdNotes[0]!.t).toBe(2.1);
+  expect(mdNotes[0]!.clip).toBe('verse');
+  expect(mdNotes[0]!.at).toEqual([100, 200]);
+  expect(mdNotes[0]!.text).toBe('text is misaligned here');
+  const all = readProjectNotes({ id: 'song', dir });
+  expect(all.length).toBe(NOTES.notes.length + 1);
 });
