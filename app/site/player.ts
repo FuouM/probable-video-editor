@@ -470,7 +470,16 @@ async function main() {
   const timeNow = $('time-now'), sectionEl = $('section'), monFps = $('mon-fps'), monMs = $('mon-ms'), stat = $('stat');
   let lastDrawn = -1, shownPlaying: boolean | null = null, renderMs = 0, frameMs = 16.7, lastFrame = performance.now(), lastStats = 0;
   const tick = (now: number) => {
-    if (audio.playing) t = audio.currentTime;
+    if (audio.playing) {
+      t = audio.currentTime;
+      // the film ends before the file does (the export cuts the audio there): stop on the last frame as the studio does
+      if (!looping && t >= duration) {
+        audio.pause();
+        t = 0;
+        audio.seek(0);
+        dirty = true;
+      }
+    }
     if (audio.playing || dirty || t !== lastDrawn) {
       const t0 = performance.now();
       if (blur) engine.render(t, frameDt, true, blur, 0.5);
