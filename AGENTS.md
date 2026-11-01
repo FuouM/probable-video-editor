@@ -46,21 +46,47 @@ The engine guide and drawing APIs are in [`docs/ENGINE.md`](docs/ENGINE.md). The
 
 ## Commands
 
+### General CLI and Engine
+
+| Command | Does |
+|---|---|
+| `bun run pve <command> -p <id>` | The unified CLI. Run `bun run pve help` to list all subcommands. `skills/pve/SKILL.md` documents the agent workflow. |
+| `bun run pve check -p <id>` | Lint inputs, `video.json`, expressions, and scene files. Use `--watch` to check again on file changes. |
+| `bun run pve at -p <id> "<where>"` | Locate a bar, frame, time, lyric or range as JSON lines. See `docs/LYRICMAP.md`. |
+| `bun run pve still -p <id> <times>` | Render stills at times or ranges (`--step s`, `--transition <id>`). |
+| `bun run pve look -p <id> [clips\|cuts\|range]` | Render contact sheet boards with timestamps and bar numbers. |
+| `bun run pve board <scene-file> -p <id>` | Render a standalone exploratory board or cover scene (such as `video/scenes/thumbnail.ts`) to PNG. |
+| `bun run pve subs -p <id>` | Export synchronized YouTube and offline subtitles (`--format ttml\|srt\|all`, default `ttml`). |
+| `bun run pve first-frame <video> <image>` | Replace frame 0 of a video file with a cover image. Copies audio untouched and encodes video with x264. |
+| `bun run pve perf <clip> -p <id>` | Play clips in real time and report CPU frame times and missed frames. |
+| `bun run pve render -p <id>` | Render full video or ranges (`--samples auto`, `--shutter s`, `--first-frame <image>`). |
+| `bun run pve notes -p <id> [filter]` | List and filter open review notes from `video/notes.json` and `video/notes/*.md`. |
+| `bun run pve gate -p <id>` | Run all pre-commit checks in parallel. Stops at the first failure (`--quick`, `--only <step,...>`, `--golden auto\|always\|never`, `--skip <step,...>`). |
+| `bun run pve commit -p <id> -m "<msg>"` | Run the gate, then commit project files and explicit `--paths` only (`--push` pushes to origin). Commit only when the human asks. |
+
+### Repository Verification
+
 | Command | Does |
 |---|---|
 | `bun install` | Install all workspaces (`packages/*`, `app`) from the root. |
-| `bun run typecheck` | Type-check the engine, core, the CLI, the app, the project scenes and the root scripts. |
+| `bun run typecheck` | Type-check the engine, core, CLI, app, project scenes, and root scripts. |
+| `bun test` | Run all unit tests (core, CLI, bench coverage, timeline parity). |
 | `bun run golden` | Compare one still per timeline entry with `tests/golden/` (max abs diff 0). |
-| `bun run determinism` | Render 100 seeded times in order and shuffled. Compare the pixels. |
-| `bun run bench` | `pve bench -p pdoom_original`: the reference GPU workload in headless Chrome. Append one line per benchmark to `bench/results.jsonl` (`-- --dry` prints only; names filter it; `--no-scenes`, `--n`, `--out`; `--compare <commit|tag|last>` marks changes above 10 % and above the spread). |
-| `bun test` | Run the unit tests (core, CLI, bench coverage, `pdoom_original` timeline parity). |
-|`bun run pve <command> -p <id>`|The CLI: `init`, `check` (`--watch`), `outline`, `find`, `at`, `scene new`, `still` (ranges, `--transition`), `look` (ranges, `clips`, `cuts`), `board`, `probe`, `bench`, `perf`, `render` (`--first-frame`), `subs` (`--format all`), `first-frame`, `notes` (JSON and Markdown), `gate` (`--quick`, `--only`), `commit` (`--push`), `doctor`. `bun run pve help` lists them. The agent loop is in `skills/pve/SKILL.md`. `pve at "bar 111"` locates a bar, frame, time, lyric or range as JSON lines (`docs/LYRICMAP.md`). `pve perf <clip>` plays clips as the preview does and prints the CPU time per frame and the missed frames.|
-|`bun run pve gate -p <id>`|All pre-commit checks at the same time: `tsc` of each project in `bun run typecheck`, `pve check`, `bun test`, and `bun run golden` when the work tree changes `packages/engine`, `projects/pdoom_original` or `tests/golden`. Stops at the first failure (`--keep-going`, `--quick`, `--only <step,...>`, `--golden auto\|always\|never`, `--skip <step,...>`, `--json`).|
-|`bun run pve commit -p <id> -m "<summary>"`|Run the gate, then commit `projects/<id>/` and `--paths` only (never the rest of the work tree), with a `Ran:` list in the message (`--push` pushes to origin after commit). Run it only when the human asks for a commit.|
-| `bun run verify-export -- --project <id>` | Check a full render: decode, duration, video size and fps, AAC. |
-| `cd app && bunx --bun vite` | Preview at http://localhost:5173/?project=pdoom_original (`&t=40` starts at 40 s). |
-| `bun projects/pdoom_original/video/make-plates.ts` | Render the plate stills of the outro's rewind montage into `video/assets/plates/`. |
-| `bun projects/breaked_neuro/video/make-thumbnail.ts` | Render the upload's cover (`video/scenes/thumbnail.ts`, not a clip of the video) into `projects/breaked_neuro/out/thumbnail.png` at 1920x1080 (`--samples N`, default 4). `god_ish` has the same scene file: `bun run pve board video/scenes/thumbnail.ts -p god_ish --out projects/god_ish/out/thumbnail.png`. |
-| `bun run site:data -- <project>` | Write the web player snapshot `projects/<id>/site/` (inputs, subtitles, cover, manifest, local MP3). Needs Lyric-Sync and ffmpeg. Run it after a source file of the project changes (`--keep-audio` keeps the MP3). See `docs/SITE.md`. |
-| `bun run site:build` | Build the web player into `out/site/`. Fails if the snapshot is older than its sources. |
-| `bun run site:preview` | Serve `out/site/` at http://localhost:4173. |
+| `bun run determinism` | Render 100 seeded times in order and shuffled, then compare pixels. |
+| `bun run bench` | Run reference GPU workload in headless Chrome and append to `bench/results.jsonl`. |
+| `bun run verify-export -- --project <id>` | Check full render export integrity (decode, duration, video size, fps, AAC). |
+
+### Web Player and Static Site
+
+| Command | Does |
+|---|---|
+| `cd app && bunx --bun vite` | Serve live preview at `http://localhost:5173/?project=<id>` (`&t=40` starts at 40 s). |
+| `bun run site:data -- <project>` | Write static player data to `projects/<id>/site/` (`--keep-audio` keeps existing MP3). See `docs/SITE.md`. |
+| `bun run site:build` | Build the static web player into `out/site/`. Fails if the data snapshot is stale. |
+| `bun run site:preview` | Serve `out/site/` at `http://localhost:4173`. |
+
+### Project-Specific Scripts
+
+| Command | Does |
+|---|---|
+| `bun projects/pdoom_original/video/make-plates.ts` | Render the plate stills of the outro rewind montage for `pdoom_original` into `video/assets/plates/`. |
