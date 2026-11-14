@@ -113,7 +113,7 @@ To change the audio, run `bun run site:data -- <project>`, then upload the new f
 gh release upload site-audio projects/<id>/site/<id>.mp3 --clobber
 ```
 
-A new video needs its MP3 in the release before the CI can build the site.
+A new video needs its MP3 in the release before the CI can build the site. A project whose `video/assets/` is not in git (it has `video/assets.json`, see `docs/AVIUTL.md`) needs those files in its release too: the CI downloads them with `pve assets fetch` before the build.
 
 ## Build and preview on your machine
 

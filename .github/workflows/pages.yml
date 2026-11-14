@@ -54,6 +54,12 @@ jobs:
             gh release download "$tag" --pattern "$file" --dir "$RUNNER_TEMP/audio" --clobber
           done
           echo "PVE_SITE_AUDIO_DIR=$RUNNER_TEMP/audio" >> "$GITHUB_ENV"
+      # a project whose video/assets/ is not in git lists it in video/assets.json: download it from its release and check
+      # every file against its SHA-256 (app/scripts/site-assets.ts), before the build hashes video/assets/
+      - name: Download the video assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bun app/scripts/site-assets.ts
       # fails when the snapshot is older than video.json, the lyrics or the timing, or the audio is not the snapshot's
       - run: bun run site:build
       - uses: actions/configure-pages@v5
