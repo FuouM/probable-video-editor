@@ -22,6 +22,8 @@ export interface ProjectInputs {
     /** Font files in video/assets/fonts/: path under fonts/ -> URL. */
     fonts: Record<string, string>;
   };
+  /** Code version of each scene file (dev server only, for SceneCtx.memo; app/scripts/versions.ts). */
+  versions?: Record<string, string>;
 }
 
 /** URL of the data folder of the static site (with a trailing slash), or undefined on the dev server. */

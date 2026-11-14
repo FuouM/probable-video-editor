@@ -33,8 +33,8 @@ export class StudioAudioEngine {
 
   constructor(
     private url: string,
-    private onTimeUpdate?: (t: number) => void,
-    private onEndedCb?: () => void,
+    public onTimeUpdate?: (t: number) => void,
+    public onEndedCb?: () => void,
     /** Download progress of the mix, 0..1. */
     private onLoad?: (fraction: number) => void,
   ) {

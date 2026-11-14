@@ -13,9 +13,11 @@ import { updateSceneTimestamp } from '../project';
 import { RenderDialog } from './render-dialog';
 import { Metronome } from './metronome';
 import { PerfGraph } from './perf-graph';
+import { NleFullscreenControls } from './fs-controls';
 export class NleStudio {
   private audio: StudioAudioEngine;
   private transport: NleTransport;
+  private fsControls: NleFullscreenControls;
   private timeline: NleTimeline;
   private badges: AgentChangeDetector;
   private notesEditor: NotesEditor;
@@ -46,7 +48,7 @@ export class NleStudio {
     private timelineEntries: TimelineEntry[],
     private canvas: HTMLCanvasElement,
     initialT: number | null = null,
-    onAudioLoad?: (fraction: number) => void,
+    audio: StudioAudioEngine,
   ) {
     this.t = initialT ?? 0;
     const savedFollow = localStorage.getItem(NleStudio.STORAGE_FOLLOW);
@@ -54,16 +56,14 @@ export class NleStudio {
     const savedSpeed = localStorage.getItem(NleStudio.STORAGE_SPEED);
     this.speed = savedSpeed ? parseFloat(savedSpeed) || 1.0 : 1.0;
 
-    this.audio = new StudioAudioEngine(
-      project.mix,
-      (t) => { this.t = t; },
-      () => {
-        this.playing = false;
-        this.seek(0);
-        this.transport.update({ playing: false, time: 0 });
-      },
-      onAudioLoad,
-    );
+    // (main.ts starts the mix download before the scenes load)
+    this.audio = audio;
+    audio.onTimeUpdate = (t) => { this.t = t; };
+    audio.onEndedCb = () => {
+      this.playing = false;
+      this.seek(0);
+      this.transport.update({ playing: false, time: 0 });
+    };
     this.audioReady = this.audio.ready;
     this.audio.setPlaybackRate(this.speed);
 
@@ -86,6 +86,25 @@ export class NleStudio {
       onRender: () => this.renderDialog.open(),
       onToggleFullscreen: () => this.toggleFullscreen(),
     });
+
+    // Mount Fullscreen Bottom Hover Player Controls
+    const canvasFrame = document.getElementById('canvas-frame')!;
+    this.fsControls = new NleFullscreenControls(canvasFrame, {
+      onTogglePlay: () => this.toggle(),
+      onSeek: (targetT) => this.seek(targetT),
+      onSeekStart: () => this.seek(0),
+      onPrevSection: () => this.prevSection(),
+      onNextSection: () => this.nextSection(),
+      onToggleLoop: () => this.toggleLoop(),
+      onVolumeChange: (vol, muted) => {
+        this.audio.setVolume(muted ? 0 : vol);
+      },
+      onSpeedChange: (speed) => this.setSpeed(speed),
+      onScaleChange: (scale) => this.setScale(scale),
+      onToggleFullscreen: () => this.toggleFullscreen(),
+    });
+    this.fsControls.setSections(this.getSections(), engine.duration);
+    this.fsControls.setSpeed(this.speed);
 
     // Mount Multi-Track Timeline Canvas
     const timelineCanvas = document.getElementById('timeline-canvas') as HTMLCanvasElement;
@@ -197,6 +216,7 @@ export class NleStudio {
   private setScale(scale: number) {
     this.canvas.style.transform = scale === 1 ? 'none' : `scale(${scale})`;
     this.canvas.style.transformOrigin = 'center center';
+    this.fsControls.setScale(scale);
   }
 
   private toggle() {
@@ -219,6 +239,7 @@ export class NleStudio {
     this.audio.setLoop(this.loop);
     this.timeline.setLoop(this.loop);
     this.transport.update({ loop: this.loop !== null });
+    this.fsControls.setLoop(this.loop !== null);
   }
 
   private toggleFollow() {
@@ -238,8 +259,42 @@ export class NleStudio {
     } catch {}
     this.audio.setPlaybackRate(speed);
     this.transport.update({ speed });
+    this.fsControls.setSpeed(speed);
   }
 
+  private getSections(): Array<{ name: string; start: number; end: number }> {
+    if (this.project.timing?.sections?.length) {
+      return this.project.timing.sections;
+    }
+    return this.timelineEntries.map((c) => ({ name: c.id, start: c.start, end: c.end }));
+  }
+
+  private sectionAt(t: number): number {
+    const sections = this.getSections();
+    let i = -1;
+    for (let k = 0; k < sections.length; k++) {
+      if (sections[k]!.start <= t) i = k;
+    }
+    return i;
+  }
+
+  private prevSection() {
+    const sections = this.getSections();
+    if (!sections.length) {
+      this.seek(0);
+      return;
+    }
+    const i = this.sectionAt(this.t);
+    const cur = sections[i];
+    this.seek(cur && this.t - cur.start > 2 ? cur.start : (sections[i - 1]?.start ?? 0));
+  }
+
+  private nextSection() {
+    const sections = this.getSections();
+    if (!sections.length) return;
+    const n = sections.find((s) => s.start > this.t + 0.01);
+    if (n) this.seek(n.start);
+  }
 
 
   private seek(targetT: number) {
@@ -252,6 +307,10 @@ export class NleStudio {
 
   private updateTransportStatus() {
     const activeClip = this.timelineEntries.find((c) => this.t >= c.start && this.t < c.end);
+    const sections = this.getSections();
+    const activeSection = sections[this.sectionAt(this.t)];
+    const sectionName = activeSection?.name ?? activeClip?.id ?? '';
+
     this.transport.update({
       time: this.t,
       duration: this.engine.duration,
@@ -263,6 +322,18 @@ export class NleStudio {
       speed: this.speed,
       clipId: activeClip?.id ?? '',
     });
+
+    this.fsControls.update({
+      time: this.t,
+      duration: this.engine.duration,
+      playing: this.playing,
+      loop: this.loop !== null,
+      sectionName,
+      fps: this.fps,
+      renderMs: this.renderMsAvg,
+      speed: this.speed,
+      projectId: this.project.id,
+    });
   }
 
   private bindGlobalKeys() {
@@ -273,6 +344,44 @@ export class NleStudio {
         this.renderDialog.toggle();
         return;
       }
+      if (document.fullscreenElement) {
+        if (ev.key === 'PageUp') {
+          ev.preventDefault();
+          this.prevSection();
+          return;
+        } else if (ev.key === 'PageDown') {
+          ev.preventDefault();
+          this.nextSection();
+          return;
+        } else if (ev.key === 'ArrowUp') {
+          ev.preventDefault();
+          this.fsControls.stepVolume(0.05);
+          return;
+        } else if (ev.key === 'ArrowDown') {
+          ev.preventDefault();
+          this.fsControls.stepVolume(-0.05);
+          return;
+        } else if (ev.key === 'm' || ev.key === 'M') {
+          ev.preventDefault();
+          this.fsControls.toggleMute();
+          return;
+        } else if (ev.key === 'f' || ev.key === 'F') {
+          ev.preventDefault();
+          this.toggleFullscreen();
+          return;
+        }
+      } else {
+        if (ev.key === 'PageUp') {
+          ev.preventDefault();
+          this.prevSection();
+          return;
+        } else if (ev.key === 'PageDown') {
+          ev.preventDefault();
+          this.nextSection();
+          return;
+        }
+      }
+
 
       if (ev.key === ' ') {
         ev.preventDefault();
@@ -344,7 +453,7 @@ export class NleStudio {
     });
 
     document.getElementById('canvas-frame')?.addEventListener('dblclick', (e) => {
-      if ((e.target as HTMLElement).closest('button, #snippet-overlay')) return;
+      if ((e.target as HTMLElement).closest('button, select, input, #snippet-overlay, .pl-controls')) return;
       this.toggleFullscreen();
     });
 
@@ -365,7 +474,10 @@ export class NleStudio {
   }
 
   private updateFullscreenState(isFs: boolean) {
+    const frame = document.getElementById('canvas-frame');
+    frame?.classList.toggle('is-fullscreen', isFs);
     this.transport.setFullscreen(isFs);
+    this.fsControls.setFullscreen(isFs);
     const menuFs = document.getElementById('menu-fullscreen');
     if (menuFs) {
       menuFs.classList.toggle('active', isFs);
@@ -375,6 +487,7 @@ export class NleStudio {
 
   private startTick() {
     const tick = () => {
+      const tickT = performance.now();
       this.playing = this.audio.playing;
       if (this.playing) {
         this.t = this.audio.currentTime;
@@ -403,6 +516,15 @@ export class NleStudio {
       this.engine.render(this.t, 1 / 60);
       const renderMs = performance.now() - t0;
       this.renderMsAvg = this.renderMsAvg * 0.85 + renderMs * 0.15;
+      // a reload of an edited scene may run in the time this frame left over
+      const until = tickT + NleStudio.FRAME_MS;
+      this.engine.paceLoads(until);
+      if (this.budgetWaiter && performance.now() < until) {
+        const go = this.budgetWaiter;
+        this.budgetWaiter = null;
+        go();
+      }
+      if (!this.pumping && this.nextJob()) void this.pump();
       this.timeline.setTime(this.t);
 
       // Measure playback FPS
@@ -432,38 +554,86 @@ export class NleStudio {
   }
 
 
+  /** Clips whose scene module changed: they draw the old scene until pump reloads them. */
+  private stale = new Set<TimelineEntry>();
+  private overlayStale = false;
+  private reloadTimer = 0;
+  private pumping = false;
+  /** Resolves in the next tick that has time left after its frame (see frameBudget). */
+  private budgetWaiter: (() => void) | null = null;
+  /** The share of a 60 Hz frame that the render plus the scene loads may take. */
+  private static FRAME_MS = 1000 / 60 - 2;
+
   private attachHmr() {
-    if (import.meta.hot) {
-      import.meta.hot.on('pve:scene-reload', async (data: { projectId: string; scene: string; file: string; timestamp: number }) => {
-        if (data.projectId !== this.project.id) return;
-        updateSceneTimestamp(data.scene, data.timestamp);
-        const reloadedIds: string[] = [];
-        if (data.scene === '*') {
-          for (const e of this.timelineEntries) {
-            if (e.scene) {
-              await this.engine.reload(e.id);
-              this.badges.markReloaded(e.id);
-              reloadedIds.push(e.id);
-            }
-          }
-          if (this.engine.overlayScene) {
-            await this.engine.reloadOverlay();
-            reloadedIds.push('overlay');
-          }
+    if (!import.meta.hot) return;
+    import.meta.hot.on('pve:scene-reload', (data: { projectId: string; scenes: string[]; versions: Record<string, string>; timestamp: number }) => {
+      if (data.projectId !== this.project.id) return;
+      for (const s of data.scenes) updateSceneTimestamp(s, data.timestamp);
+      for (const e of this.timelineEntries) {
+        if (!e.scene || !data.scenes.includes(e.scene)) continue;
+        // the new code version: a memo of the old code is not used (no version: the clip computes)
+        const v = data.versions[e.scene];
+        if (v === undefined) delete e.version;
+        else e.version = v;
+        this.stale.add(e);
+      }
+      if (this.engine.overlayScene && data.scenes.includes(this.engine.overlayScene)) this.overlayStale = true;
+      // an agent saves a file several times in a row: reload once after the burst (startTick starts the pump)
+      clearTimeout(this.reloadTimer);
+      this.reloadTimer = window.setTimeout(() => { this.reloadTimer = 0; }, 250);
+    });
+  }
+
+  /** The next reload: the overlay, then clips at or 3 s ahead of the playhead, then (paused only) the others. */
+  private nextJob(): TimelineEntry | 'overlay' | null {
+    if (this.reloadTimer !== 0) return null;
+    if (this.overlayStale) return 'overlay';
+    const t = this.t;
+    for (const e of this.stale) if (e.start <= t + 3 && e.end >= t) return e;
+    if (this.playing) return null;
+    for (const e of this.stale) return e;
+    return null;
+  }
+
+  /** Waits for a tick whose frame left time over. */
+  private frameBudget(): Promise<void> {
+    const { promise, resolve } = Promise.withResolvers<void>();
+    this.budgetWaiter = resolve;
+    return promise;
+  }
+
+  /**
+   * Reloads edited scenes one at a time in the time frames leave over (a scene init is main-thread work). A load that awaits
+   * ctx.slice() spreads over frames. One that does not runs whole, so the frame it starts in is late by its init time.
+   */
+  private async pump() {
+    if (this.pumping) return;
+    this.pumping = true;
+    try {
+      for (;;) {
+        await this.frameBudget();
+        // (picked after the wait: the playhead may have moved)
+        const job = this.nextJob();
+        if (!job) break;
+        if (job === 'overlay') {
+          this.overlayStale = false;
+          await this.engine.reloadOverlay();
         } else {
-          for (const e of this.timelineEntries) {
-            if (e.scene === data.scene || e.id === data.scene) {
-              await this.engine.reload(e.id);
-              this.badges.markReloaded(e.id);
-              reloadedIds.push(e.id);
-            }
-          }
-          if (this.engine.overlayScene === data.scene) {
-            await this.engine.reloadOverlay();
-            reloadedIds.push('overlay');
-          }
+          this.stale.delete(job);
+          await this.engine.reload(job.id);
+          this.badges.markReloaded(job.id);
         }
-      });
+        this.showErrors();
+      }
+    } finally {
+      this.pumping = false;
     }
+  }
+
+  private showErrors() {
+    const errs = document.getElementById('errs');
+    if (!errs || !this.engine.errors.length) return;
+    errs.textContent = this.engine.errors.join('\n\n');
+    errs.classList.add('visible');
   }
 }

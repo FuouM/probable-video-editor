@@ -52,7 +52,7 @@ The line shows 0.25 s before its first token and 0.7 s after its last. A token t
 
 ### The files for YouTube
 
-`bun run pve subs -p <id>` writes the same tracks as files for YouTube: `projects/<id>/out/subs/<id>.<lang>.ttml`, one file for each language (`--lang en,ja`, `--format ttml|srt`, `--out <dir>`). It reads `site/subtitles.json`, so run `site:data` after a change of the lyrics. A subtitle file has no running highlight, so every change of state is its own cue: the whole line again, with the next token lit (yellow, white and grey as in the player). The cues start and end as in the player, and none runs past the end of the film.
+`bun run pve subs -p <id>` writes the same tracks as files for YouTube: `projects/<id>/out/subs/<id>.<lang>.ttml`, one file for each language (`--lang en,ja`, `--format ttml|srt|ass|ytt|all`, `--out <dir>`). The formats are TTML, SRT, ASS (Advanced SubStation Alpha) and YTT (YouTube timed text, srv3). The cue model and the writers are in the `lyricsync/formats` module of Lyric-Sync. `pve subs` builds the cues from the player tracks. `lyricsync export subs` builds them from the calibration files of a song folder. `pve subs` reads `site/subtitles.json`, so run `site:data` after a change of the lyrics. A subtitle file has no running highlight, so every change of state is its own cue: the whole line again, with the next token lit (yellow, white and grey as in the player). The cues start and end as in the player, and none runs past the end of the film.
 
 | Language | Rows |
 |---|---|

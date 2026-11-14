@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { ROOT } from './browser';
 import { checkProject } from './check';
+import { loadIgnore } from './ignore';
 import { fmtCounts, fmtProblem } from './out';
 import type { ProjectRef } from './project';
 
@@ -87,8 +88,12 @@ export function typecheckProjects(script: string): string[] {
 export const GOLDEN_PATHS = ['packages/engine/', 'projects/pdoom_original/', 'tests/golden/'];
 
 /** Does the work tree change a path that the golden stills cover? */
-export function goldenNeeded(porcelain: string): boolean {
-  return porcelain.split('\n').some((l) => GOLDEN_PATHS.some((p) => l.slice(3).replace(/^"/, '').startsWith(p)));
+export function goldenNeeded(porcelain: string, isIgnored = loadIgnore(ROOT)): boolean {
+  return porcelain.split('\n').some((l) => {
+    const file = l.slice(3).replace(/^"/, '').replace(/"$/, '').replaceAll('\\', '/');
+    if (isIgnored(file)) return false;
+    return GOLDEN_PATHS.some((p) => file.startsWith(p));
+  });
 }
 
 export type GoldenMode = 'auto' | 'always' | 'never';

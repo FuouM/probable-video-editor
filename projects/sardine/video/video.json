@@ -1,0 +1,78 @@
+{
+  "v": 2,
+  "title": "イワシがつちからはえてくるんだ",
+  "fps": 36,
+  "size": [
+    1920,
+    1080
+  ],
+  "markers": {},
+  "clips": [
+    {
+      "id": "chirp",
+      "at": 0,
+      "scene": "opening",
+      "brief": "The real room at dusk, the head at the kotatsu. The CRT opens from one white line to the title screen over the night platform イワシ. The head looks at the mug, the open boxes and back. PRESS START blinks, the menu confirms DAY 1, and the head pushes into the glass."
+    },
+    {
+      "id": "intro",
+      "at": "section:Intro",
+      "scene": "ride",
+      "brief": "[キハ40 - CAR 1] maximized: a fixed view of the night platform イワシ. The train rocks on the kicks, the cursor hovers the board and the train. The sardine swims in through the open door. The doors close, the view cycles to the cabin, the train pulls out and the hand straps swing. The sardine comes to rest over its seat on 14.222."
+    },
+    {
+      "id": "verse_1",
+      "at": "section:Verse 1",
+      "scene": "ride",
+      "brief": "Line 0 on the LED board in the cabin. The car view shrinks into [Car 1 - Interior] over the dusk map of the stem. The scissors cut the rail ahead of the train on ちょん; the map jumps. On そして night falls and the bend tool drags the track into the loop; the ends join on つな. The map zooms to the player's house, and the pick-up hand lifts the sardine out of the car (あ, あー) to the balcony door."
+    },
+    {
+      "id": "chorus_1",
+      "at": "section:Chorus 1",
+      "scene": "day",
+      "brief": "[HOUSE] security cams of the game's copy of the room. CAM 01: the sardine tapes the box ふく, calendar pages tear on the beat. CAM 02: sardines grow from the planter, line 6 on the road markings, the jellyfish floats over the street. CAM 01: the sardine lays the pass on the kotatsu and the cursor punches it. CAM 02: the cursor deletes the duckboard slats one per syllable, and the sardine falls through the hole."
+    },
+    {
+      "id": "chorus_1b",
+      "at": 42.6667,
+      "scene": "night",
+      "brief": "Bright noon at Station ？: the sardine lands and boards, line 9 on the flap board. Props go missing by themselves (checkerboards) and the cursor runs after them in vain. One smooth zoom out: towers build down from the clouds. The clear tool opens a sinkhole like an eye; the town falls in, the track breaks behind the train, and the map follows the train into the tunnel. 56.000: [MAP: OUT OF BOUNDS] opens."
+    },
+    {
+      "id": "bridge",
+      "at": "section:Bridge",
+      "scene": "bridge",
+      "brief": "[Train 1 - Ride Cam] out of bounds, a window that cannot close. The train flies off the ramp through six flower walls, past a sleeping flock that forms line 14, under fireworks and arp pillars. sv_wind 0: everything freezes, STALL, the train falls, and the tuna catch it and carry it up. Hip view to the huge moon disc with line 16 burnt in, a push to the nose, and the ram that cracks the CRT."
+    },
+    {
+      "id": "interlude",
+      "at": "section:Interlude",
+      "scene": "interlude",
+      "brief": "Deep night, the room. The head jerks back from the cracked CRT; RETRY 1/3, 2/3 while the game leaks into the room. Push into the green map: the pieces of the track settle twisted into a figure-8 crossing. CONTINUE / DAY 1: the cursor clicks, and the camera goes down to the train as the save loads."
+    },
+    {
+      "id": "verse_2",
+      "at": "section:Verse 2",
+      "scene": "interlude",
+      "brief": "One ride at 158 km/h: lines 17-20 on LED gantries, the crossing turns the train upside down and back, the day counter skips on the kicks. Voice 1 draws streaks in the sky, voice 2 rings on the ground and sparks. The train slides off the bend into Station もと and sinks into Platform 8, line 21 on its yellow signs. LOAD STATE fails on each kick, and the jellyfish takes the last dialog."
+    },
+    {
+      "id": "chorus_2",
+      "at": "section:Chorus 2",
+      "scene": "chorus2",
+      "brief": "The save loads: day, the train on the twisted loop at 140 km/h. The lines happen to the world (giant sardines, holes, lost sleepers, missing textures, towers, the ground opens). The jellyfish is the desktop buddy: balloons, reminders, it grabs the cursor and multiplies. Ctrl+Alt+Del ends WINMGR.EXE: the desktop tears, text mode, the jellyfish explode, a blue screen that datamoshes into chorus 3."
+    },
+    {
+      "id": "chorus_3",
+      "at": "section:Chorus 3",
+      "scene": "chorus3",
+      "brief": "The same world as chorus 2, no cut, under the eclipse. A new straight opens from the loop and the train takes it; the world unloads to the checker behind it over a red void. One camera orbits the train. Lines 30-37 are constellations. Every voice of the music is a light: arp stars, chord rings, fireworks, glints, shooting stars. First half: a typing game against diving tuna. Second half: a DIVA game, every note hits. In the last bar the view swings behind the train to the wall."
+    },
+    {
+      "id": "outro",
+      "at": "section:Outro",
+      "scene": "chorus3",
+      "brief": "The same scene as chorus 3, no cut. Ahead is the painted sunrise wall with a station name board that carries the credits (ORIGINAL MV KORONBA, IDEA FM, VISUALS: CLAUDE FABLE 5.2 & OPUS 5.5, GEMINI 4 ARGON). The lamps light it row by row. A school of sardines swims with the train. The nose goes through the wall. Bar 95: the head jerks back into the empty dawn room, the small train bursts out of the CRT glass and is gone. The CRT plays the attract mode (PRESS START). Push into the CRT, which switches off to a line: the first frame of the chirp."
+    }
+  ]
+}

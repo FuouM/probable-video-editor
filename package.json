@@ -4,7 +4,7 @@
   "type": "module",
   "workspaces": ["packages/*", "app"],
   "scripts": {
-    "typecheck": "tsc -p packages/engine && tsc -p packages/core && tsc -p packages/cli && tsc -p app && tsc -p app/tsconfig.scripts.json && tsc -p .",
+    "typecheck": "tsc -p packages/engine && tsc -p packages/aviutl && tsc -p packages/core && tsc -p packages/cli && tsc -p app && tsc -p app/tsconfig.scripts.json && tsc -p .",
     "pve": "bun packages/cli/src/main.ts",
     "golden": "bun scripts/golden.ts",
     "determinism": "bun scripts/determinism.ts",

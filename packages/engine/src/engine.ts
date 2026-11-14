@@ -11,6 +11,7 @@ import { loadFonts } from './type';
 import { loadStrokeFonts } from './stroke';
 import { clearMarks, markScope } from './marks';
 import { cutSpan } from './util';
+import { memo } from './memo';
 
 export interface TimelineEntry {
   id: string;
@@ -31,6 +32,8 @@ export interface TimelineEntry {
    * the composited clips as `f.under` and composites itself (it must draw `under` where it is empty).
    */
   over?: boolean;
+  /** Code version of the scene (a hash, see SceneCtx.memo). Without one, ctx.memo always computes. */
+  version?: string;
 }
 
 /** What the engine plays: the song analysis, the lyrics and the resolved edit. */
@@ -150,6 +153,13 @@ export class Engine {
   overlayLoader?: () => Promise<{ default: OverlayClass }>;
   overlayScene?: string;
   timeline: TimelineEntry[] = [];
+  /**
+   * Load pacing (the studio reloads an edited scene while it plays). A scene load waits at each ctx.slice() (and the
+   * engine's own points in loadEntry) until paceLoads gives it time. Infinity (the default: exports, the loading
+   * screen): never waits.
+   */
+  private sliceUntil = Infinity;
+  private sliceWaiters: (() => void)[] = [];
   private pbos: WebGLBuffer[] = [];
 
   constructor(public canvas: HTMLCanvasElement, private loadProject: () => Promise<EngineProject>) {
@@ -352,6 +362,7 @@ export class Engine {
   async init(
     only?: (e: TimelineEntry) => boolean,
     onProgress?: (p: InitProgress) => void,
+    warm = false,
   ) {
     onProgress?.({ phase: 'manifest', count: 5, total: 100, detail: 'Loading manifest & project inputs...' });
     const project = await this.loadProject();
@@ -365,6 +376,9 @@ export class Engine {
       mapTileMask: (rt, map) => this.mapTileMask(rt, map),
       ensureClip: (id) => this.ensureClip(id),
       renderClip: (id, t, target, dt) => this.renderClip(id, t, target, dt),
+      slice: () => this.slice(),
+      // (the overlay has no code version: it always computes)
+      memo: async (_name, compute) => compute(),
     };
     this.post = new Post();
     let overlay: Overlay | null = null;
@@ -402,7 +416,49 @@ export class Engine {
         });
       }),
     );
+    if (warm) await this.warmClips(entries, onProgress);
     onProgress?.({ phase: 'ready', count: 100, total: 100, detail: 'Ready.' });
+  }
+
+  /**
+   * Renders the first frame of each clip once, off screen. `renderer.compile` only starts the programs: the link, the shadow programs and
+   * the texture uploads wait for the first draw, which then stalls playback at the clip boundary (50-250 ms). After the warm frames every
+   * clip seeks again on its next frame, so the warm frames change no picture.
+   */
+  private async warmClips(entries: TimelineEntry[], onProgress?: (p: InitProgress) => void) {
+    const clips = entries.filter((e) => !e.over && this.loaded.get(e.id)?.scene);
+    for (const [i, e] of clips.entries()) {
+      onProgress?.({ phase: 'scenes', count: 100, total: 100, detail: `Warming the first frame of ${e.id} (${i + 1}/${clips.length})...` });
+      this.warmClip(e.id);
+      // (the loader paints between the clips)
+      const { promise, resolve } = Promise.withResolvers<void>();
+      setTimeout(resolve, 0);
+      await promise;
+    }
+  }
+
+  /** Renders the first frame of loaded clip `id` once, off screen (see warmClips). Every clip then seeks on its next frame. */
+  private warmClip(id: string) {
+    const e = this.timeline.find((x) => x.id === id);
+    if (!e || e.over || !this.loaded.get(id)?.scene) return;
+    this.render(e.start, 1 / 60, false);
+    this.lastT = -1;
+    for (const rec of this.loaded.values()) rec.lastT = -1;
+  }
+
+  /** SceneCtx.slice: nothing while the load has time, else a promise that paceLoads resolves. */
+  private slice(): Promise<void> | void {
+    if (performance.now() < this.sliceUntil) return;
+    const { promise, resolve } = Promise.withResolvers<void>();
+    this.sliceWaiters.push(resolve);
+    return promise;
+  }
+
+  /** Scene loads may run until performance.now() reaches `until` (ms; Infinity: no limit). */
+  paceLoads(until: number) {
+    this.sliceUntil = until;
+    if (performance.now() >= until) return;
+    for (const w of this.sliceWaiters.splice(0)) w();
   }
 
   private loading = new Map<string, Promise<void>>();
@@ -417,7 +473,15 @@ export class Engine {
       if (!prev?.scene) this.loaded.set(e.id, rec);
       try {
         const mod = await e.load();
-        const s = new mod.default({ ...this.ctx, id: e.id, params: e.params ?? {}, start: e.start, end: e.end });
+        await this.slice();
+        const params = e.params ?? {}, version = e.version;
+        const ctx: SceneCtx = { ...this.ctx, id: e.id, params, start: e.start, end: e.end };
+        if (version !== undefined) {
+          const key = `${version}|${e.start}|${e.end}|${JSON.stringify(params)}`;
+          ctx.memo = (name, compute) => memo(`${this.ctx.assets}|${e.id}|${name}`, key, compute);
+        }
+        const s = new mod.default(ctx);
+        await this.slice();
         await s.init();
         rec.scene = s;
         if (prev?.scene) {

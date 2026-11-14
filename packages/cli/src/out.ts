@@ -3,7 +3,7 @@
 // Exit codes: 0 = success, 1 = a check or a command failed, 2 = usage error.
 import type { TimingData } from '@pve/core';
 
-export const EXIT = { ok: 0, error: 1, usage: 2 } as const;
+export const EXIT = { ok: 0, error: 1, usage: 2, running: 3 } as const;
 export type ExitCode = (typeof EXIT)[keyof typeof EXIT];
 
 /** Wrong arguments. main() prints the message and the usage of the command, then exits with 2. */

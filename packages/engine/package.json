@@ -6,6 +6,7 @@
     "./*": "./src/*.ts"
   },
   "dependencies": {
+    "@dimforge/rapier3d-deterministic-compat": "0.21",
     "opentype.js": "^2.0.0",
     "three": "^0.186.0"
   },

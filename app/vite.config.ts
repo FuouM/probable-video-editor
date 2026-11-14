@@ -1,6 +1,6 @@
-import { defineConfig, normalizePath, type Plugin } from 'vite';
+import { defineConfig, normalizePath, type ModuleNode, type Plugin } from 'vite';
 import type { IncomingMessage } from 'node:http';
-import type { Subprocess } from 'bun';
+import { $, type Subprocess } from 'bun';
 import { execSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -8,25 +8,44 @@ import { TimingData, resolveVideo, type VideoJson } from '@pve/core';
 import { loadSong } from '@pve/core/load';
 import { PROJECTS, REPO, projectDir } from './scripts/project';
 import { projectInputs } from './scripts/inputs';
+import { inputsHash, sceneVersions } from './scripts/versions';
 
-/** Query git status for modified/untracked scene files in a project. */
-function getProjectStatus(id: string) {
-  try {
-    const raw = execSync(`git status --porcelain projects/${id}/video`, { encoding: 'utf8', cwd: REPO });
-    const dirtyClips = new Set<string>();
-    const modifiedFiles: string[] = [];
-    for (const line of raw.split('\n')) {
-      const trimmed = line.trim();
-      if (!trimmed) continue;
-      const file = trimmed.slice(2).trim();
-      modifiedFiles.push(file);
-      const m = /video\/scenes\/([a-zA-Z0-9_-]+)\.ts$/.exec(file);
-      if (m && !m[1].startsWith('_')) dirtyClips.add(m[1]);
-    }
-    return { projectId: id, dirtyClips: [...dirtyClips], modifiedFiles, timestamp: Date.now() };
-  } catch {
-    return { projectId: id, dirtyClips: [], modifiedFiles: [], timestamp: Date.now() };
+/** Query git status for modified/untracked scene files in a project (async: a sync spawn stalls the dev server for every file write). */
+async function getProjectStatus(id: string) {
+  const out = await $`git status --porcelain projects/${id}/video`.cwd(REPO).quiet().nothrow();
+  const raw = out.exitCode === 0 ? out.stdout.toString() : '';
+  const dirtyClips = new Set<string>();
+  const modifiedFiles: string[] = [];
+  for (const line of raw.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    const file = trimmed.slice(2).trim();
+    modifiedFiles.push(file);
+    const m = /video\/scenes\/([a-zA-Z0-9_-]+)\.ts$/.exec(file);
+    if (m && !m[1].startsWith('_')) dirtyClips.add(m[1]);
   }
+  return { projectId: id, dirtyClips: [...dirtyClips], modifiedFiles, timestamp: Date.now() };
+}
+
+/**
+ * The scene names (top-level files of `<project>/video/scenes/` without a leading `_`) that import `mods`, directly or through
+ * helper modules of the same folder, `mods` included. Only modules the page has loaded are in the graph.
+ */
+function scenesImporting(mods: ModuleNode[], sceneDir: string): string[] {
+  const scenes = new Set<string>();
+  const seen = new Set<ModuleNode>();
+  const stack = [...mods];
+  while (stack.length) {
+    const mod = stack.pop()!;
+    if (seen.has(mod) || !mod.file) continue;
+    const rel = normalizePath(path.relative(sceneDir, mod.file));
+    if (rel.startsWith('..')) continue;
+    seen.add(mod);
+    const m = /^([a-zA-Z0-9-][a-zA-Z0-9_-]*)\.ts$/.exec(rel);
+    if (m) scenes.add(m[1]);
+    stack.push(...mod.importers);
+  }
+  return [...scenes];
 }
 async function readBody(req: IncomingMessage): Promise<string> {
   const { promise, resolve, reject } = Promise.withResolvers<string>();
@@ -107,23 +126,26 @@ function projects(): Plugin {
     outFile: string;
   }
   const activeWebCodecsSessions = new Map<string, WebCodecsSession>();
+  /** Project id -> hash of the inputs the page read last (the base of the scene versions, see scripts/versions.ts). */
+  const inputHashes = new Map<string, string>();
   return {
     name: 'pve-projects',
     configureServer(server) {
       server.watcher.add(PROJECTS);
+      // git status per project at most once per burst of writes (an agent writes several files in a row)
+      const statusTimers = new Map<string, ReturnType<typeof setTimeout>>();
+      const sendStatus = (projectId: string) => {
+        clearTimeout(statusTimers.get(projectId));
+        statusTimers.set(projectId, setTimeout(async () => {
+          statusTimers.delete(projectId);
+          server.ws.send({ type: 'custom', event: 'pve:scene-status', data: await getProjectStatus(projectId) });
+        }, 300));
+      };
       server.watcher.on('change', (f) => {
         const rel = normalizePath(path.relative(PROJECTS, f));
-        if (rel.includes('/out/') || rel.includes('/bench/')) return;
-        if (!rel.startsWith('..') && /\.(json|ya?ml)$/.test(rel) && !rel.includes('/lyricsync/')) server.ws.send({ type: 'full-reload' });
-        const parts = rel.split('/');
-        const projectId = parts[0];
-        if (projectId) {
-          server.ws.send({
-            type: 'custom',
-            event: 'pve:scene-status',
-            data: getProjectStatus(projectId),
-          });
-        }
+        if (rel.startsWith('..') || rel.includes('/out/') || rel.includes('/bench/')) return;
+        if (/\.(json|ya?ml)$/.test(rel) && !rel.includes('/lyricsync/')) server.ws.send({ type: 'full-reload' });
+        sendStatus(rel.split('/')[0]!);
       });
       server.middlewares.use(async (req, res, next) => {
         let url = req.url ?? '';
@@ -144,7 +166,7 @@ function projects(): Plugin {
         if (sm) {
           const id = decodeURIComponent(sm[1] ?? '') || process.env.PVE_PROJECT || '';
           res.setHeader('content-type', 'application/json');
-          res.end(JSON.stringify(getProjectStatus(id)));
+          res.end(JSON.stringify(await getProjectStatus(id)));
           return;
         }
         const nm = /^\/api\/project(?:\/([^/?#]*))?\/notes(?:\/([^/?#]+))?(?:[?#].*)?$/.exec(url);
@@ -513,8 +535,10 @@ function projects(): Plugin {
             mix: (song) => `/projects/${id}/${normalizePath(path.relative(dir, song.prompt.mixPath)).split('/').map(encodeURIComponent).join('/')}`,
             font: (rel) => `/projects/${id}/video/assets/fonts/${rel}`,
           });
+          const ih = inputsHash(body);
+          inputHashes.set(id, ih);
           res.setHeader('content-type', 'application/json');
-          res.end(JSON.stringify(body));
+          res.end(JSON.stringify({ ...body, versions: sceneVersions(dir, ih) }));
         } catch (e) {
           res.statusCode = 404;
           res.setHeader('content-type', 'text/plain');
@@ -524,25 +548,20 @@ function projects(): Plugin {
     },
     handleHotUpdate(ctx) {
       const rel = normalizePath(path.relative(PROJECTS, ctx.file));
-      if (!rel.startsWith('..')) {
-        const m = /^([^/]+)\/video\/scenes\/([a-zA-Z0-9_-]+)\.ts$/.exec(rel);
-        if (m) {
-          const projectId = m[1];
-          const sceneFile = m[2];
-          const isHelper = sceneFile.startsWith('_') || sceneFile === 'pdoom';
-          ctx.server.ws.send({
-            type: 'custom',
-            event: 'pve:scene-reload',
-            data: {
-              projectId,
-              file: rel,
-              scene: isHelper ? '*' : sceneFile,
-              timestamp: ctx.timestamp,
-            },
-          });
-          return [];
-        }
+      const m = /^([^/]+)\/video\/scenes\/.+\.ts$/.exec(rel);
+      if (!m) return;
+      const projectId = m[1]!;
+      // only the scenes that import the changed file reload, not every clip of the project
+      const scenes = scenesImporting(ctx.modules, path.join(PROJECTS, projectId, 'video/scenes'));
+      // HMR timestamps on the changed module and its importers: the re-imported scene then asks for fresh helper URLs (?t=)
+      for (const mod of ctx.modules) ctx.server.moduleGraph.invalidateModule(mod, new Set(), ctx.timestamp, true);
+      if (scenes.length) {
+        // (no inputs hash: no page of this server has read the project, and a scene without a version is never memoized)
+        const ih = inputHashes.get(projectId);
+        const versions = ih === undefined ? {} : sceneVersions(path.join(PROJECTS, projectId), ih, scenes);
+        ctx.server.ws.send({ type: 'custom', event: 'pve:scene-reload', data: { projectId, scenes, versions, timestamp: ctx.timestamp } });
       }
+      return [];
     },
   };
 }

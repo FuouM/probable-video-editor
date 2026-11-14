@@ -34,4 +34,30 @@ export const bench: EffectBench[] = [
       s.rt.dispose();
     },
   }),
+  defineBench({
+    id: 'gl.missing',
+    kind: 'helper',
+    async setup() {
+      const [{ missingMaterial, makeRT }, THREE] = await Promise.all([import('./gl'), import('three')]);
+      const mat = missingMaterial(0.25);
+      const geo = new THREE.BoxGeometry(1, 1, 1);
+      const mesh = new THREE.Mesh(geo, mat);
+      const scene = new THREE.Scene();
+      scene.add(mesh);
+      const cam = new THREE.PerspectiveCamera(45, 16 / 9, 0.1, 100);
+      cam.position.set(2, 2, 2);
+      cam.lookAt(0, 0, 0);
+      const rt = makeRT(640, 360);
+      return { scene, cam, rt, geo, mat };
+    },
+    run({ renderer }, s) {
+      renderer.setRenderTarget(s.rt);
+      renderer.render(s.scene, s.cam);
+    },
+    dispose(_, s) {
+      s.geo.dispose();
+      s.mat.dispose();
+      s.rt.dispose();
+    },
+  }),
 ];

@@ -44,6 +44,50 @@
             <div class="nle-snippet-marquee hidden" id="snippet-marquee"></div>
             <div class="nle-snippet-hint">Select region: Drag rectangle over frame · Press Escape to cancel</div>
           </div>
+          <!-- Fullscreen Bottom Hover Player Control (like the live site) -->
+          <div class="pl-controls nle-fs-controls" id="fs-controls">
+            <div class="pl-seek" id="fs-seek" role="slider" aria-label="Seek" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0">
+              <div class="pl-seek-fill" id="fs-seek-fill"></div>
+              <div class="pl-seek-ticks" id="fs-seek-ticks"></div>
+              <div class="pl-seek-tip" id="fs-seek-tip"></div>
+            </div>
+            <div class="daw-transport pl-bar">
+              <div class="daw-transport-group">
+                <button class="daw-tbtn" id="fs-btn-start" title="Go to start (Home)" aria-label="Go to start"></button>
+                <button class="daw-tbtn" id="fs-btn-prev" title="Previous section (PageUp)" aria-label="Previous section"></button>
+                <button class="daw-tbtn daw-tbtn-play" id="fs-btn-play" title="Play / pause (Space)" aria-label="Play"></button>
+                <button class="daw-tbtn" id="fs-btn-next" title="Next section (PageDown)" aria-label="Next section"></button>
+                <button class="daw-tbtn" id="fs-btn-loop" title="Loop active clip (L)" aria-label="Loop" aria-pressed="false"></button>
+              </div>
+              <div class="pl-time"><span id="fs-time-now">0:00</span> <span class="pl-muted">/</span> <span id="fs-time-total">0:00</span></div>
+              <div class="nle-chip" id="fs-chip-section" title="Current section / clip"><span class="pl-muted">SECTION:</span> <strong id="fs-section">&mdash;</strong></div>
+              <div class="pl-stat" id="fs-stat" title="Video, output size, frames per second, CPU time of one frame"></div>
+              <div class="daw-transport-spacer"></div>
+              <div class="daw-transport-group">
+                <button class="daw-tbtn" id="fs-btn-mute" title="Mute (M)" aria-label="Mute"></button>
+                <input class="pl-vol" id="fs-vol" type="range" min="0" max="1" step="0.05" value="1" aria-label="Volume" title="Volume (Up / Down)" />
+              </div>
+              <label class="pl-field" title="Playback speed ( &lt; and &gt; )">
+                <span class="pl-muted">SPEED:</span>
+                <select class="nle-select pl-select" id="fs-speed" aria-label="Playback speed">
+                  <option value="0.25">0.25×</option>
+                  <option value="0.5">0.5×</option>
+                  <option value="1" selected>1.0×</option>
+                  <option value="2">2.0×</option>
+                </select>
+              </label>
+              <label class="pl-field" title="Preview resolution">
+                <span class="pl-muted">RES:</span>
+                <select class="nle-select pl-select" id="fs-res" aria-label="Preview resolution">
+                  <option value="0.5">0.5×</option>
+                  <option value="1" selected>1.0×</option>
+                </select>
+              </label>
+              <div class="daw-transport-group">
+                <button class="daw-tbtn" id="fs-btn-full" title="Exit fullscreen (Escape / F11)" aria-label="Exit fullscreen"></button>
+              </div>
+            </div>
+          </div>
         </div>
       </main>
       <aside class="nle-perf-pane hidden" id="perf-pane">

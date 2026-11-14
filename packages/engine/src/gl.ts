@@ -308,3 +308,79 @@ export function clearRT(renderer: THREE.WebGLRenderer, rt: THREE.WebGLRenderTarg
   renderer.clear(true, true, true);
   renderer.setClearColor(prev, prevA);
 }
+
+// ---------------------------------------------------------------- missing material
+
+/** Default cells along the longest side of a mesh. */
+export const MISSING_CELLS = 8;
+
+const MAGENTA = 'vec3(1.0, 0.0, 1.0)';
+const missingCache = new Map<string, THREE.MeshBasicMaterial>();
+
+/**
+ * Object-space unlit magenta and black (#ff00ff / #000000) checkerboard material.
+ * Box-mapped along the dominant normal axis without requiring texture coordinates.
+ */
+export function missingMaterial(cell: number, side: THREE.Side = THREE.FrontSide): THREE.MeshBasicMaterial {
+  if (!(cell > 0)) throw new Error(`missing: the cell size must be positive, got ${cell}`);
+  const key = `${cell.toPrecision(5)}|${side}`;
+  let m = missingCache.get(key);
+  if (!m) {
+    m = new THREE.MeshBasicMaterial({ side, fog: false });
+    m.onBeforeCompile = (s) => {
+      s.uniforms.uMsCell = { value: cell };
+      s.vertexShader = s.vertexShader
+        .replace('#include <common>', '#include <common>\nvarying vec3 vMsP;\nvarying vec3 vMsN;')
+        .replace('#include <begin_vertex>', '#include <begin_vertex>\nvMsP = position;\nvMsN = normal;');
+      s.fragmentShader = s.fragmentShader
+        .replace('#include <common>', '#include <common>\nuniform float uMsCell;\nvarying vec3 vMsP;\nvarying vec3 vMsN;')
+        .replace('#include <color_fragment>', `
+vec3 msA = abs(vMsN);
+vec2 msUv = (msA.y >= msA.x && msA.y >= msA.z) ? vMsP.xz : (msA.x >= msA.z ? vMsP.zy : vMsP.xy);
+vec2 msCell = floor(msUv / uMsCell);
+diffuseColor.rgb = mod(msCell.x + msCell.y, 2.0) < 0.5 ? vec3(0.0) : ${MAGENTA};`);
+    };
+    m.customProgramCacheKey = () => 'pve-missing';
+    missingCache.set(key, m);
+  }
+  return m;
+}
+
+const savedMaterials = new WeakMap<THREE.Mesh, THREE.Material | THREE.Material[]>();
+const boundsSize = new THREE.Vector3();
+
+/** The cell size of a mesh: its longest object-space side over `MISSING_CELLS`. */
+export function cellOfMesh(mesh: THREE.Mesh): number {
+  const g = mesh.geometry;
+  if (!g.boundingBox) g.computeBoundingBox();
+  g.boundingBox!.getSize(boundsSize);
+  const longest = Math.max(boundsSize.x, boundsSize.y, boundsSize.z);
+  if (!(longest > 0)) throw new Error('missing: a mesh with an empty geometry has no checker');
+  return longest / MISSING_CELLS;
+}
+
+/**
+ * Swaps the materials of every mesh under `root` for the missing-texture checker, or back to the
+ * ones they had. Calling it again with the same `on` changes nothing. `cell` fixes the cell size of the whole group
+ * (object-space units); by default each mesh gets 8 cells along its longest side.
+ */
+export function setMissing(root: THREE.Object3D, on: boolean, cell?: number) {
+  root.traverse((o) => {
+    if (!(o instanceof THREE.Mesh)) return;
+    if (!on) {
+      const m = savedMaterials.get(o);
+      if (m) { o.material = m; savedMaterials.delete(o); }
+      return;
+    }
+    if (savedMaterials.has(o)) return;
+    savedMaterials.set(o, o.material);
+    const first = Array.isArray(o.material) ? o.material[0] : o.material;
+    const mm = missingMaterial(cell ?? cellOfMesh(o), first?.side ?? THREE.FrontSide);
+    o.material = Array.isArray(o.material) ? o.material.map(() => mm) : mm;
+  });
+}
+
+/** `setMissing` from time spans `[from, to)`: the object shows the checker while t is in a span. A pure function of t. */
+export function missingAt(root: THREE.Object3D, spans: readonly (readonly [number, number])[], t: number, cell?: number) {
+  setMissing(root, spans.some(([a, b]) => t >= a && t < b), cell);
+}

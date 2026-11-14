@@ -57,6 +57,9 @@ export const DEFAULT_POST: PostParams = {
   invert: 0,
 };
 
+/** Post overrides with no film effects: every post effect that would soften or tint the pixels is off. Use it for a pixel-art look. */
+export const NO_FILM_POST: Partial<PostParams> = { bloom: 0, halation: 0, ca: 0, grain: 0, vignette: 0, hud: 0, frame: 0 };
+
 const MIPS = 7;
 
 export class Post {

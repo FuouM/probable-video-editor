@@ -2,6 +2,7 @@
 node_modules/
 .vite/
 .deprecated/
+.scratch/
 
 # renders
 out/
@@ -19,6 +20,12 @@ projects/*/user_input/**/*.opus
 !projects/pdoom_original/user_input/**
 # the static site's audio is a release asset (app/scripts/site-data.ts), not in git
 projects/*/site/*.mp3
+# sardine: the UTAU sources (ust, aup) and the vocal renders are local. placements.json stays in git.
+projects/sardine/user_input/ust/
+projects/sardine/user_input/**/*.aup
+projects/sardine/generated/renders/
+# sardine: the video assets (sprites, timeline.json) are release assets listed in video/assets.json (pve assets), not in git
+projects/sardine/video/assets/
 
 # notes & post-mortems
 .lessons/

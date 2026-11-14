@@ -2,13 +2,15 @@
 // scripts (golden, determinism): the Vite dev server and one headless Chrome on the app's export mode
 // (?export=1&project=<id>, window.__pve).
 // Chrome runs with a persistent profile (its GPU shader cache keeps compiled shaders between runs). Two
-// Chromes cannot share a profile, so a lock file guards each one: a second command waits for the first.
+// Chromes cannot share a profile, so a lock file guards each one. A command takes the first free profile of a
+// pool, so commands run side by side. When all profiles are busy, the command fails at once: it never waits.
+// Each page step has a deadline (PVE_READY_TIMEOUT, PVE_FRAME_TIMEOUT): a stuck scene fails the command.
 import { closeSync, mkdirSync, openSync, readFileSync, rmSync, writeSync } from 'node:fs';
 import path from 'node:path';
 import { chromium, type BrowserContext, type Page } from 'playwright-core';
 import type { BenchOptions, BenchPageResult } from '@pve/engine/bench/types';
 import type { AdaptiveSampling } from '@pve/engine/engine';
-import type { Mark } from '@pve/engine/marks';
+import type { CamRecord, Mark, Metric } from '@pve/engine/marks';
 import type { Lyrics } from '@pve/engine/lyrics';
 
 export const ROOT = path.resolve(import.meta.dir, '../../..');
@@ -40,6 +42,11 @@ export interface PveExport {
   png(): Promise<string>;
   /** The named objects of the last rendered frame (scenes call `mark` from @pve/engine/marks). */
   marks(): Mark[];
+  /** The values that scenes reported for the last rendered frame (`metric` from @pve/engine/marks). */
+  metrics(): Metric[];
+  /** The cameras of the last rendered frame; recorded only after `recordCams(true)`. */
+  cameras(): CamRecord[];
+  recordCams(on: boolean): void;
   stream(o: { from: number; to: number; fps: number; ws: string; samples?: number | AdaptiveSampling; shutter?: number; inflight?: number; webcodecs?: boolean }): Promise<StreamFrame[]>;
   engine: {
     hudOff: boolean;
@@ -51,8 +58,30 @@ export interface PveExport {
 }
 export type PveWindow = { __pve?: PveExport };
 
-/** Persistent Chrome profile. Slot k > 0 (a second render worker) uses `chrome-profile-k`. */
+/** The Chrome profile pool: `chrome-profile`, `chrome-profile-1` … `chrome-profile-7`. A command takes free ones. */
 export const PROFILE = path.join(ROOT, 'out/cache/chrome-profile');
+export const PROFILES = 8;
+const profileDir = (k: number) => (k ? `${PROFILE}-${k}` : PROFILE);
+
+function seconds(v: string | undefined, def: number): number {
+  const n = Number(v);
+  return v !== undefined && Number.isFinite(n) && n > 0 ? n : def;
+}
+/** Deadline for the page to boot and load its clips (scene init), in ms. `PVE_READY_TIMEOUT` in seconds, default 60. */
+export const READY_MS = seconds(process.env.PVE_READY_TIMEOUT, 60) * 1000;
+/** Deadline for one frame (`still`, one sheet tile), in ms. `PVE_FRAME_TIMEOUT` in seconds, default 30. */
+export const FRAME_MS = seconds(process.env.PVE_FRAME_TIMEOUT, 30) * 1000;
+
+/**
+ * Rejects when `p` takes longer than `ms`. A page that runs a scene in a loop never answers, so each page step
+ * goes through this. The caller then closes the browser, which stops the page.
+ */
+export async function deadline<T>(p: Promise<T>, ms: number, what: string): Promise<T> {
+  p.catch(() => {}); // after a timeout the browser closes and `p` rejects: nobody waits for it then
+  const { promise: late, reject } = Promise.withResolvers<never>();
+  const timer = setTimeout(() => reject(new Error(`${what} took more than ${ms / 1000} s: the page is stuck (a scene loops, or its init or render is too slow). PVE_READY_TIMEOUT and PVE_FRAME_TIMEOUT (seconds) set the limits.`)), ms);
+  try { return await Promise.race([p, late]); } finally { clearTimeout(timer); }
+}
 
 /** ANGLE backend for this platform (Chrome's default elsewhere). */
 export const ANGLE: Partial<Record<NodeJS.Platform, string>> = { win32: 'd3d11', darwin: 'metal' };
@@ -67,9 +96,15 @@ export function killTree(proc: { pid: number; kill: () => void }) {
   else proc.kill();
 }
 
-/** Use the dev server at `url` if it answers, else start a private one. */
-export async function ensureServer(url = 'http://localhost:5173'): Promise<{ url: string; stop: () => void }> {
-  if (await reachable(url)) return { url, stop: () => {} };
+/**
+ * The dev server for a headless page: `url` if given and it answers, else a private one without live reload.
+ * A shared dev server with live reload reloads the page when an agent saves a file mid-render.
+ */
+export async function ensureServer(url?: string): Promise<{ url: string; stop: () => void }> {
+  if (url) {
+    if (await reachable(url)) return { url, stop: () => {} };
+    throw new Error(`no dev server answers at ${url}`);
+  }
   // a free port: the OS picks one for a moment, Vite takes it
   const probe = Bun.serve({ port: 0, fetch: () => new Response() });
   const port = probe.port;
@@ -91,15 +126,11 @@ function alive(pid: number): boolean {
 const held = new Set<string>();
 process.on('exit', () => { for (const f of held) rmSync(f, { force: true }); });
 
-/**
- * Waits until this process holds the profile folder `dir` (lock file `<dir>.lock` with pid and command).
- * A lock whose process is gone is taken over. Returns the release function.
- */
-export async function lockProfile(dir: string, onWait: (holder: string) => void = (h) => console.error(`waiting for Chrome: ${h}`)): Promise<() => void> {
+/** Takes the lock of profile folder `dir`. Returns the release function, or the holder when another process has it. */
+function tryLock(dir: string): (() => void) | string {
   const file = `${dir}.lock`;
   mkdirSync(path.dirname(file), { recursive: true });
-  let told = false;
-  for (;;) {
+  for (let attempt = 0; attempt < 3; attempt++) {
     try {
       const fd = openSync(file, 'wx');
       writeSync(fd, JSON.stringify({ pid: process.pid, cmd: process.argv.slice(1).map((a) => path.basename(a)).join(' '), since: new Date().toISOString() }));
@@ -109,15 +140,24 @@ export async function lockProfile(dir: string, onWait: (holder: string) => void 
     } catch (e) {
       if (!(e instanceof Error && 'code' in e && e.code === 'EEXIST')) throw e;
     }
-    let holder: { pid?: number; cmd?: string } = {};
-    try { holder = JSON.parse(readFileSync(file, 'utf8')); } catch { /* being written: read again */ }
-    if (holder.pid !== undefined && !alive(holder.pid)) {
-      try { rmSync(file, { force: true }); } catch { /* retry */ }
-      continue;
-    }
-    if (!told && holder.pid !== undefined) { onWait(`${holder.cmd ?? '?'} (pid ${holder.pid}) uses ${path.basename(dir)}`); told = true; }
-    await Bun.sleep(250);
+    let holder: { pid?: number; cmd?: string; since?: string } = {};
+    try { holder = JSON.parse(readFileSync(file, 'utf8')); } catch { continue; /* being written: read again */ }
+    if (holder.pid !== undefined && !alive(holder.pid)) { rmSync(file, { force: true }); continue; }
+    return `${path.basename(dir)}: ${holder.cmd ?? '?'} (pid ${holder.pid ?? '?'}, since ${holder.since ?? '?'})`;
   }
+  return `${path.basename(dir)}: lock file is changing`;
+}
+
+/** Takes the first free profile of the pool. Throws at once when all are busy. */
+export function acquireProfile(): { dir: string; release: () => void } {
+  const busy: string[] = [];
+  for (let k = 0; k < PROFILES; k++) {
+    const dir = profileDir(k);
+    const r = tryLock(dir);
+    if (typeof r === 'function') return { dir, release: r };
+    busy.push(r);
+  }
+  throw new Error(`all ${PROFILES} Chrome profiles are busy:\n  ${busy.join('\n  ')}\nStop a stuck one with taskkill /PID <pid> /T /F.`);
 }
 
 export interface OpenOptions {
@@ -125,10 +165,10 @@ export interface OpenOptions {
   /** Load only these clips (comma-separated ids). */
   only?: string;
   headed?: boolean;
-  /** Profile slot: concurrent Chromes of one command need their own profile folders. */
-  slot?: number;
   /** Keep the GPU 2D canvas, as in the live preview (not deterministic: for timing only, never for pixels). */
   gpuCanvas?: boolean;
+  /** The precision of the lit HDR targets: `half` (16-bit float, the default) or `float` (32-bit: free of the GPU's 16-bit blend rounding, for the checks). */
+  hdr?: 'half' | 'float';
 }
 
 /**
@@ -138,7 +178,8 @@ export interface OpenOptions {
  * and between runs. The software 2D canvas gives the same pixels on every render. WebGL stays on the GPU.
  */
 export const CHROME_ARGS = [
-  ...(ANGLE[process.platform] ? [`--use-angle=${ANGLE[process.platform]}`] : []),
+  // PVE_ANGLE (such as `gl`) renders on another ANGLE backend, to reproduce a fault that one browser setup shows
+  ...(process.env.PVE_ANGLE ? [`--use-angle=${process.env.PVE_ANGLE}`] : ANGLE[process.platform] ? [`--use-angle=${ANGLE[process.platform]}`] : []),
   '--disable-accelerated-2d-canvas',
   '--enable-gpu-rasterization', '--ignore-gpu-blocklist',
   '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows',
@@ -152,11 +193,10 @@ export interface OpenPage {
   logs: string[];
 }
 
-/** Open project `project` in export mode and wait until it is ready. Waits for the profile lock first. */
+/** Open project `project` in export mode and wait until it is ready. Takes a free profile first (fails at once if none). */
 export async function openPage(url: string, project: string, o: OpenOptions = {}): Promise<OpenPage> {
   const scale = o.scale ?? 1;
-  const profile = o.slot ? `${PROFILE}-${o.slot}` : PROFILE;
-  const release = await lockProfile(profile);
+  const { dir: profile, release } = acquireProfile();
   let browser: BrowserContext;
   try {
     browser = await chromium.launchPersistentContext(profile, {
@@ -171,9 +211,9 @@ export async function openPage(url: string, project: string, o: OpenOptions = {}
     throw e;
   }
   browser.on('close', release);
+  const logs: string[] = [];
   try {
     const page = browser.pages()[0] ?? (await browser.newPage());
-    const logs: string[] = [];
     // A failed load (404, network error) is a console error whose location is the failed URL. The
     // favicon request is not a page request, so the console is the only place where it shows.
     page.on('console', (m) => {
@@ -181,8 +221,14 @@ export async function openPage(url: string, project: string, o: OpenOptions = {}
       logs.push(`[${m.type()}] ${m.text()}${m.text().startsWith('Failed to load resource') ? ` ${m.location().url}` : ''}`);
     });
     page.on('pageerror', (e) => logs.push(`[pageerror] ${e.message}`));
-    await page.goto(`${url}/?export=1&project=${encodeURIComponent(project)}${o.only ? `&only=${o.only}` : ''}${scale !== 1 ? `&scale=${scale}` : ''}`);
-    await page.waitForFunction(() => { const p = (window as unknown as PveWindow).__pve; return p?.ready || p?.error; }, null, { timeout: 120000 });
+    // One deadline for load and init. Playwright's own timeouts do not fire while the page's main thread is busy.
+    const t0 = performance.now();
+    const boot = (async () => {
+      await page.goto(`${url}/?export=1&project=${encodeURIComponent(project)}${o.only ? `&only=${o.only}` : ''}${scale !== 1 ? `&scale=${scale}` : ''}${o.hdr === 'float' ? '&hdr=float' : ''}`, { timeout: READY_MS });
+      await page.waitForFunction(() => { const p = (window as unknown as PveWindow).__pve; return p?.ready || p?.error; }, null, { timeout: READY_MS });
+    })();
+    await deadline(boot, READY_MS, `loading the page (clips: ${o.only ?? 'all'})`);
+    if (process.env.PVE_VERBOSE) console.error(`page ready in ${((performance.now() - t0) / 1000).toFixed(1)} s`);
     const err = await page.evaluate(() => (window as unknown as PveWindow).__pve!.error);
     if (err) throw new Error(`app failed to boot:\n${err}\n${logs.join('\n')}`);
     const size: [number, number] = await page.evaluate(() => { const p = (window as unknown as PveWindow).__pve!; return [p.width ?? 1920, p.height ?? 1080]; });
@@ -191,7 +237,8 @@ export async function openPage(url: string, project: string, o: OpenOptions = {}
     if (sceneErrors.length) console.error('SCENE ERRORS:\n' + sceneErrors.join('\n'));
     return { browser, page, logs };
   } catch (e) {
-    await browser.close().catch(() => {});
+    if (logs.length) console.error('BROWSER LOG:\n' + logs.slice(0, 40).join('\n'));
+    await closeBrowser(browser);
     throw e;
   }
 }
@@ -223,6 +270,11 @@ export function assertNoBrowserErrors(logs: string[]): void {
   if (errors.length) throw new Error(`the page logged ${errors.length} error${errors.length === 1 ? '' : 's'}, the frames are not valid:\n${errors.slice(0, 10).join('\n')}`);
 }
 
+/** Closes Chrome. A busy page can delay the close: give up after 10 s (Playwright kills Chrome when the process exits). */
+export async function closeBrowser(browser: BrowserContext): Promise<void> {
+  await deadline(browser.close(), 10_000, 'closing Chrome').catch(() => {});
+}
+
 /** Runs `fn` with a page of `project`: starts the server if needed, closes everything after. Fails on browser errors. */
 export async function withPage<T>(project: string, o: OpenOptions & { url?: string }, fn: (page: Page, logs: string[]) => Promise<T>): Promise<T> {
   const { url, stop } = await ensureServer(o.url);
@@ -233,7 +285,7 @@ export async function withPage<T>(project: string, o: OpenOptions & { url?: stri
       result = await fn(page, logs);
     } finally {
       if (logs.length) console.error('BROWSER LOG:\n' + logs.slice(0, 40).join('\n'));
-      await browser.close().catch(() => {});
+      await closeBrowser(browser);
     }
     assertNoBrowserErrors(logs);
     return result;

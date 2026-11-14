@@ -1,0 +1,5276 @@
+{
+  "format": "words",
+  "fps": 60,
+  "method": "ust",
+  "sections": [
+    {
+      "id": "sec_mvzbz2aw",
+      "name": "Chirp",
+      "start": 0,
+      "end": 7.111111
+    },
+    {
+      "id": "intro_0",
+      "name": "Intro",
+      "start": 7.111111,
+      "end": 14.222222
+    },
+    {
+      "id": "verse_1_1",
+      "name": "Verse 1",
+      "start": 14.222222,
+      "end": 28.444444
+    },
+    {
+      "id": "chorus_1_2",
+      "name": "Chorus 1",
+      "start": 28.444444,
+      "end": 56.888889
+    },
+    {
+      "id": "bridge_3",
+      "name": "Bridge",
+      "start": 56.888889,
+      "end": 85.333333
+    },
+    {
+      "id": "interlude_4",
+      "name": "Interlude",
+      "start": 85.333333,
+      "end": 92.444444
+    },
+    {
+      "id": "verse_2_5",
+      "name": "Verse 2",
+      "start": 92.444444,
+      "end": 106.666667
+    },
+    {
+      "id": "chorus_2_6",
+      "name": "Chorus 2",
+      "start": 106.666667,
+      "end": 135.111111
+    },
+    {
+      "id": "chorus_3_7",
+      "name": "Chorus 3",
+      "start": 135.111111,
+      "end": 163.555556
+    },
+    {
+      "id": "outro_8",
+      "name": "Outro",
+      "start": 163.555556,
+      "end": 170.667
+    }
+  ],
+  "lines": [
+    {
+      "i": 0,
+      "text": "nannen mae ka no koto deshita",
+      "start": 14.222222,
+      "end": 17.111111,
+      "words": [
+        {
+          "w": "nannen",
+          "start": 14.222222,
+          "end": 15.111111,
+          "syl": [
+            [
+              14.222222,
+              14.555556
+            ],
+            [
+              14.555556,
+              14.666667
+            ],
+            [
+              14.666667,
+              15
+            ],
+            [
+              15,
+              15.111111
+            ]
+          ],
+          "sylText": [
+            "na",
+            "n",
+            "ne",
+            "n"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true,
+            true
+          ],
+          "sylJoin": [
+            true,
+            false,
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "mae",
+          "start": 15.111111,
+          "end": 15.555556,
+          "syl": [
+            [
+              15.111111,
+              15.444445
+            ],
+            [
+              15.444445,
+              15.555556
+            ]
+          ],
+          "sylText": [
+            "ma",
+            "e"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "ka",
+          "start": 15.555556,
+          "end": 15.777778,
+          "syl": [
+            [
+              15.555556,
+              15.777778
+            ]
+          ],
+          "sylText": [
+            "ka"
+          ],
+          "sylCalibrated": [
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "no",
+          "start": 15.777778,
+          "end": 16,
+          "syl": [
+            [
+              15.777778,
+              16
+            ]
+          ],
+          "sylText": [
+            "no"
+          ],
+          "sylCalibrated": [
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "koto",
+          "start": 16,
+          "end": 16.444444,
+          "syl": [
+            [
+              16,
+              16.222222
+            ],
+            [
+              16.222222,
+              16.444444
+            ]
+          ],
+          "sylText": [
+            "ko",
+            "to"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "deshita",
+          "start": 16.444444,
+          "end": 17.111111,
+          "syl": [
+            [
+              16.444444,
+              16.666666
+            ],
+            [
+              16.666666,
+              16.888889
+            ],
+            [
+              16.888889,
+              17.111111
+            ]
+          ],
+          "sylText": [
+            "de",
+            "shi",
+            "ta"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true
+          ],
+          "calibrated": true
+        }
+      ],
+      "calibrated": true
+    },
+    {
+      "i": 1,
+      "text": "dareka ga hasami de",
+      "start": 17.333333,
+      "end": 19.555556,
+      "words": [
+        {
+          "w": "dareka",
+          "start": 17.333333,
+          "end": 18.222222,
+          "syl": [
+            [
+              17.333333,
+              17.555556
+            ],
+            [
+              17.555556,
+              17.777778
+            ],
+            [
+              17.777778,
+              18.222222
+            ]
+          ],
+          "sylText": [
+            "da",
+            "re",
+            "ka"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "ga",
+          "start": 18.222222,
+          "end": 18.666667,
+          "syl": [
+            [
+              18.222222,
+              18.666667
+            ]
+          ],
+          "sylText": [
+            "ga"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "hasami",
+          "start": 18.666667,
+          "end": 19.333334,
+          "syl": [
+            [
+              18.666667,
+              18.888889
+            ],
+            [
+              18.888889,
+              19.111111
+            ],
+            [
+              19.111111,
+              19.333334
+            ]
+          ],
+          "sylText": [
+            "ha",
+            "sa",
+            "mi"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "de",
+          "start": 19.333334,
+          "end": 19.555556,
+          "syl": [
+            [
+              19.333334,
+              19.555556
+            ]
+          ],
+          "sylText": [
+            "de"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "i": 2,
+      "text": "taimurain o chongitta",
+      "start": 19.555556,
+      "end": 22.666667,
+      "words": [
+        {
+          "w": "taimurain",
+          "start": 19.555556,
+          "end": 21.166666,
+          "syl": [
+            [
+              19.555556,
+              20.055556
+            ],
+            [
+              20.055556,
+              20.222222
+            ],
+            [
+              20.222222,
+              20.444444
+            ],
+            [
+              20.444444,
+              20.666666
+            ],
+            [
+              20.666666,
+              20.944445
+            ],
+            [
+              20.944445,
+              21.166666
+            ]
+          ],
+          "sylText": [
+            "ta",
+            "i",
+            "mu",
+            "ra",
+            "i",
+            "n"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "sylJoin": [
+            false,
+            false,
+            false,
+            false,
+            true
+          ]
+        },
+        {
+          "w": "o",
+          "start": 21.166666,
+          "end": 21.333333,
+          "syl": [
+            [
+              21.166666,
+              21.333333
+            ]
+          ],
+          "sylText": [
+            "o"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "chongitta",
+          "start": 21.333333,
+          "end": 22.666667,
+          "syl": [
+            [
+              21.333333,
+              21.666667
+            ],
+            [
+              21.666667,
+              21.777778
+            ],
+            [
+              21.777778,
+              22
+            ],
+            [
+              22,
+              22.222222
+            ],
+            [
+              22.222222,
+              22.666667
+            ]
+          ],
+          "sylText": [
+            "cho",
+            "n",
+            "gi",
+            "t",
+            "ta"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            false,
+            false,
+            true
+          ],
+          "sylJoin": [
+            true,
+            false,
+            true,
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "i": 3,
+      "text": "soshite",
+      "start": 22.888889,
+      "end": 23.777778,
+      "words": [
+        {
+          "w": "soshite",
+          "start": 22.888889,
+          "end": 23.777778,
+          "syl": [
+            [
+              22.888889,
+              23.111111
+            ],
+            [
+              23.111111,
+              23.555556
+            ],
+            [
+              23.555556,
+              23.777778
+            ]
+          ],
+          "sylText": [
+            "so",
+            "shi",
+            "te"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "i": 4,
+      "text": "ashita to kinou ga tsunagatta",
+      "start": 24,
+      "end": 26.888889,
+      "words": [
+        {
+          "w": "ashita",
+          "start": 24,
+          "end": 24.666666,
+          "syl": [
+            [
+              24,
+              24.222222
+            ],
+            [
+              24.222222,
+              24.444444
+            ],
+            [
+              24.444444,
+              24.666666
+            ]
+          ],
+          "sylText": [
+            "a",
+            "shi",
+            "ta"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "to",
+          "start": 24.666666,
+          "end": 24.888889,
+          "syl": [
+            [
+              24.666666,
+              24.888889
+            ]
+          ],
+          "sylText": [
+            "to"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "kinou",
+          "start": 24.888889,
+          "end": 25.555556,
+          "syl": [
+            [
+              24.888889,
+              25.111111
+            ],
+            [
+              25.111111,
+              25.333334
+            ],
+            [
+              25.333334,
+              25.555556
+            ]
+          ],
+          "sylText": [
+            "ki",
+            "no",
+            "u"
+          ],
+          "sylCalibrated": [
+            true,
+            false,
+            false
+          ],
+          "sylJoin": [
+            false,
+            true
+          ]
+        },
+        {
+          "w": "ga",
+          "start": 25.555556,
+          "end": 25.777778,
+          "syl": [
+            [
+              25.555556,
+              25.777778
+            ]
+          ],
+          "sylText": [
+            "ga"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "tsunagatta",
+          "start": 25.777778,
+          "end": 26.888889,
+          "syl": [
+            [
+              25.777778,
+              26
+            ],
+            [
+              26,
+              26.222222
+            ],
+            [
+              26.222222,
+              26.444445
+            ],
+            [
+              26.444445,
+              26.666667
+            ],
+            [
+              26.666667,
+              26.888889
+            ]
+          ],
+          "sylText": [
+            "tsu",
+            "na",
+            "ga",
+            "t",
+            "ta"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            false,
+            false,
+            true
+          ],
+          "sylJoin": [
+            false,
+            false,
+            true,
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "i": 5,
+      "text": "ashita no koto wa shitteiru",
+      "start": 28,
+      "end": 31.388889,
+      "words": [
+        {
+          "w": "ashita",
+          "start": 28,
+          "end": 29.111111,
+          "syl": [
+            [
+              28,
+              28.666666
+            ],
+            [
+              28.666666,
+              28.888889
+            ],
+            [
+              28.888889,
+              29.111111
+            ]
+          ],
+          "sylText": [
+            "a",
+            "shi",
+            "ta"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "no",
+          "start": 29.111111,
+          "end": 29.333333,
+          "syl": [
+            [
+              29.111111,
+              29.333333
+            ]
+          ],
+          "sylText": [
+            "no"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "koto",
+          "start": 29.333333,
+          "end": 30,
+          "syl": [
+            [
+              29.333333,
+              29.777778
+            ],
+            [
+              29.777778,
+              30
+            ]
+          ],
+          "sylText": [
+            "ko",
+            "to"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "wa",
+          "start": 30,
+          "end": 30.222222,
+          "syl": [
+            [
+              30,
+              30.222222
+            ]
+          ],
+          "sylText": [
+            "wa"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "shitteiru",
+          "start": 30.222222,
+          "end": 31.388889,
+          "syl": [
+            [
+              30.222222,
+              30.444445
+            ],
+            [
+              30.444445,
+              30.666667
+            ],
+            [
+              30.666667,
+              30.888889
+            ],
+            [
+              30.888889,
+              31.111111
+            ],
+            [
+              31.111111,
+              31.388889
+            ]
+          ],
+          "sylText": [
+            "shi",
+            "t",
+            "te",
+            "i",
+            "ru"
+          ],
+          "sylCalibrated": [
+            false,
+            false,
+            true,
+            true,
+            true
+          ],
+          "sylJoin": [
+            true,
+            false,
+            false,
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "i": 6,
+      "text": "iwashi ga tsuchi kara haetekuru nda",
+      "start": 31.555556,
+      "end": 35.555556,
+      "words": [
+        {
+          "w": "iwashi",
+          "start": 31.555556,
+          "end": 32.444444,
+          "syl": [
+            [
+              31.555556,
+              31.777778
+            ],
+            [
+              31.777778,
+              32
+            ],
+            [
+              32,
+              32.444444
+            ]
+          ],
+          "sylText": [
+            "i",
+            "wa",
+            "shi"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "ga",
+          "start": 32.444444,
+          "end": 32.888889,
+          "syl": [
+            [
+              32.444444,
+              32.888889
+            ]
+          ],
+          "sylText": [
+            "ga"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "tsuchi",
+          "start": 32.888889,
+          "end": 33.333333,
+          "syl": [
+            [
+              32.888889,
+              33.111111
+            ],
+            [
+              33.111111,
+              33.333333
+            ]
+          ],
+          "sylText": [
+            "tsu",
+            "chi"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "kara",
+          "start": 33.333333,
+          "end": 33.777778,
+          "syl": [
+            [
+              33.333333,
+              33.555556
+            ],
+            [
+              33.555556,
+              33.777778
+            ]
+          ],
+          "sylText": [
+            "ka",
+            "ra"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "haetekuru",
+          "start": 33.777778,
+          "end": 35.055556,
+          "syl": [
+            [
+              33.777778,
+              34
+            ],
+            [
+              34,
+              34.222222
+            ],
+            [
+              34.222222,
+              34.444445
+            ],
+            [
+              34.444445,
+              34.666667
+            ],
+            [
+              34.666667,
+              35.055556
+            ]
+          ],
+          "sylText": [
+            "ha",
+            "e",
+            "te",
+            "ku",
+            "ru"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "nda",
+          "start": 35.055556,
+          "end": 35.555556,
+          "syl": [
+            [
+              35.055556,
+              35.111111
+            ],
+            [
+              35.111111,
+              35.555556
+            ]
+          ],
+          "sylText": [
+            "n",
+            "da"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "i": 7,
+      "text": "eki no hoomu ni ana ga aku",
+      "start": 35.555556,
+      "end": 38.444445,
+      "words": [
+        {
+          "w": "eki",
+          "start": 35.555556,
+          "end": 36.222222,
+          "syl": [
+            [
+              35.555556,
+              36
+            ],
+            [
+              36,
+              36.222222
+            ]
+          ],
+          "sylText": [
+            "e",
+            "ki"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "no",
+          "start": 36.222222,
+          "end": 36.444444,
+          "syl": [
+            [
+              36.222222,
+              36.444444
+            ]
+          ],
+          "sylText": [
+            "no"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "hoomu",
+          "start": 36.444444,
+          "end": 37.111111,
+          "syl": [
+            [
+              36.444444,
+              36.666667
+            ],
+            [
+              36.666667,
+              36.888889
+            ],
+            [
+              36.888889,
+              37.111111
+            ]
+          ],
+          "sylText": [
+            "ho",
+            "o",
+            "mu"
+          ],
+          "sylCalibrated": [
+            false,
+            false,
+            true
+          ],
+          "sylJoin": [
+            true,
+            false
+          ]
+        },
+        {
+          "w": "ni",
+          "start": 37.111111,
+          "end": 37.333333,
+          "syl": [
+            [
+              37.111111,
+              37.333333
+            ]
+          ],
+          "sylText": [
+            "ni"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "ana",
+          "start": 37.333333,
+          "end": 37.777778,
+          "syl": [
+            [
+              37.333333,
+              37.555556
+            ],
+            [
+              37.555556,
+              37.777778
+            ]
+          ],
+          "sylText": [
+            "a",
+            "na"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "ga",
+          "start": 37.777778,
+          "end": 38,
+          "syl": [
+            [
+              37.777778,
+              38
+            ]
+          ],
+          "sylText": [
+            "ga"
+          ],
+          "sylCalibrated": [
+            false
+          ]
+        },
+        {
+          "w": "aku",
+          "start": 38,
+          "end": 38.444445,
+          "syl": [
+            [
+              38,
+              38.222222
+            ],
+            [
+              38.222222,
+              38.444445
+            ]
+          ],
+          "sylText": [
+            "a",
+            "ku"
+          ],
+          "sylCalibrated": [
+            false,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "i": 8,
+      "text": "sunoko ga kieru nda",
+      "start": 38.666667,
+      "end": 41.777778,
+      "words": [
+        {
+          "w": "sunoko",
+          "start": 38.666667,
+          "end": 39.555556,
+          "syl": [
+            [
+              38.666667,
+              38.888889
+            ],
+            [
+              38.888889,
+              39.111111
+            ],
+            [
+              39.111111,
+              39.555556
+            ]
+          ],
+          "sylText": [
+            "su",
+            "no",
+            "ko"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "ga",
+          "start": 39.555556,
+          "end": 40,
+          "syl": [
+            [
+              39.555556,
+              40
+            ]
+          ],
+          "sylText": [
+            "ga"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "kieru",
+          "start": 40,
+          "end": 40.666667,
+          "syl": [
+            [
+              40,
+              40.222222
+            ],
+            [
+              40.222222,
+              40.444444
+            ],
+            [
+              40.444444,
+              40.666667
+            ]
+          ],
+          "sylText": [
+            "ki",
+            "e",
+            "ru"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "nda",
+          "start": 40.666667,
+          "end": 41.777778,
+          "syl": [
+            [
+              40.666667,
+              40.888889
+            ],
+            [
+              40.888889,
+              41.777778
+            ]
+          ],
+          "sylText": [
+            "n",
+            "da"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "i": 9,
+      "text": "kinou no kioku wa kieta kedo",
+      "start": 42.666667,
+      "end": 45.555556,
+      "words": [
+        {
+          "w": "kinou",
+          "start": 42.666667,
+          "end": 43.333334,
+          "syl": [
+            [
+              42.666667,
+              42.888889
+            ],
+            [
+              42.888889,
+              43.111112
+            ],
+            [
+              43.111112,
+              43.333334
+            ]
+          ],
+          "sylText": [
+            "ki",
+            "no",
+            "u"
+          ],
+          "sylCalibrated": [
+            true,
+            false,
+            false
+          ],
+          "sylJoin": [
+            false,
+            true
+          ]
+        },
+        {
+          "w": "no",
+          "start": 43.333334,
+          "end": 43.555556,
+          "syl": [
+            [
+              43.333334,
+              43.555556
+            ]
+          ],
+          "sylText": [
+            "no"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "kioku",
+          "start": 43.555556,
+          "end": 44.222222,
+          "syl": [
+            [
+              43.555556,
+              43.833334
+            ],
+            [
+              43.833334,
+              44
+            ],
+            [
+              44,
+              44.222222
+            ]
+          ],
+          "sylText": [
+            "ki",
+            "o",
+            "ku"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "wa",
+          "start": 44.222222,
+          "end": 44.444444,
+          "syl": [
+            [
+              44.222222,
+              44.444444
+            ]
+          ],
+          "sylText": [
+            "wa"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "kieta",
+          "start": 44.444444,
+          "end": 45.111111,
+          "syl": [
+            [
+              44.444444,
+              44.666667
+            ],
+            [
+              44.666667,
+              44.888889
+            ],
+            [
+              44.888889,
+              45.111111
+            ]
+          ],
+          "sylText": [
+            "ki",
+            "e",
+            "ta"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "kedo",
+          "start": 45.111111,
+          "end": 45.555556,
+          "syl": [
+            [
+              45.111111,
+              45.333333
+            ],
+            [
+              45.333333,
+              45.555556
+            ]
+          ],
+          "sylText": [
+            "ke",
+            "do"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "i": 10,
+      "text": "kieta tte koto mo yoku wakaranai nda",
+      "start": 45.777778,
+      "end": 49.777778,
+      "words": [
+        {
+          "w": "kieta",
+          "start": 45.777778,
+          "end": 46.62,
+          "syl": [
+            [
+              45.777778,
+              46
+            ],
+            [
+              46,
+              46.222222
+            ],
+            [
+              46.222222,
+              46.62
+            ]
+          ],
+          "sylText": [
+            "ki",
+            "e",
+            "ta"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "tte",
+          "start": 46.62,
+          "end": 47.111111,
+          "syl": [
+            [
+              46.62,
+              46.918
+            ],
+            [
+              46.918,
+              47.111111
+            ]
+          ],
+          "sylText": [
+            "t",
+            "te"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ],
+          "sylJoin": [
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "koto",
+          "start": 47.111111,
+          "end": 47.444445,
+          "syl": [
+            [
+              47.111111,
+              47.333334
+            ],
+            [
+              47.333334,
+              47.444445
+            ]
+          ],
+          "sylText": [
+            "ko",
+            "to"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "mo",
+          "start": 47.444445,
+          "end": 47.555556,
+          "syl": [
+            [
+              47.444445,
+              47.555556
+            ]
+          ],
+          "sylText": [
+            "mo"
+          ],
+          "sylCalibrated": [
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "yoku",
+          "start": 47.555556,
+          "end": 48,
+          "syl": [
+            [
+              47.555556,
+              47.777778
+            ],
+            [
+              47.777778,
+              48
+            ]
+          ],
+          "sylText": [
+            "yo",
+            "ku"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "wakaranai",
+          "start": 48,
+          "end": 49.222222,
+          "syl": [
+            [
+              48,
+              48.222222
+            ],
+            [
+              48.222222,
+              48.444444
+            ],
+            [
+              48.444444,
+              48.666667
+            ],
+            [
+              48.666667,
+              48.888889
+            ],
+            [
+              48.888889,
+              49.222222
+            ]
+          ],
+          "sylText": [
+            "wa",
+            "ka",
+            "ra",
+            "na",
+            "i"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "nda",
+          "start": 49.222222,
+          "end": 49.777778,
+          "syl": [
+            [
+              49.222222,
+              49.333333
+            ],
+            [
+              49.333333,
+              49.777778
+            ]
+          ],
+          "sylText": [
+            "n",
+            "da"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ],
+          "calibrated": true
+        }
+      ],
+      "calibrated": true
+    },
+    {
+      "i": 11,
+      "text": "sora no ue kara biru ga tatsu",
+      "start": 49.777778,
+      "end": 52.666667,
+      "words": [
+        {
+          "w": "sora",
+          "start": 49.777778,
+          "end": 50.444445,
+          "syl": [
+            [
+              49.777778,
+              50.222222
+            ],
+            [
+              50.222222,
+              50.444445
+            ]
+          ],
+          "sylText": [
+            "so",
+            "ra"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "no",
+          "start": 50.444445,
+          "end": 50.666667,
+          "syl": [
+            [
+              50.444445,
+              50.666667
+            ]
+          ],
+          "sylText": [
+            "no"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "ue",
+          "start": 50.666667,
+          "end": 51.111111,
+          "syl": [
+            [
+              50.666667,
+              50.888889
+            ],
+            [
+              50.888889,
+              51.111111
+            ]
+          ],
+          "sylText": [
+            "u",
+            "e"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "kara",
+          "start": 51.111111,
+          "end": 51.555556,
+          "syl": [
+            [
+              51.111111,
+              51.333334
+            ],
+            [
+              51.333334,
+              51.555556
+            ]
+          ],
+          "sylText": [
+            "ka",
+            "ra"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "biru",
+          "start": 51.555556,
+          "end": 52,
+          "syl": [
+            [
+              51.555556,
+              51.777778
+            ],
+            [
+              51.777778,
+              52
+            ]
+          ],
+          "sylText": [
+            "bi",
+            "ru"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "ga",
+          "start": 52,
+          "end": 52.222222,
+          "syl": [
+            [
+              52,
+              52.222222
+            ]
+          ],
+          "sylText": [
+            "ga"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "tatsu",
+          "start": 52.222222,
+          "end": 52.666667,
+          "syl": [
+            [
+              52.222222,
+              52.444444
+            ],
+            [
+              52.444444,
+              52.666667
+            ]
+          ],
+          "sylText": [
+            "ta",
+            "tsu"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "i": 12,
+      "text": "me ga mienakunattekita",
+      "start": 52.888889,
+      "end": 56,
+      "words": [
+        {
+          "w": "me",
+          "start": 52.888889,
+          "end": 53.111111,
+          "syl": [
+            [
+              52.888889,
+              53.111111
+            ]
+          ],
+          "sylText": [
+            "me"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "ga",
+          "start": 53.111111,
+          "end": 53.333333,
+          "syl": [
+            [
+              53.111111,
+              53.333333
+            ]
+          ],
+          "sylText": [
+            "ga"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "mienakunattekita",
+          "start": 53.333333,
+          "end": 56,
+          "syl": [
+            [
+              53.333333,
+              53.611111
+            ],
+            [
+              53.611111,
+              53.777778
+            ],
+            [
+              53.777778,
+              54
+            ],
+            [
+              54,
+              54.222222
+            ],
+            [
+              54.222222,
+              54.444445
+            ],
+            [
+              54.444445,
+              54.666667
+            ],
+            [
+              54.666667,
+              54.888889
+            ],
+            [
+              54.888889,
+              55.111111
+            ],
+            [
+              55.111111,
+              56
+            ]
+          ],
+          "sylText": [
+            "mi",
+            "e",
+            "na",
+            "ku",
+            "na",
+            "t",
+            "te",
+            "ki",
+            "ta"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true,
+            true,
+            false,
+            false,
+            true,
+            true,
+            true
+          ],
+          "sylJoin": [
+            false,
+            false,
+            false,
+            false,
+            true,
+            false,
+            false,
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "i": 13,
+      "text": "hana wa karezu",
+      "start": 56.444444,
+      "end": 61.34,
+      "words": [
+        {
+          "w": "hana",
+          "start": 56.444444,
+          "end": 57.78,
+          "syl": [
+            [
+              56.444444,
+              56.888889
+            ],
+            [
+              56.888889,
+              57.78
+            ]
+          ],
+          "sylText": [
+            "ha",
+            "na"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "wa",
+          "start": 57.78,
+          "end": 58.66,
+          "syl": [
+            [
+              57.78,
+              58.66
+            ]
+          ],
+          "sylText": [
+            "wa"
+          ],
+          "sylCalibrated": [
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "karezu",
+          "start": 58.66,
+          "end": 61.34,
+          "syl": [
+            [
+              58.66,
+              59.54
+            ],
+            [
+              59.54,
+              60.44
+            ],
+            [
+              60.44,
+              61.34
+            ]
+          ],
+          "sylText": [
+            "ka",
+            "re",
+            "zu"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true
+          ],
+          "calibrated": true
+        }
+      ],
+      "calibrated": true
+    },
+    {
+      "i": 14,
+      "text": "tori wa tobazu nemuru",
+      "start": 61.78,
+      "end": 68.44,
+      "words": [
+        {
+          "w": "tori",
+          "start": 61.78,
+          "end": 63.12,
+          "syl": [
+            [
+              61.78,
+              62.22
+            ],
+            [
+              62.22,
+              63.12
+            ]
+          ],
+          "sylText": [
+            "to",
+            "ri"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "wa",
+          "start": 63.12,
+          "end": 63.56,
+          "syl": [
+            [
+              63.12,
+              63.56
+            ]
+          ],
+          "sylText": [
+            "wa"
+          ],
+          "sylCalibrated": [
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "tobazu",
+          "start": 63.56,
+          "end": 65.763304,
+          "syl": [
+            [
+              63.56,
+              64
+            ],
+            [
+              64,
+              64.9
+            ],
+            [
+              64.9,
+              65.763304
+            ]
+          ],
+          "sylText": [
+            "to",
+            "ba",
+            "zu"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "nemuru",
+          "start": 65.763304,
+          "end": 68.44,
+          "syl": [
+            [
+              65.763304,
+              66.66
+            ],
+            [
+              66.66,
+              67.56
+            ],
+            [
+              67.56,
+              68.44
+            ]
+          ],
+          "sylText": [
+            "ne",
+            "mu",
+            "ru"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true
+          ],
+          "calibrated": true
+        }
+      ],
+      "calibrated": true
+    },
+    {
+      "i": 15,
+      "text": "kaze wa tomari tsumetaku",
+      "start": 68.9,
+      "end": 75.56,
+      "words": [
+        {
+          "w": "kaze",
+          "start": 68.9,
+          "end": 69.78,
+          "syl": [
+            [
+              68.9,
+              69.34
+            ],
+            [
+              69.34,
+              69.78
+            ]
+          ],
+          "sylText": [
+            "ka",
+            "ze"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "wa",
+          "start": 69.78,
+          "end": 70.22,
+          "syl": [
+            [
+              69.78,
+              70.22
+            ]
+          ],
+          "sylText": [
+            "wa"
+          ],
+          "sylCalibrated": [
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "tomari",
+          "start": 70.22,
+          "end": 72,
+          "syl": [
+            [
+              70.22,
+              70.652193
+            ],
+            [
+              70.652193,
+              71.12
+            ],
+            [
+              71.12,
+              72
+            ]
+          ],
+          "sylText": [
+            "to",
+            "ma",
+            "ri"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "tsumetaku",
+          "start": 72,
+          "end": 75.56,
+          "syl": [
+            [
+              72,
+              72.9
+            ],
+            [
+              72.9,
+              73.78
+            ],
+            [
+              73.78,
+              74.68
+            ],
+            [
+              74.68,
+              75.56
+            ]
+          ],
+          "sylText": [
+            "tsu",
+            "me",
+            "ta",
+            "ku"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true,
+            true
+          ],
+          "calibrated": true
+        }
+      ],
+      "calibrated": true
+    },
+    {
+      "i": 16,
+      "text": "tsuki wa michi mo kake mo sezu mawaru",
+      "start": 76,
+      "end": 85.355,
+      "words": [
+        {
+          "w": "tsuki",
+          "start": 76,
+          "end": 77.34,
+          "syl": [
+            [
+              76,
+              76.46
+            ],
+            [
+              76.46,
+              77.34
+            ]
+          ],
+          "sylText": [
+            "tsu",
+            "ki"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "wa",
+          "start": 77.34,
+          "end": 77.78,
+          "syl": [
+            [
+              77.34,
+              77.78
+            ]
+          ],
+          "sylText": [
+            "wa"
+          ],
+          "sylCalibrated": [
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "michi",
+          "start": 77.78,
+          "end": 79.096637,
+          "syl": [
+            [
+              77.78,
+              78.22
+            ],
+            [
+              78.22,
+              79.096637
+            ]
+          ],
+          "sylText": [
+            "mi",
+            "chi"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "mo",
+          "start": 79.096637,
+          "end": 80,
+          "syl": [
+            [
+              79.096637,
+              80
+            ]
+          ],
+          "sylText": [
+            "mo"
+          ],
+          "sylCalibrated": [
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "kake",
+          "start": 80,
+          "end": 81.78,
+          "syl": [
+            [
+              80,
+              80.9
+            ],
+            [
+              80.9,
+              81.78
+            ]
+          ],
+          "sylText": [
+            "ka",
+            "ke"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "mo",
+          "start": 81.78,
+          "end": 82.66,
+          "syl": [
+            [
+              81.78,
+              82.66
+            ]
+          ],
+          "sylText": [
+            "mo"
+          ],
+          "sylCalibrated": [
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "sezu",
+          "start": 83.08,
+          "end": 84.001,
+          "syl": [
+            [
+              83.08,
+              83.548
+            ],
+            [
+              83.548,
+              84.001
+            ]
+          ],
+          "sylText": [
+            "se",
+            "zu"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ],
+          "calibrated": true
+        },
+        {
+          "w": "mawaru",
+          "start": 84.001,
+          "end": 85.355,
+          "syl": [
+            [
+              84.001,
+              84.429
+            ],
+            [
+              84.429,
+              85.124415
+            ],
+            [
+              85.124415,
+              85.355
+            ]
+          ],
+          "sylText": [
+            "ma",
+            "wa",
+            "ru"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true
+          ],
+          "calibrated": true
+        }
+      ],
+      "calibrated": true
+    },
+    {
+      "i": 17,
+      "text": "ima made to kore kara ga tsunagatte",
+      "start": 92.444444,
+      "end": 96.666667,
+      "words": [
+        {
+          "w": "ima",
+          "start": 92.444444,
+          "end": 93.111111,
+          "syl": [
+            [
+              92.444444,
+              92.888889
+            ],
+            [
+              92.888889,
+              93.111111
+            ]
+          ],
+          "sylText": [
+            "i",
+            "ma"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "made",
+          "start": 93.111111,
+          "end": 93.777778,
+          "syl": [
+            [
+              93.111111,
+              93.333333
+            ],
+            [
+              93.333333,
+              93.777778
+            ]
+          ],
+          "sylText": [
+            "ma",
+            "de"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "to",
+          "start": 93.777778,
+          "end": 94.222222,
+          "syl": [
+            [
+              93.777778,
+              94.222222
+            ]
+          ],
+          "sylText": [
+            "to"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "kore",
+          "start": 94.222222,
+          "end": 94.666667,
+          "syl": [
+            [
+              94.222222,
+              94.444445
+            ],
+            [
+              94.444445,
+              94.666667
+            ]
+          ],
+          "sylText": [
+            "ko",
+            "re"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "kara",
+          "start": 94.666667,
+          "end": 95.111111,
+          "syl": [
+            [
+              94.666667,
+              94.888889
+            ],
+            [
+              94.888889,
+              95.111111
+            ]
+          ],
+          "sylText": [
+            "ka",
+            "ra"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "ga",
+          "start": 95.111111,
+          "end": 95.333334,
+          "syl": [
+            [
+              95.111111,
+              95.333334
+            ]
+          ],
+          "sylText": [
+            "ga"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "tsunagatte",
+          "start": 95.555556,
+          "end": 96.666667,
+          "syl": [
+            [
+              95.555556,
+              95.777778
+            ],
+            [
+              95.777778,
+              96
+            ],
+            [
+              96,
+              96.222222
+            ],
+            [
+              96.222222,
+              96.444444
+            ],
+            [
+              96.444444,
+              96.666667
+            ]
+          ],
+          "sylText": [
+            "tsu",
+            "na",
+            "ga",
+            "t",
+            "te"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            false,
+            false,
+            true
+          ],
+          "sylJoin": [
+            false,
+            false,
+            true,
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "i": 18,
+      "text": "ichinichi o tobashite wasurete",
+      "start": 96.666667,
+      "end": 99.555556,
+      "words": [
+        {
+          "w": "ichinichi",
+          "start": 96.666667,
+          "end": 97.555556,
+          "syl": [
+            [
+              96.666667,
+              96.888889
+            ],
+            [
+              96.888889,
+              97.111111
+            ],
+            [
+              97.111111,
+              97.333333
+            ],
+            [
+              97.333333,
+              97.555556
+            ]
+          ],
+          "sylText": [
+            "i",
+            "chi",
+            "ni",
+            "chi"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "o",
+          "start": 97.555556,
+          "end": 97.777778,
+          "syl": [
+            [
+              97.555556,
+              97.777778
+            ]
+          ],
+          "sylText": [
+            "o"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "tobashite",
+          "start": 97.777778,
+          "end": 98.666667,
+          "syl": [
+            [
+              97.777778,
+              98
+            ],
+            [
+              98,
+              98.222222
+            ],
+            [
+              98.222222,
+              98.444445
+            ],
+            [
+              98.444445,
+              98.666667
+            ]
+          ],
+          "sylText": [
+            "to",
+            "ba",
+            "shi",
+            "te"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "wasurete",
+          "start": 98.666667,
+          "end": 99.555556,
+          "syl": [
+            [
+              98.666667,
+              98.888889
+            ],
+            [
+              98.888889,
+              99.111111
+            ],
+            [
+              99.111111,
+              99.333334
+            ],
+            [
+              99.333334,
+              99.555556
+            ]
+          ],
+          "sylText": [
+            "wa",
+            "su",
+            "re",
+            "te"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "i": 19,
+      "text": "susundeku",
+      "start": 99.555556,
+      "end": 100.888889,
+      "words": [
+        {
+          "w": "susundeku",
+          "start": 99.555556,
+          "end": 100.888889,
+          "syl": [
+            [
+              99.555556,
+              99.777778
+            ],
+            [
+              99.777778,
+              100
+            ],
+            [
+              100,
+              100.222222
+            ],
+            [
+              100.222222,
+              100.444444
+            ],
+            [
+              100.444444,
+              100.888889
+            ]
+          ],
+          "sylText": [
+            "su",
+            "su",
+            "n",
+            "de",
+            "ku"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "sylJoin": [
+            false,
+            true,
+            false,
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "i": 20,
+      "text": "koko wa",
+      "start": 101.111111,
+      "end": 102,
+      "words": [
+        {
+          "w": "koko",
+          "start": 101.111111,
+          "end": 101.777778,
+          "syl": [
+            [
+              101.111111,
+              101.333333
+            ],
+            [
+              101.333333,
+              101.777778
+            ]
+          ],
+          "sylText": [
+            "ko",
+            "ko"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "wa",
+          "start": 101.777778,
+          "end": 102,
+          "syl": [
+            [
+              101.777778,
+              102
+            ]
+          ],
+          "sylText": [
+            "wa"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "i": 21,
+      "text": "moto ni wa modoranakunatta",
+      "start": 102.222222,
+      "end": 105.111111,
+      "words": [
+        {
+          "w": "moto",
+          "start": 102.222222,
+          "end": 102.666667,
+          "syl": [
+            [
+              102.222222,
+              102.444445
+            ],
+            [
+              102.444445,
+              102.666667
+            ]
+          ],
+          "sylText": [
+            "mo",
+            "to"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "ni",
+          "start": 102.666667,
+          "end": 102.888889,
+          "syl": [
+            [
+              102.666667,
+              102.888889
+            ]
+          ],
+          "sylText": [
+            "ni"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "wa",
+          "start": 102.888889,
+          "end": 103.111111,
+          "syl": [
+            [
+              102.888889,
+              103.111111
+            ]
+          ],
+          "sylText": [
+            "wa"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "modoranakunatta",
+          "start": 103.111111,
+          "end": 105.111111,
+          "syl": [
+            [
+              103.111111,
+              103.333334
+            ],
+            [
+              103.333334,
+              103.555556
+            ],
+            [
+              103.555556,
+              103.777778
+            ],
+            [
+              103.777778,
+              104
+            ],
+            [
+              104,
+              104.222222
+            ],
+            [
+              104.222222,
+              104.555556
+            ],
+            [
+              104.555556,
+              104.888889
+            ],
+            [
+              104.888889,
+              105.111111
+            ]
+          ],
+          "sylText": [
+            "mo",
+            "do",
+            "ra",
+            "na",
+            "ku",
+            "na",
+            "t",
+            "ta"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            false,
+            false,
+            true
+          ],
+          "sylJoin": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            true,
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "i": 22,
+      "text": "ashita no koto wa shitteiru",
+      "start": 106.223565,
+      "end": 109.612454,
+      "words": [
+        {
+          "w": "ashita",
+          "start": 106.223565,
+          "end": 107.334677,
+          "syl": [
+            [
+              106.223565,
+              106.890232
+            ],
+            [
+              106.890232,
+              107.112454
+            ],
+            [
+              107.112454,
+              107.334677
+            ]
+          ],
+          "sylText": [
+            "a",
+            "shi",
+            "ta"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "no",
+          "start": 107.334677,
+          "end": 107.556899,
+          "syl": [
+            [
+              107.334677,
+              107.556899
+            ]
+          ],
+          "sylText": [
+            "no"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "koto",
+          "start": 107.556899,
+          "end": 108.223565,
+          "syl": [
+            [
+              107.556899,
+              108.001343
+            ],
+            [
+              108.001343,
+              108.223565
+            ]
+          ],
+          "sylText": [
+            "ko",
+            "to"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "wa",
+          "start": 108.223565,
+          "end": 108.445787,
+          "syl": [
+            [
+              108.223565,
+              108.445787
+            ]
+          ],
+          "sylText": [
+            "wa"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "shitteiru",
+          "start": 108.445787,
+          "end": 109.612454,
+          "syl": [
+            [
+              108.445787,
+              108.66801
+            ],
+            [
+              108.66801,
+              108.890232
+            ],
+            [
+              108.890232,
+              109.112454
+            ],
+            [
+              109.112454,
+              109.334676
+            ],
+            [
+              109.334676,
+              109.612454
+            ]
+          ],
+          "sylText": [
+            "shi",
+            "t",
+            "te",
+            "i",
+            "ru"
+          ],
+          "sylCalibrated": [
+            false,
+            false,
+            true,
+            true,
+            true
+          ],
+          "sylJoin": [
+            true,
+            false,
+            false,
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "i": 23,
+      "text": "iwashi ga tsuchi kara haetekuru nda",
+      "start": 109.779121,
+      "end": 113.779121,
+      "words": [
+        {
+          "w": "iwashi",
+          "start": 109.779121,
+          "end": 110.66801,
+          "syl": [
+            [
+              109.779121,
+              110.001343
+            ],
+            [
+              110.001343,
+              110.223565
+            ],
+            [
+              110.223565,
+              110.66801
+            ]
+          ],
+          "sylText": [
+            "i",
+            "wa",
+            "shi"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "ga",
+          "start": 110.66801,
+          "end": 111.112454,
+          "syl": [
+            [
+              110.66801,
+              111.112454
+            ]
+          ],
+          "sylText": [
+            "ga"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "tsuchi",
+          "start": 111.112454,
+          "end": 111.556899,
+          "syl": [
+            [
+              111.112454,
+              111.334677
+            ],
+            [
+              111.334677,
+              111.556899
+            ]
+          ],
+          "sylText": [
+            "tsu",
+            "chi"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "kara",
+          "start": 111.556899,
+          "end": 112.001343,
+          "syl": [
+            [
+              111.556899,
+              111.779121
+            ],
+            [
+              111.779121,
+              112.001343
+            ]
+          ],
+          "sylText": [
+            "ka",
+            "ra"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "haetekuru",
+          "start": 112.001343,
+          "end": 113.279121,
+          "syl": [
+            [
+              112.001343,
+              112.223565
+            ],
+            [
+              112.223565,
+              112.445787
+            ],
+            [
+              112.445787,
+              112.66801
+            ],
+            [
+              112.66801,
+              112.890232
+            ],
+            [
+              112.890232,
+              113.279121
+            ]
+          ],
+          "sylText": [
+            "ha",
+            "e",
+            "te",
+            "ku",
+            "ru"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "nda",
+          "start": 113.279121,
+          "end": 113.779121,
+          "syl": [
+            [
+              113.279121,
+              113.334676
+            ],
+            [
+              113.334676,
+              113.779121
+            ]
+          ],
+          "sylText": [
+            "n",
+            "da"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "i": 24,
+      "text": "eki no hoomu ni ana ga aku",
+      "start": 113.779121,
+      "end": 116.66801,
+      "words": [
+        {
+          "w": "eki",
+          "start": 113.779121,
+          "end": 114.445788,
+          "syl": [
+            [
+              113.779121,
+              114.223565
+            ],
+            [
+              114.223565,
+              114.445788
+            ]
+          ],
+          "sylText": [
+            "e",
+            "ki"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "no",
+          "start": 114.445788,
+          "end": 114.66801,
+          "syl": [
+            [
+              114.445788,
+              114.66801
+            ]
+          ],
+          "sylText": [
+            "no"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "hoomu",
+          "start": 114.66801,
+          "end": 115.334677,
+          "syl": [
+            [
+              114.66801,
+              114.890232
+            ],
+            [
+              114.890232,
+              115.112454
+            ],
+            [
+              115.112454,
+              115.334677
+            ]
+          ],
+          "sylText": [
+            "ho",
+            "o",
+            "mu"
+          ],
+          "sylCalibrated": [
+            false,
+            false,
+            true
+          ],
+          "sylJoin": [
+            true,
+            false
+          ]
+        },
+        {
+          "w": "ni",
+          "start": 115.334677,
+          "end": 115.556899,
+          "syl": [
+            [
+              115.334677,
+              115.556899
+            ]
+          ],
+          "sylText": [
+            "ni"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "ana",
+          "start": 115.556899,
+          "end": 116.001343,
+          "syl": [
+            [
+              115.556899,
+              115.779121
+            ],
+            [
+              115.779121,
+              116.001343
+            ]
+          ],
+          "sylText": [
+            "a",
+            "na"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "ga",
+          "start": 116.001343,
+          "end": 116.223565,
+          "syl": [
+            [
+              116.001343,
+              116.223565
+            ]
+          ],
+          "sylText": [
+            "ga"
+          ],
+          "sylCalibrated": [
+            false
+          ]
+        },
+        {
+          "w": "aku",
+          "start": 116.223565,
+          "end": 116.66801,
+          "syl": [
+            [
+              116.223565,
+              116.445787
+            ],
+            [
+              116.445787,
+              116.66801
+            ]
+          ],
+          "sylText": [
+            "a",
+            "ku"
+          ],
+          "sylCalibrated": [
+            false,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "i": 25,
+      "text": "sunoko ga kieru nda",
+      "start": 116.890232,
+      "end": 120.001343,
+      "words": [
+        {
+          "w": "sunoko",
+          "start": 116.890232,
+          "end": 117.779121,
+          "syl": [
+            [
+              116.890232,
+              117.112454
+            ],
+            [
+              117.112454,
+              117.334676
+            ],
+            [
+              117.334676,
+              117.779121
+            ]
+          ],
+          "sylText": [
+            "su",
+            "no",
+            "ko"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "ga",
+          "start": 117.779121,
+          "end": 118.223565,
+          "syl": [
+            [
+              117.779121,
+              118.223565
+            ]
+          ],
+          "sylText": [
+            "ga"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "kieru",
+          "start": 118.223565,
+          "end": 118.890232,
+          "syl": [
+            [
+              118.223565,
+              118.445788
+            ],
+            [
+              118.445788,
+              118.66801
+            ],
+            [
+              118.66801,
+              118.890232
+            ]
+          ],
+          "sylText": [
+            "ki",
+            "e",
+            "ru"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "nda",
+          "start": 118.890232,
+          "end": 120.001343,
+          "syl": [
+            [
+              118.890232,
+              119.112454
+            ],
+            [
+              119.112454,
+              120.001343
+            ]
+          ],
+          "sylText": [
+            "n",
+            "da"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "i": 26,
+      "text": "kinou no kioku wa kieta kedo",
+      "start": 120.890232,
+      "end": 123.779121,
+      "words": [
+        {
+          "w": "kinou",
+          "start": 120.890232,
+          "end": 121.556899,
+          "syl": [
+            [
+              120.890232,
+              121.112454
+            ],
+            [
+              121.112454,
+              121.334677
+            ],
+            [
+              121.334677,
+              121.556899
+            ]
+          ],
+          "sylText": [
+            "ki",
+            "no",
+            "u"
+          ],
+          "sylCalibrated": [
+            true,
+            false,
+            false
+          ],
+          "sylJoin": [
+            false,
+            true
+          ]
+        },
+        {
+          "w": "no",
+          "start": 121.556899,
+          "end": 121.779121,
+          "syl": [
+            [
+              121.556899,
+              121.779121
+            ]
+          ],
+          "sylText": [
+            "no"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "kioku",
+          "start": 121.779121,
+          "end": 122.445788,
+          "syl": [
+            [
+              121.779121,
+              122.056899
+            ],
+            [
+              122.056899,
+              122.223565
+            ],
+            [
+              122.223565,
+              122.445788
+            ]
+          ],
+          "sylText": [
+            "ki",
+            "o",
+            "ku"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "wa",
+          "start": 122.445788,
+          "end": 122.66801,
+          "syl": [
+            [
+              122.445788,
+              122.66801
+            ]
+          ],
+          "sylText": [
+            "wa"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "kieta",
+          "start": 122.66801,
+          "end": 123.334677,
+          "syl": [
+            [
+              122.66801,
+              122.890232
+            ],
+            [
+              122.890232,
+              123.112454
+            ],
+            [
+              123.112454,
+              123.334677
+            ]
+          ],
+          "sylText": [
+            "ki",
+            "e",
+            "ta"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "kedo",
+          "start": 123.334677,
+          "end": 123.779121,
+          "syl": [
+            [
+              123.334677,
+              123.556899
+            ],
+            [
+              123.556899,
+              123.779121
+            ]
+          ],
+          "sylText": [
+            "ke",
+            "do"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "i": 27,
+      "text": "kieta tte koto mo yoku wakaranai nda",
+      "start": 124.001343,
+      "end": 128.001343,
+      "words": [
+        {
+          "w": "kieta",
+          "start": 124.001343,
+          "end": 124.779121,
+          "syl": [
+            [
+              124.001343,
+              124.223565
+            ],
+            [
+              124.223565,
+              124.445787
+            ],
+            [
+              124.445787,
+              124.779121
+            ]
+          ],
+          "sylText": [
+            "ki",
+            "e",
+            "ta"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            false
+          ]
+        },
+        {
+          "w": "tte",
+          "start": 124.779121,
+          "end": 125.334676,
+          "syl": [
+            [
+              124.779121,
+              125.112454
+            ],
+            [
+              125.112454,
+              125.334676
+            ]
+          ],
+          "sylText": [
+            "t",
+            "te"
+          ],
+          "sylCalibrated": [
+            false,
+            true
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "koto",
+          "start": 125.334676,
+          "end": 125.66801,
+          "syl": [
+            [
+              125.334676,
+              125.556899
+            ],
+            [
+              125.556899,
+              125.66801
+            ]
+          ],
+          "sylText": [
+            "ko",
+            "to"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "mo",
+          "start": 125.66801,
+          "end": 125.779121,
+          "syl": [
+            [
+              125.66801,
+              125.779121
+            ]
+          ],
+          "sylText": [
+            "mo"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "yoku",
+          "start": 125.779121,
+          "end": 126.223565,
+          "syl": [
+            [
+              125.779121,
+              126.001343
+            ],
+            [
+              126.001343,
+              126.223565
+            ]
+          ],
+          "sylText": [
+            "yo",
+            "ku"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "wakaranai",
+          "start": 126.223565,
+          "end": 127.445788,
+          "syl": [
+            [
+              126.223565,
+              126.445788
+            ],
+            [
+              126.445788,
+              126.66801
+            ],
+            [
+              126.66801,
+              126.890232
+            ],
+            [
+              126.890232,
+              127.112454
+            ],
+            [
+              127.112454,
+              127.445788
+            ]
+          ],
+          "sylText": [
+            "wa",
+            "ka",
+            "ra",
+            "na",
+            "i"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "nda",
+          "start": 127.445788,
+          "end": 128.001343,
+          "syl": [
+            [
+              127.445788,
+              127.556899
+            ],
+            [
+              127.556899,
+              128.001343
+            ]
+          ],
+          "sylText": [
+            "n",
+            "da"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "i": 28,
+      "text": "sora no ue kara biru ga tatsu",
+      "start": 128.001343,
+      "end": 130.890232,
+      "words": [
+        {
+          "w": "sora",
+          "start": 128.001343,
+          "end": 128.66801,
+          "syl": [
+            [
+              128.001343,
+              128.445787
+            ],
+            [
+              128.445787,
+              128.66801
+            ]
+          ],
+          "sylText": [
+            "so",
+            "ra"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "no",
+          "start": 128.66801,
+          "end": 128.890232,
+          "syl": [
+            [
+              128.66801,
+              128.890232
+            ]
+          ],
+          "sylText": [
+            "no"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "ue",
+          "start": 128.890232,
+          "end": 129.334676,
+          "syl": [
+            [
+              128.890232,
+              129.112454
+            ],
+            [
+              129.112454,
+              129.334676
+            ]
+          ],
+          "sylText": [
+            "u",
+            "e"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "kara",
+          "start": 129.334676,
+          "end": 129.779121,
+          "syl": [
+            [
+              129.334676,
+              129.556899
+            ],
+            [
+              129.556899,
+              129.779121
+            ]
+          ],
+          "sylText": [
+            "ka",
+            "ra"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "biru",
+          "start": 129.779121,
+          "end": 130.223565,
+          "syl": [
+            [
+              129.779121,
+              130.001343
+            ],
+            [
+              130.001343,
+              130.223565
+            ]
+          ],
+          "sylText": [
+            "bi",
+            "ru"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "ga",
+          "start": 130.223565,
+          "end": 130.445788,
+          "syl": [
+            [
+              130.223565,
+              130.445788
+            ]
+          ],
+          "sylText": [
+            "ga"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "tatsu",
+          "start": 130.445788,
+          "end": 130.890232,
+          "syl": [
+            [
+              130.445788,
+              130.66801
+            ],
+            [
+              130.66801,
+              130.890232
+            ]
+          ],
+          "sylText": [
+            "ta",
+            "tsu"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "i": 29,
+      "text": "me ga mienakunattekita",
+      "start": 131.112454,
+      "end": 134.223565,
+      "words": [
+        {
+          "w": "me",
+          "start": 131.112454,
+          "end": 131.334677,
+          "syl": [
+            [
+              131.112454,
+              131.334677
+            ]
+          ],
+          "sylText": [
+            "me"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "ga",
+          "start": 131.334677,
+          "end": 131.556899,
+          "syl": [
+            [
+              131.334677,
+              131.556899
+            ]
+          ],
+          "sylText": [
+            "ga"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "mienakunattekita",
+          "start": 131.556899,
+          "end": 134.223565,
+          "syl": [
+            [
+              131.556899,
+              131.834677
+            ],
+            [
+              131.834677,
+              132.001343
+            ],
+            [
+              132.001343,
+              132.223565
+            ],
+            [
+              132.223565,
+              132.445787
+            ],
+            [
+              132.445787,
+              132.668009
+            ],
+            [
+              132.668009,
+              132.890232
+            ],
+            [
+              132.890232,
+              133.112454
+            ],
+            [
+              133.112454,
+              133.334676
+            ],
+            [
+              133.334676,
+              134.223565
+            ]
+          ],
+          "sylText": [
+            "mi",
+            "e",
+            "na",
+            "ku",
+            "na",
+            "t",
+            "te",
+            "ki",
+            "ta"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true,
+            true,
+            false,
+            false,
+            true,
+            true,
+            true
+          ],
+          "sylJoin": [
+            false,
+            false,
+            false,
+            false,
+            true,
+            false,
+            false,
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "i": 30,
+      "text": "ashita no koto wa shitteiru",
+      "start": 134.666667,
+      "end": 138.055556,
+      "words": [
+        {
+          "w": "ashita",
+          "start": 134.666667,
+          "end": 135.777778,
+          "syl": [
+            [
+              134.666667,
+              135.333333
+            ],
+            [
+              135.333333,
+              135.555556
+            ],
+            [
+              135.555556,
+              135.777778
+            ]
+          ],
+          "sylText": [
+            "a",
+            "shi",
+            "ta"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "no",
+          "start": 135.777778,
+          "end": 136,
+          "syl": [
+            [
+              135.777778,
+              136
+            ]
+          ],
+          "sylText": [
+            "no"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "koto",
+          "start": 136,
+          "end": 136.666667,
+          "syl": [
+            [
+              136,
+              136.444444
+            ],
+            [
+              136.444444,
+              136.666667
+            ]
+          ],
+          "sylText": [
+            "ko",
+            "to"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "wa",
+          "start": 136.666667,
+          "end": 136.888889,
+          "syl": [
+            [
+              136.666667,
+              136.888889
+            ]
+          ],
+          "sylText": [
+            "wa"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "shitteiru",
+          "start": 136.888889,
+          "end": 138.055556,
+          "syl": [
+            [
+              136.888889,
+              137.111111
+            ],
+            [
+              137.111111,
+              137.333333
+            ],
+            [
+              137.333333,
+              137.555556
+            ],
+            [
+              137.555556,
+              137.777778
+            ],
+            [
+              137.777778,
+              138.055556
+            ]
+          ],
+          "sylText": [
+            "shi",
+            "t",
+            "te",
+            "i",
+            "ru"
+          ],
+          "sylCalibrated": [
+            false,
+            false,
+            true,
+            true,
+            true
+          ],
+          "sylJoin": [
+            true,
+            false,
+            false,
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "i": 31,
+      "text": "iwashi ga tsuchi kara haetekuru nda",
+      "start": 138.222222,
+      "end": 142.222222,
+      "words": [
+        {
+          "w": "iwashi",
+          "start": 138.222222,
+          "end": 139.111111,
+          "syl": [
+            [
+              138.222222,
+              138.444444
+            ],
+            [
+              138.444444,
+              138.666667
+            ],
+            [
+              138.666667,
+              139.111111
+            ]
+          ],
+          "sylText": [
+            "i",
+            "wa",
+            "shi"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "ga",
+          "start": 139.111111,
+          "end": 139.555556,
+          "syl": [
+            [
+              139.111111,
+              139.555556
+            ]
+          ],
+          "sylText": [
+            "ga"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "tsuchi",
+          "start": 139.555556,
+          "end": 140,
+          "syl": [
+            [
+              139.555556,
+              139.777778
+            ],
+            [
+              139.777778,
+              140
+            ]
+          ],
+          "sylText": [
+            "tsu",
+            "chi"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "kara",
+          "start": 140,
+          "end": 140.444444,
+          "syl": [
+            [
+              140,
+              140.222222
+            ],
+            [
+              140.222222,
+              140.444444
+            ]
+          ],
+          "sylText": [
+            "ka",
+            "ra"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "haetekuru",
+          "start": 140.444444,
+          "end": 141.722222,
+          "syl": [
+            [
+              140.444444,
+              140.666667
+            ],
+            [
+              140.666667,
+              140.888889
+            ],
+            [
+              140.888889,
+              141.111111
+            ],
+            [
+              141.111111,
+              141.333333
+            ],
+            [
+              141.333333,
+              141.722222
+            ]
+          ],
+          "sylText": [
+            "ha",
+            "e",
+            "te",
+            "ku",
+            "ru"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "nda",
+          "start": 141.722222,
+          "end": 142.222222,
+          "syl": [
+            [
+              141.722222,
+              141.777778
+            ],
+            [
+              141.777778,
+              142.222222
+            ]
+          ],
+          "sylText": [
+            "n",
+            "da"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "i": 32,
+      "text": "eki no hoomu ni ana ga aku",
+      "start": 142.222222,
+      "end": 145.111111,
+      "words": [
+        {
+          "w": "eki",
+          "start": 142.222222,
+          "end": 142.888889,
+          "syl": [
+            [
+              142.222222,
+              142.666667
+            ],
+            [
+              142.666667,
+              142.888889
+            ]
+          ],
+          "sylText": [
+            "e",
+            "ki"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "no",
+          "start": 142.888889,
+          "end": 143.111111,
+          "syl": [
+            [
+              142.888889,
+              143.111111
+            ]
+          ],
+          "sylText": [
+            "no"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "hoomu",
+          "start": 143.111111,
+          "end": 143.777778,
+          "syl": [
+            [
+              143.111111,
+              143.333333
+            ],
+            [
+              143.333333,
+              143.555556
+            ],
+            [
+              143.555556,
+              143.777778
+            ]
+          ],
+          "sylText": [
+            "ho",
+            "o",
+            "mu"
+          ],
+          "sylCalibrated": [
+            false,
+            false,
+            true
+          ],
+          "sylJoin": [
+            true,
+            false
+          ]
+        },
+        {
+          "w": "ni",
+          "start": 143.777778,
+          "end": 144,
+          "syl": [
+            [
+              143.777778,
+              144
+            ]
+          ],
+          "sylText": [
+            "ni"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "ana",
+          "start": 144,
+          "end": 144.444444,
+          "syl": [
+            [
+              144,
+              144.222222
+            ],
+            [
+              144.222222,
+              144.444444
+            ]
+          ],
+          "sylText": [
+            "a",
+            "na"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "ga",
+          "start": 144.444444,
+          "end": 144.666667,
+          "syl": [
+            [
+              144.444444,
+              144.666667
+            ]
+          ],
+          "sylText": [
+            "ga"
+          ],
+          "sylCalibrated": [
+            false
+          ]
+        },
+        {
+          "w": "aku",
+          "start": 144.666667,
+          "end": 145.111111,
+          "syl": [
+            [
+              144.666667,
+              144.888889
+            ],
+            [
+              144.888889,
+              145.111111
+            ]
+          ],
+          "sylText": [
+            "a",
+            "ku"
+          ],
+          "sylCalibrated": [
+            false,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "i": 33,
+      "text": "sunoko ga kieru nda",
+      "start": 145.333333,
+      "end": 148.444444,
+      "words": [
+        {
+          "w": "sunoko",
+          "start": 145.333333,
+          "end": 146.222222,
+          "syl": [
+            [
+              145.333333,
+              145.555556
+            ],
+            [
+              145.555556,
+              145.777778
+            ],
+            [
+              145.777778,
+              146.222222
+            ]
+          ],
+          "sylText": [
+            "su",
+            "no",
+            "ko"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "ga",
+          "start": 146.222222,
+          "end": 146.666667,
+          "syl": [
+            [
+              146.222222,
+              146.666667
+            ]
+          ],
+          "sylText": [
+            "ga"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "kieru",
+          "start": 146.666667,
+          "end": 147.333333,
+          "syl": [
+            [
+              146.666667,
+              146.888889
+            ],
+            [
+              146.888889,
+              147.111111
+            ],
+            [
+              147.111111,
+              147.333333
+            ]
+          ],
+          "sylText": [
+            "ki",
+            "e",
+            "ru"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "nda",
+          "start": 147.333333,
+          "end": 148.444444,
+          "syl": [
+            [
+              147.333333,
+              147.555556
+            ],
+            [
+              147.555556,
+              148.444444
+            ]
+          ],
+          "sylText": [
+            "n",
+            "da"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "i": 34,
+      "text": "kinou no kioku wa kieta kedo",
+      "start": 149.333333,
+      "end": 152.222222,
+      "words": [
+        {
+          "w": "kinou",
+          "start": 149.333333,
+          "end": 150,
+          "syl": [
+            [
+              149.333333,
+              149.555556
+            ],
+            [
+              149.555556,
+              149.777778
+            ],
+            [
+              149.777778,
+              150
+            ]
+          ],
+          "sylText": [
+            "ki",
+            "no",
+            "u"
+          ],
+          "sylCalibrated": [
+            true,
+            false,
+            false
+          ],
+          "sylJoin": [
+            false,
+            true
+          ]
+        },
+        {
+          "w": "no",
+          "start": 150,
+          "end": 150.222222,
+          "syl": [
+            [
+              150,
+              150.222222
+            ]
+          ],
+          "sylText": [
+            "no"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "kioku",
+          "start": 150.222222,
+          "end": 150.888889,
+          "syl": [
+            [
+              150.222222,
+              150.5
+            ],
+            [
+              150.5,
+              150.666667
+            ],
+            [
+              150.666667,
+              150.888889
+            ]
+          ],
+          "sylText": [
+            "ki",
+            "o",
+            "ku"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "wa",
+          "start": 150.888889,
+          "end": 151.111111,
+          "syl": [
+            [
+              150.888889,
+              151.111111
+            ]
+          ],
+          "sylText": [
+            "wa"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "kieta",
+          "start": 151.111111,
+          "end": 151.777778,
+          "syl": [
+            [
+              151.111111,
+              151.333333
+            ],
+            [
+              151.333333,
+              151.555556
+            ],
+            [
+              151.555556,
+              151.777778
+            ]
+          ],
+          "sylText": [
+            "ki",
+            "e",
+            "ta"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "kedo",
+          "start": 151.777778,
+          "end": 152.222222,
+          "syl": [
+            [
+              151.777778,
+              152
+            ],
+            [
+              152,
+              152.222222
+            ]
+          ],
+          "sylText": [
+            "ke",
+            "do"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "i": 35,
+      "text": "kieta tte koto mo yoku wakaranai nda",
+      "start": 152.444444,
+      "end": 156.444444,
+      "words": [
+        {
+          "w": "kieta",
+          "start": 152.444444,
+          "end": 153.222223,
+          "syl": [
+            [
+              152.444444,
+              152.666667
+            ],
+            [
+              152.666667,
+              152.888889
+            ],
+            [
+              152.888889,
+              153.222223
+            ]
+          ],
+          "sylText": [
+            "ki",
+            "e",
+            "ta"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            false
+          ]
+        },
+        {
+          "w": "tte",
+          "start": 153.222223,
+          "end": 153.777778,
+          "syl": [
+            [
+              153.222223,
+              153.555556
+            ],
+            [
+              153.555556,
+              153.777778
+            ]
+          ],
+          "sylText": [
+            "t",
+            "te"
+          ],
+          "sylCalibrated": [
+            false,
+            true
+          ],
+          "sylJoin": [
+            true
+          ]
+        },
+        {
+          "w": "koto",
+          "start": 153.777778,
+          "end": 154.111111,
+          "syl": [
+            [
+              153.777778,
+              154
+            ],
+            [
+              154,
+              154.111111
+            ]
+          ],
+          "sylText": [
+            "ko",
+            "to"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "mo",
+          "start": 154.111111,
+          "end": 154.222222,
+          "syl": [
+            [
+              154.111111,
+              154.222222
+            ]
+          ],
+          "sylText": [
+            "mo"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "yoku",
+          "start": 154.222222,
+          "end": 154.666667,
+          "syl": [
+            [
+              154.222222,
+              154.444444
+            ],
+            [
+              154.444444,
+              154.666667
+            ]
+          ],
+          "sylText": [
+            "yo",
+            "ku"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "wakaranai",
+          "start": 154.666667,
+          "end": 155.888889,
+          "syl": [
+            [
+              154.666667,
+              154.888889
+            ],
+            [
+              154.888889,
+              155.111111
+            ],
+            [
+              155.111111,
+              155.333333
+            ],
+            [
+              155.333333,
+              155.555556
+            ],
+            [
+              155.555556,
+              155.888889
+            ]
+          ],
+          "sylText": [
+            "wa",
+            "ka",
+            "ra",
+            "na",
+            "i"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "w": "nda",
+          "start": 155.888889,
+          "end": 156.444444,
+          "syl": [
+            [
+              155.888889,
+              156
+            ],
+            [
+              156,
+              156.444444
+            ]
+          ],
+          "sylText": [
+            "n",
+            "da"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "i": 36,
+      "text": "sora no ue kara biru ga tatsu",
+      "start": 156.444444,
+      "end": 159.333333,
+      "words": [
+        {
+          "w": "sora",
+          "start": 156.444444,
+          "end": 157.111111,
+          "syl": [
+            [
+              156.444444,
+              156.888889
+            ],
+            [
+              156.888889,
+              157.111111
+            ]
+          ],
+          "sylText": [
+            "so",
+            "ra"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "no",
+          "start": 157.111111,
+          "end": 157.333333,
+          "syl": [
+            [
+              157.111111,
+              157.333333
+            ]
+          ],
+          "sylText": [
+            "no"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "ue",
+          "start": 157.333333,
+          "end": 157.777778,
+          "syl": [
+            [
+              157.333333,
+              157.555556
+            ],
+            [
+              157.555556,
+              157.777778
+            ]
+          ],
+          "sylText": [
+            "u",
+            "e"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "kara",
+          "start": 157.777778,
+          "end": 158.222222,
+          "syl": [
+            [
+              157.777778,
+              158
+            ],
+            [
+              158,
+              158.222222
+            ]
+          ],
+          "sylText": [
+            "ka",
+            "ra"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "biru",
+          "start": 158.222222,
+          "end": 158.666667,
+          "syl": [
+            [
+              158.222222,
+              158.444444
+            ],
+            [
+              158.444444,
+              158.666667
+            ]
+          ],
+          "sylText": [
+            "bi",
+            "ru"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        },
+        {
+          "w": "ga",
+          "start": 158.666667,
+          "end": 158.888889,
+          "syl": [
+            [
+              158.666667,
+              158.888889
+            ]
+          ],
+          "sylText": [
+            "ga"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "tatsu",
+          "start": 158.888889,
+          "end": 159.333333,
+          "syl": [
+            [
+              158.888889,
+              159.111111
+            ],
+            [
+              159.111111,
+              159.333333
+            ]
+          ],
+          "sylText": [
+            "ta",
+            "tsu"
+          ],
+          "sylCalibrated": [
+            true,
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "i": 37,
+      "text": "me ga mienakunattekita",
+      "start": 159.555556,
+      "end": 162.666667,
+      "words": [
+        {
+          "w": "me",
+          "start": 159.555556,
+          "end": 159.777778,
+          "syl": [
+            [
+              159.555556,
+              159.777778
+            ]
+          ],
+          "sylText": [
+            "me"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "ga",
+          "start": 159.777778,
+          "end": 160,
+          "syl": [
+            [
+              159.777778,
+              160
+            ]
+          ],
+          "sylText": [
+            "ga"
+          ],
+          "sylCalibrated": [
+            true
+          ]
+        },
+        {
+          "w": "mienakunattekita",
+          "start": 160,
+          "end": 162.666667,
+          "syl": [
+            [
+              160,
+              160.277778
+            ],
+            [
+              160.277778,
+              160.444444
+            ],
+            [
+              160.444444,
+              160.666667
+            ],
+            [
+              160.666667,
+              160.888889
+            ],
+            [
+              160.888889,
+              161.111111
+            ],
+            [
+              161.111111,
+              161.333333
+            ],
+            [
+              161.333333,
+              161.555556
+            ],
+            [
+              161.555556,
+              161.777778
+            ],
+            [
+              161.777778,
+              162.666667
+            ]
+          ],
+          "sylText": [
+            "mi",
+            "e",
+            "na",
+            "ku",
+            "na",
+            "t",
+            "te",
+            "ki",
+            "ta"
+          ],
+          "sylCalibrated": [
+            true,
+            true,
+            true,
+            true,
+            false,
+            false,
+            true,
+            true,
+            true
+          ],
+          "sylJoin": [
+            false,
+            false,
+            false,
+            false,
+            true,
+            false,
+            false,
+            false
+          ]
+        }
+      ]
+    }
+  ]
+}

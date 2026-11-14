@@ -1,0 +1,19 @@
+{"v": 1, "song": "sardine", "calibrated": "lyrics.calibrated.ko.json", "raw": {"jp": "lyrics.raw.jp.txt", "en": "lyrics.raw.en.aligned.txt"}, "note": "Companion of lyrics.calibrated.ko.json. Times live there only. jp: one slot per calibrated syllable, space separated. '~' = same glyph as the slot before. '_' = ghost syllable (none in this song). Glyphs are the kana the raw file writes, no kanji added. A long-vowel mark is its own glyph on its own syllable (ホ ー ム). A sokuon and a moraic n are own glyphs on their own syllables (っ, ん). Quotes are plain. en: [fromSyl,toSyl(excl),text,'~'?] phrases in English reading order, '~' = loose split, a syllable may have no phrase. skip = raw lines (1-based) that are not sung by this singer. ig = raw text not in the calibration. The English raw file with the same line numbers as the Japanese one is lyrics.raw.en.aligned.txt: it is lyrics.raw.en.txt without its first two lines (header '### English translation by 25239x' and a blank line). Footnote marker [1] on the moon line is ig.", "skip": [1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19, 21, 23, 24, 25, 26, 27, 29, 31, 33, 35, 37, 39, 41, 43, 46, 48, 50, 52, 54, 56, 58, 60],
+"lines":[
+{"i":0,"r":30,"t":"kuromaguro ga tondekuru","n":11,"jp":"ク ロ マ グ ロ が と ん で く る","en":[[0,6,"The bluefin tuna"],[6,11,"will come flying"]],"ig":["(",")"]},
+{"i":1,"r":32,"t":"ashita no hirusugi ni tondekuru nda","n":16,"jp":"あ し た の ひ る す ぎ に と ん で く る ん だ","en":[[9,15,"It will come flying"],[0,4,"tomorrow"],[4,9,"just past noon"]],"ig":["(",")"]},
+{"i":2,"r":34,"t":"bokura o megakete futtekuru","n":13,"jp":"ぼ く ら を め が け て ふ っ て く る","en":[[4,8,"It will point"],[8,12,"and fall"],[0,4,"upon us"]],"ig":["(",")"]},
+{"i":3,"r":36,"t":"bokura wa korosareru nda","n":11,"jp":"ぼ く ら は こ ろ さ れ る ん だ","en":[[0,4,"We'll"],[4,11,"be killed"]],"ig":["(",")"]},
+{"i":4,"r":38,"t":"kihada ga koko made tondekuru","n":13,"jp":"キ ハ ダ が こ こ ま で と ん で く る","en":[[0,4,"The yellowfin tuna"],[8,13,"comes"],[4,8,"here"]],"ig":["(",")"]},
+{"i":5,"r":40,"t":"kawara o tsukiyabutte tondekuru nda","n":17,"jp":"か わ ら を つ き や ぶ っ て と ん で く る ん だ","en":[[10,17,"It comes"],[4,10,"breaking through"],[0,4,"the roof"]],"ig":["(",")"]},
+{"i":6,"r":42,"t":"maguro no hari ni wa doku ga aru","n":13,"jp":"ま ぐ ろ の は り に は ど く が あ る","en":[[0,4,"The tuna's"],[4,8,"spines"],[8,12,"are covered in poison"]],"ig":["(",")"]},
+{"i":7,"r":44,"t":"sasaru to dekishi suru","n":9,"jp":"さ さ る と で き し す る","en":[[0,4,"If they pierce us,"],[4,9,"we'll drown"]],"ig":["(",")"]},
+{"i":8,"r":47,"t":"kuromaguro ga tondekuru","n":11,"jp":"ク ロ マ グ ロ が と ん で く る","en":[[0,6,"The bluefin tuna"],[6,11,"will come flying"]],"ig":["(",")"]},
+{"i":9,"r":49,"t":"ashita no hirusugi ni tondekuru nda","n":16,"jp":"あ し た の ひ る す ぎ に と ん で く る ん だ","en":[[9,15,"It will come flying"],[0,4,"tomorrow"],[4,9,"just past noon"]],"ig":["(",")"]},
+{"i":10,"r":51,"t":"bokura o megakete futtekuru","n":13,"jp":"ぼ く ら を め が け て ふ っ て く る","en":[[4,8,"It will point"],[8,12,"and fall"],[0,4,"upon us"]],"ig":["(",")"]},
+{"i":11,"r":53,"t":"bokura wa korosareru nda","n":11,"jp":"ぼ く ら は こ ろ さ れ る ん だ","en":[[0,4,"We'll"],[4,11,"be killed"]],"ig":["(",")"]},
+{"i":12,"r":55,"t":"kihada ga koko made tondekuru","n":13,"jp":"キ ハ ダ が こ こ ま で と ん で く る","en":[[0,4,"The yellowfin tuna"],[8,13,"comes"],[4,8,"here"]],"ig":["(",")"]},
+{"i":13,"r":57,"t":"kawara o tsukiyabutte tondekuru nda","n":17,"jp":"か わ ら を つ き や ぶ っ て と ん で く る ん だ","en":[[10,17,"It comes"],[4,10,"breaking through"],[0,4,"the roof"]],"ig":["(",")"]},
+{"i":14,"r":59,"t":"maguro no hari ni wa doku ga aru","n":13,"jp":"ま ぐ ろ の は り に は ど く が あ る","en":[[0,4,"The tuna's"],[4,8,"spines"],[8,12,"are covered in poison"]],"ig":["(",")"]},
+{"i":15,"r":61,"t":"sasaru to dekishi suru","n":9,"jp":"さ さ る と で き し す る","en":[[0,4,"If they pierce us,"],[4,9,"we'll drown"]],"ig":["(",")"]}
+]}

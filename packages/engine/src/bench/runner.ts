@@ -106,8 +106,8 @@ export async function runBench(engine: Engine, opts: BenchOptions = {}): Promise
       try {
         // the first iteration: shader compile and link, texture upload, plus the run
         const compileMs = await timed(() => b.run(ctx, state));
-        for (let i = 0; i < warmup; i++) await timed(() => b.run(ctx, state));
-        results.push(await measure(b.id, b.kind, compileMs, n, () => b.run(ctx, state)));
+        for (let i = 0; i < (b.warmup ?? warmup); i++) await timed(() => b.run(ctx, state));
+        results.push(await measure(b.id, b.kind, compileMs, b.n ?? n, () => b.run(ctx, state)));
       } finally {
         b.dispose?.(ctx, state);
       }

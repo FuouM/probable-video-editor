@@ -30,6 +30,12 @@ export interface EffectBench<S = unknown> {
   run(ctx: BenchCtx, state: S): void | Promise<void>;
   /** Free what `setup` allocated and restore engine state. */
   dispose?(ctx: BenchCtx, state: S): void;
+  /**
+   * Measured and warm-up iterations of this benchmark, in place of those of the run (`BenchOptions`). For a benchmark of slow CPU work
+   * done once at init (a bake of seconds): the default 35 runs of it make the whole benchmark run minutes longer and say no more.
+   */
+  n?: number;
+  warmup?: number;
 }
 
 export interface BenchOptions {

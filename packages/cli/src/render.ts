@@ -5,7 +5,8 @@ import path from 'node:path';
 import type { Page } from 'playwright-core';
 import type { AdaptiveSampling } from '@pve/engine/engine';
 import type { BenchRecord } from '@pve/engine/bench/types';
-import { assertNoBrowserErrors, chromeVersion, ensureServer, gpuInfo, openPage, type OpenOptions, type OpenPage, type PveWindow, type StreamFrame } from './browser';
+import { assertNoBrowserErrors, chromeVersion, closeBrowser, deadline, ensureServer, FRAME_MS, gpuInfo, openPage, type OpenOptions, type OpenPage, type PveWindow, type StreamFrame } from './browser';
+import { encodePngAsync } from './png';
 
 export type Samples = number | AdaptiveSampling;
 
@@ -25,15 +26,49 @@ export interface StillOptions {
   scale: number;
 }
 
-/** Renders each time into its PNG file. Returns the sub-frame count of each still. */
+/**
+ * Renders each time into its PNG file. Returns the sub-frame count of each still. Each still has the frame deadline.
+ * The page posts the pixels of the frame (RGBA bytes, full size at each scale) to a local receiver, and the PNG is made here. A
+ * screenshot of the page costs about 0.7 s for each still: the browser encodes the PNG and sends it as text.
+ */
 export async function stills(page: Page, items: { t: number; file: string }[], o: StillOptions): Promise<number[]> {
+  let arrived = Promise.withResolvers<Uint8Array>();
+  const sink = Bun.serve({
+    hostname: '127.0.0.1',
+    port: 0,
+    maxRequestBodySize: 1024 * 1024 * 1024,
+    async fetch(req) {
+      arrived.resolve(new Uint8Array(await req.arrayBuffer()));
+      return new Response(null, { headers: { 'Access-Control-Allow-Origin': '*' } });
+    },
+  });
   const counts: number[] = [];
-  for (const { t, file } of items) {
-    mkdirSync(path.dirname(file), { recursive: true });
-    counts.push(await page.evaluate(([t, s, sh, fps]) => (window as unknown as PveWindow).__pve!.still(t, s, sh, fps), [t, o.samples, o.shutter, o.fps] as const));
-    // at scale > 1 the canvas is shown downscaled on the page: save the full-res pixel buffer instead
-    if (o.scale !== 1) await Bun.write(file, Buffer.from(await page.evaluate(() => (window as unknown as PveWindow).__pve!.png()), 'base64'));
-    else await page.screenshot({ path: file, clip: { x: 0, y: 0, width: 1920, height: 1080 } });
+  // the files compress and write while the next stills render
+  const writes: Promise<unknown>[] = [];
+  try {
+    for (const { t, file } of items) {
+      mkdirSync(path.dirname(file), { recursive: true });
+      arrived = Promise.withResolvers<Uint8Array>();
+      const got = await deadline(page.evaluate(async ([t, s, sh, fps, url]) => {
+        const p = (window as unknown as PveWindow).__pve!;
+        const n = p.still(t, s, sh, fps);
+        // (a Blob body: Chrome sends a typed array body about ten times slower)
+        const sent = await fetch(url, { method: 'POST', body: new Blob([await p.engine.readPixelsAsync()]) });
+        if (!sent.ok) throw new Error(`the pixels of the still were not taken (HTTP ${sent.status})`);
+        return { n, width: p.width, height: p.height };
+      }, [t, o.samples, o.shutter, o.fps, `http://127.0.0.1:${sink.port}/`] as const), FRAME_MS, `the still at ${t} s`);
+      counts.push(got.n);
+      // the rows come bottom-up
+      const px = await arrived.promise, row = got.width * 4;
+      if (px.length !== row * got.height) throw new Error(`the still at ${t} s: ${px.length} bytes arrived, not ${got.width}x${got.height} RGBA`);
+      const data = new Uint8Array(px.length);
+      for (let y = 0; y < got.height; y++) data.set(px.subarray((got.height - 1 - y) * row, (got.height - y) * row), y * row);
+      writes.push(encodePngAsync({ width: got.width, height: got.height, data }).then((png) => Bun.write(file, png)));
+    }
+    await Promise.all(writes);
+  } finally {
+    await Promise.allSettled(writes);
+    void sink.stop(true);
   }
   return counts;
 }
@@ -46,25 +81,40 @@ export interface SheetTile {
   head?: boolean;
 }
 
-/** A contact sheet: `cols` tiles of 480x270 a row, each with its label. Writes the PNG to `out`. */
-export async function sheet(page: Page, tiles: SheetTile[], cols: number, out: string, o: Omit<StillOptions, 'scale'>): Promise<void> {
-  const dataUrl: string = await page.evaluate(async ({ tiles, cols, samples, shutter, fps }) => {
-    const P = (window as unknown as PveWindow).__pve!;
-    const cw = 480, ch = 270, pad = 4, lab = 20;
-    const rows = Math.ceil(tiles.length / cols);
+/** The sheet canvas lives on the page between tile calls, so each tile has its own frame deadline. */
+type SheetWindow = PveWindow & { __sheet?: HTMLCanvasElement };
+
+/**
+ * A contact sheet: `cols` tiles of 480x270 a row, each with its label. Writes the PNG to `out`. With `crop` ([x, y, w, h] in 1920x1080 px)
+ * each tile shows only that part of the frame, zoomed by the largest whole factor that keeps the tile at most 960 px wide, without smoothing.
+ */
+export async function sheet(page: Page, tiles: SheetTile[], cols: number, out: string, o: Omit<StillOptions, 'scale'>, crop?: [number, number, number, number]): Promise<void> {
+  const zoom = crop ? Math.max(1, Math.floor(960 / crop[2])) : 1;
+  const cw = crop ? crop[2] * zoom : 480, ch = crop ? crop[3] * zoom : 270, pad = 4, lab = 20;
+  const rows = Math.ceil(tiles.length / cols);
+  await page.evaluate(({ w, h }) => {
     const cv = document.createElement('canvas');
-    cv.width = cols * (cw + pad) + pad; cv.height = rows * (ch + lab + pad) + pad;
+    cv.width = w; cv.height = h;
     const c = cv.getContext('2d')!;
-    c.fillStyle = '#222'; c.fillRect(0, 0, cv.width, cv.height);
-    const src = document.getElementById('c') as HTMLCanvasElement;
-    tiles.forEach((tile, i) => {
-      P.still(tile.t, samples, shutter, fps);
-      const x = pad + (i % cols) * (cw + pad), y = pad + Math.floor(i / cols) * (ch + lab + pad);
-      c.drawImage(src, x, y + lab, cw, ch);
+    c.fillStyle = '#222'; c.fillRect(0, 0, w, h);
+    (window as unknown as SheetWindow).__sheet = cv;
+  }, { w: cols * (cw + pad) + pad, h: rows * (ch + lab + pad) + pad });
+  for (const [i, tile] of tiles.entries()) {
+    const x = pad + (i % cols) * (cw + pad), y = pad + Math.floor(i / cols) * (ch + lab + pad);
+    await deadline(page.evaluate(({ tile, x, y, cw, ch, lab, samples, shutter, fps, crop }) => {
+      const w = window as unknown as SheetWindow;
+      w.__pve!.still(tile.t, samples, shutter, fps);
+      const c = w.__sheet!.getContext('2d')!;
+      const frame = document.getElementById('c') as HTMLCanvasElement;
+      if (crop) {
+        const k = frame.width / 1920;
+        c.imageSmoothingEnabled = false;
+        c.drawImage(frame, crop[0] * k, crop[1] * k, crop[2] * k, crop[3] * k, x, y + lab, cw, ch);
+      } else c.drawImage(frame, x, y + lab, cw, ch);
       c.fillStyle = tile.head ? '#ffb347' : '#ddd'; c.font = '13px monospace'; c.fillText(tile.label, x + 2, y + 14);
-    });
-    return cv.toDataURL('image/png');
-  }, { tiles, cols, samples: o.samples, shutter: o.shutter, fps: o.fps });
+    }, { tile, x, y, cw, ch, lab, samples: o.samples, shutter: o.shutter, fps: o.fps, crop }), FRAME_MS, `the sheet tile at ${tile.t} s`);
+  }
+  const dataUrl: string = await page.evaluate(() => { const w = window as unknown as SheetWindow; const u = w.__sheet!.toDataURL('image/png'); delete w.__sheet; return u; });
   mkdirSync(path.dirname(out), { recursive: true });
   await Bun.write(out, Buffer.from(dataUrl.split(',')[1]!, 'base64'));
 }
@@ -418,22 +468,22 @@ async function streamFrames(o: FramesOptions, segs: Segment[], stats: FrameLine[
   const closePages = async () => {
     for (const p of pages.splice(0)) {
       if (p.logs.length) console.error('BROWSER LOG:\n' + p.logs.slice(0, 40).join('\n'));
-      await p.browser.close().catch(() => {});
+      await closeBrowser(p.browser);
     }
   };
   let ok = false;
   try {
     const open: OpenOptions = { scale: o.scale, headed: o.headed };
-    const opened = await Promise.allSettled(Array.from({ length: workers }, (_, k) => openPage(url, o.project, { ...open, slot: k })));
+    const opened = await Promise.allSettled(Array.from({ length: workers }, () => openPage(url, o.project, open)));
     for (const p of opened) if (p.status === 'fulfilled') pages.push(p.value);
     for (const p of opened) if (p.status === 'rejected') throw p.reason;
     const facts = { ...(await gpuInfo(pages[0]!.page)), chrome: chromeVersion(pages[0]!.browser) };
     const rendering = Promise.all(pages.map(async ({ page }, k) => {
       for (let r = take(); r && !failure; r = take()) {
         for (let n = r[0]; n < r[1]; n++) queue[k]!.push(n);
-        const fr = await page.evaluate((a) => (window as unknown as PveWindow).__pve!.stream(a), {
+        const fr = await deadline(page.evaluate((a) => (window as unknown as PveWindow).__pve!.stream(a), {
           from: r[0] / o.fps, to: r[1] / o.fps, fps: o.fps, ws: `ws://localhost:${server.port}/?w=${k}`, samples: o.samples, shutter: o.shutter, inflight: o.webcodecs ? 8 : 4, webcodecs: o.webcodecs,
-        });
+        }), FRAME_MS * (r[1] - r[0]), `frames ${r[0]}..${r[1] - 1}`);
         for (const f of fr) stats.push({ ...f, t: f.n / o.fps, clip: segOf(f.n).clip });
       }
     }));

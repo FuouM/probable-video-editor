@@ -6,7 +6,7 @@
 import { existsSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { ROOT, ensureServer, openPage, type PveWindow } from '../packages/cli/src/browser';
-import { decodePng, diffImages, encodePng } from './png';
+import { decodePng, diffImages, encodePng } from '../packages/cli/src/png';
 
 const capture = process.argv.includes('--capture');
 const dir = path.join(ROOT, 'tests/golden');

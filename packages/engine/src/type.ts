@@ -321,3 +321,204 @@ export function drawV(
   });
   return top;
 }
+
+// ---------------------------------------------------------------- pixel fonts
+
+/** A pixel sink: x right, y down. */
+export interface Pixels { put(x: number, y: number, i: number): void }
+
+export interface PixelGlyph { adv: number; x0: number; y0: number; w: number; h: number; bits: Uint8Array }
+
+/**
+ * Pixel fonts: a face is drawn once per glyph with Canvas2D at its design pixel size and cut at half
+ * coverage into a 1-bit mask. Sub-pixel offsets (0 or 0.5 px) are probed to find the alignment with
+ * the fewest grey anti-aliasing pixels.
+ */
+export class PixelFont {
+  private glyphs = new Map<string, PixelGlyph>();
+  private cv = document.createElement('canvas');
+  private c: CanvasRenderingContext2D;
+  private ox = 0;
+  private oy = 0;
+
+  /** `size`: the design pixel size (px per em) of the face. */
+  constructor(readonly family: string, readonly size: number) {
+    this.cv.width = this.cv.height = size * 4;
+    this.c = this.cv.getContext('2d', { willReadFrequently: true })!;
+  }
+
+  /** Fit probe alignment for an already loaded font family. */
+  static from(family: string, size: number, probe = 'ABGaby012'): PixelFont {
+    const f = new PixelFont(family, size);
+    let best = { grey: Infinity, ox: 0, oy: 0 };
+    for (const ox of [0, 0.5]) {
+      for (const oy of [0, 0.5]) {
+        f.ox = ox;
+        f.oy = oy;
+        let grey = 0;
+        for (const ch of probe) grey += f.raster(ch).grey;
+        if (grey < best.grey) best = { grey, ox, oy };
+      }
+    }
+    f.ox = best.ox;
+    f.oy = best.oy;
+    return f;
+  }
+
+  /** `probe`: characters of the face that the grid alignment measures (only glyphs the face has). */
+  static async load(family: string, url: string, size: number, probe: string): Promise<PixelFont> {
+    const face = new FontFace(family, `url(${url})`);
+    document.fonts.add(await face.load());
+    return PixelFont.from(family, size, probe);
+  }
+
+  /** Draws ch with the pen at (size, 3 size) and returns its mask and the count of grey pixels. */
+  private raster(ch: string): { g: PixelGlyph; grey: number } {
+    const n = this.size * 4;
+    const c = this.c;
+    c.setTransform(1, 0, 0, 1, 0, 0);
+    c.clearRect(0, 0, n, n);
+    c.font = `${this.size}px "${this.family}"`;
+    c.textBaseline = 'alphabetic';
+    c.fillStyle = '#fff';
+    c.fillText(ch, this.size + this.ox, this.size * 3 + this.oy);
+    const a = c.getImageData(0, 0, n, n).data;
+    let grey = 0, x0 = n, y0 = n, x1 = -1, y1 = -1;
+    for (let y = 0; y < n; y++) {
+      for (let x = 0; x < n; x++) {
+        const v = a[(y * n + x) * 4 + 3]!;
+        if (v > 24 && v < 232) grey++;
+        if (v >= 128) {
+          x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y);
+        }
+      }
+    }
+    const w = Math.max(0, x1 - x0 + 1), h = Math.max(0, y1 - y0 + 1);
+    const bits = new Uint8Array(w * h);
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        bits[y * w + x] = a[((y0 + y) * n + x0 + x) * 4 + 3]! >= 128 ? 1 : 0;
+      }
+    }
+    const adv = Math.round(c.measureText(ch).width);
+    return { g: { adv, x0: w ? x0 - this.size : 0, y0: h ? y0 - this.size * 3 : 0, w, h, bits }, grey };
+  }
+
+  glyph(ch: string): PixelGlyph {
+    let g = this.glyphs.get(ch);
+    if (!g) {
+      g = this.raster(ch).g;
+      this.glyphs.set(ch, g);
+    }
+    return g;
+  }
+
+  width(text: string, tracking = 0): number {
+    let w = 0;
+    for (const ch of text) w += this.glyph(ch).adv + tracking;
+    return text.length ? w - tracking : 0;
+  }
+
+  /** Draws text with the pen at x and the baseline at y. Returns the pen x after the text. */
+  draw(out: Pixels, text: string, x: number, y: number, i: number, tracking = 0): number {
+    for (const ch of text) {
+      const g = this.glyph(ch);
+      for (let yy = 0; yy < g.h; yy++) {
+        for (let xx = 0; xx < g.w; xx++) {
+          if (g.bits[yy * g.w + xx]) out.put(x + g.x0 + xx, y + g.y0 + yy, i);
+        }
+      }
+      x += g.adv + tracking;
+    }
+    return x;
+  }
+}
+
+/**
+ * Draws text with a one-pixel outline in index `edge` (the 8 neighbours of every ink pixel that are not ink).
+ * Returns the pen x after the text.
+ */
+export function outlined(out: Pixels, f: PixelFont, text: string, x: number, y: number, ink: number, edge: number, tracking = 0): number {
+  const ink2 = new Set<number>();
+  const key = (px: number, py: number) => (py + 4096) * 16384 + px + 4096;
+  const end = f.draw({ put: (px, py) => ink2.add(key(px, py)) }, text, x, y, 1, tracking);
+  for (const k of ink2) {
+    const px = (k % 16384) - 4096, py = Math.floor(k / 16384) - 4096;
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        if (!ink2.has(key(px + dx, py + dy))) out.put(px + dx, py + dy, edge);
+      }
+    }
+  }
+  for (const k of ink2) out.put((k % 16384) - 4096, Math.floor(k / 16384) - 4096, ink);
+  return end;
+}
+
+/**
+ * A 1-bit pixel shape with its origin at the pen position on the baseline: text scaled up by a whole number for
+ * big type, and grown by whole pixels for thick outlines. x right, y down.
+ */
+export class Mask {
+  constructor(readonly x0: number, readonly y0: number, readonly w: number, readonly h: number, readonly bits: Uint8Array, readonly adv: number) {}
+
+  /** `text` in face f, each pixel an n x n block. `adv`: the pen advance (scaled). */
+  static text(f: PixelFont, text: string, n = 1, tracking = 0): Mask {
+    const pts: number[] = [];
+    const adv = f.draw({ put: (x, y) => pts.push(x, y) }, text, 0, 0, 1, tracking) * n;
+    if (!pts.length) return new Mask(0, 0, 0, 0, new Uint8Array(0), adv);
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (let k = 0; k < pts.length; k += 2) {
+      x0 = Math.min(x0, pts[k]!); x1 = Math.max(x1, pts[k]!);
+      y0 = Math.min(y0, pts[k + 1]!); y1 = Math.max(y1, pts[k + 1]!);
+    }
+    const w = (x1 - x0 + 1) * n, h = (y1 - y0 + 1) * n;
+    const bits = new Uint8Array(w * h);
+    for (let k = 0; k < pts.length; k += 2) {
+      const bx = (pts[k]! - x0) * n, by = (pts[k + 1]! - y0) * n;
+      for (let yy = 0; yy < n; yy++) bits.fill(1, (by + yy) * w + bx, (by + yy) * w + bx + n);
+    }
+    return new Mask(x0 * n, y0 * n, w, h, bits, adv);
+  }
+
+  has(x: number, y: number): boolean {
+    const u = x - this.x0, v = y - this.y0;
+    return u >= 0 && v >= 0 && u < this.w && v < this.h && this.bits[v * this.w + u] === 1;
+  }
+
+  /** The shape grown by r pixels in all eight directions (a square brush). */
+  grow(r: number): Mask {
+    if (r <= 0 || !this.w) return this;
+    const w = this.w + 2 * r, h = this.h + 2 * r;
+    const row = new Uint8Array(w * this.h);
+    for (let y = 0; y < this.h; y++) {
+      for (let x = 0; x < this.w; x++) {
+        if (this.bits[y * this.w + x]) row.fill(1, y * w + x, y * w + x + 2 * r + 1);
+      }
+    }
+    const bits = new Uint8Array(w * h);
+    for (let y = 0; y < this.h; y++) {
+      for (let x = 0; x < w; x++) {
+        if (row[y * w + x]) for (let d = 0; d <= 2 * r; d++) bits[(y + d) * w + x] = 1;
+      }
+    }
+    return new Mask(this.x0 - r, this.y0 - r, w, h, bits, this.adv);
+  }
+
+  /** Puts index i on every pixel of the shape, with the origin at x, y. `keep` can clip pixels (screen coords). */
+  draw(out: Pixels, x: number, y: number, i: number, keep?: (px: number, py: number) => boolean) {
+    for (let v = 0; v < this.h; v++) {
+      for (let u = 0; u < this.w; u++) {
+        if (!this.bits[v * this.w + u]) continue;
+        const px = x + this.x0 + u, py = y + this.y0 + v;
+        if (!keep || keep(px, py)) out.put(px, py, i);
+      }
+    }
+  }
+}
+
+/** Big type: `text` scaled n times, an inner outline of r1 px in `edge` and an outer one of r2 px in `outer`. */
+export function bigText(f: PixelFont, text: string, n: number, r1: number, r2 = 0): { ink: Mask; edge: Mask; outer: Mask | null } {
+  const ink = Mask.text(f, text, n);
+  const edge = ink.grow(r1);
+  return { ink, edge, outer: r2 > 0 ? edge.grow(r2) : null };
+}

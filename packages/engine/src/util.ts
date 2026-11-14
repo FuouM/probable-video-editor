@@ -4,16 +4,56 @@ import { FRAME_SKEW } from './skew';
 // pure function of time (or seeded), so frames render identically on export.
 
 export const clamp = (x: number, a = 0, b = 1) => (x < a ? a : x > b ? b : x);
+export const clamp01 = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x);
+/**
+ * Clamps u to [a, b] with Math.max and Math.min. It is not the same as `clamp`: when a > b it gives a, and it
+ * gives +0 for -0 when a is 0.
+ */
+export const clampMinMax = (u: number, a: number, b: number) => Math.max(a, Math.min(b, u));
 export const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 export const invLerp = (a: number, b: number, x: number) => (a === b ? 0 : (x - a) / (b - a));
 export const remap = (x: number, a: number, b: number, c: number, d: number, clampIt = true) => {
   const t = invLerp(a, b, x);
   return lerp(c, d, clampIt ? clamp(t) : t);
 };
+export const smooth = (x: number) => {
+  const t = x < 0 ? 0 : x > 1 ? 1 : x;
+  return t * t * (3 - 2 * t);
+};
 export const smoothstep = (a: number, b: number, x: number) => {
   const t = clamp((x - a) / (b - a));
   return t * t * (3 - 2 * t);
 };
+
+/**
+ * Gradually changes a value toward a desired target over time using a critically damped spring.
+ */
+export function smoothDamp(
+  current: number,
+  target: number,
+  vel: { current: number },
+  smoothTime: number,
+  dt: number,
+  maxSpeed = Infinity,
+): number {
+  smoothTime = Math.max(0.0001, smoothTime);
+  const omega = 2 / smoothTime;
+  const x = omega * dt;
+  const exp = 1 / (1 + x + 0.48 * x * x + 0.235 * x * x * x);
+  let change = current - target;
+  const originalTo = target;
+  const maxChange = maxSpeed * smoothTime;
+  change = clamp(change, -maxChange, maxChange);
+  target = current - change;
+  const temp = (vel.current + omega * change) * dt;
+  vel.current = (vel.current - omega * temp) * exp;
+  let output = target + (change + temp) * exp;
+  if (originalTo - current > 0 === output > originalTo) {
+    output = originalTo;
+    vel.current = (output - originalTo) / (dt || 0.0001);
+  }
+  return output;
+}
 export const smootherstep = (a: number, b: number, x: number) => {
   const t = clamp((x - a) / (b - a));
   return t * t * t * (t * (t * 6 - 15) + 10);
@@ -21,6 +61,15 @@ export const smootherstep = (a: number, b: number, x: number) => {
 export const fract = (x: number) => x - Math.floor(x);
 export const mod = (x: number, m: number) => ((x % m) + m) % m;
 export const TAU = Math.PI * 2;
+/** Radians per degree. */
+export const DEG = Math.PI / 180;
+
+/**
+ * A point in normalized device coordinates (x, y in -1..1, y up; e.g. Vector3.project) as whole pixels of the
+ * rectangle [x, y, w, h] (y down): Math.round(x + (q.x * 0.5 + 0.5) * w), Math.round(y + (0.5 - q.y * 0.5) * h).
+ */
+export const projectToRect = (q: { x: number; y: number }, rect: readonly [number, number, number, number]): [number, number] =>
+  [Math.round(rect[0] + (q.x * 0.5 + 0.5) * rect[2]), Math.round(rect[1] + (0.5 - q.y * 0.5) * rect[3])];
 
 /** Window: 0 before a, ramps up over `fadeIn`, holds, ramps down over `fadeOut` ending at b. */
 export const window01 = (x: number, a: number, b: number, fadeIn = 0.2, fadeOut = 0.2) =>
@@ -154,6 +203,12 @@ export function hash(...xs: number[]) {
   }
   return (h >>> 0) / 4294967296;
 }
+
+/** The sine hash of one or two numbers to [0, 1): fract(sin(a * 127.1 + b * 311.7) * 43758.5453). It is a different hash from `hash`. */
+export const hashSin = (a: number, b = 0) => {
+  const x = Math.sin(a * 127.1 + b * 311.7) * 43758.5453;
+  return x - Math.floor(x);
+};
 
 // ---- value noise (1D/2D/3D), cheap & deterministic, for CPU-side motion ----
 const fade = (t: number) => t * t * t * (t * (t * 6 - 15) + 10);

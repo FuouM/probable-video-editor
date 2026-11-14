@@ -27,4 +27,16 @@ export const bench: EffectBench[] = [
     },
     dispose: (_, s) => { s.layer.dispose(); },
   }),
+  defineBench({
+    id: 'type.pixel',
+    kind: 'helper',
+    async setup() {
+      const { PixelFont, Mask, F } = await import('./type');
+      const font = PixelFont.from(F.mono(400), 16);
+      return { font, Mask, text: 'PIXEL TYPE BENCHMARK 12345' };
+    },
+    run: (_, s) => {
+      s.Mask.text(s.font, s.text, 2);
+    },
+  }),
 ];

@@ -100,7 +100,7 @@ bun run pve bench -p breaked_neuro
 # Render video range
 bun run pve render --from @hook1 --to @room -p pdoom_original
 
-# Write the subtitles for YouTube (TTML and SRT; --format all writes both)
+# Write the subtitles for YouTube (--format ttml|srt|ass|ytt|all)
 bun run pve subs -p god_ish --format all
 
 # Replace the first frame of a video with an image (thumbnail for video platforms)

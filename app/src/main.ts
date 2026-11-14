@@ -1,10 +1,14 @@
 // Entry: preview player (default) or export mode (?export=1, driven by scripts/render.ts).
+import { Vector4 } from 'three';
 import { Engine, type AdaptiveSampling, type InitProgress } from '@pve/engine/engine';
 import { PW, PH, SCALE } from '@pve/engine/gl';
-import { marks } from '@pve/engine/marks';
+import { cameras, marks, metrics, recordRender } from '@pve/engine/marks';
+import { indexedDbMemo, setMemoStore } from '@pve/engine/memo';
 import type { BenchOptions } from '@pve/engine/bench/types';
 import { inputs, loadProject, project } from './project';
+import { fetchInputs } from './inputs';
 import { NleStudio } from './ui/nle';
+import { StudioAudioEngine } from './ui/audio';
 import { Loader } from './ui/loader';
 
 const params = new URLSearchParams(location.search);
@@ -36,8 +40,16 @@ async function boot() {
   };
 
   const onlySet = ONLY ? new Set(ONLY.split(',')) : null;
+  let audio: StudioAudioEngine | null = null;
   try {
-    await engine.init(onlySet ? (e) => onlySet.has(e.id) : undefined, onProgress);
+    if (!EXPORT) {
+      // the studio keeps slow init results between page loads (SceneCtx.memo, physics bakes); exports always compute
+      setMemoStore(await indexedDbMemo());
+      // the studio downloads and decodes the mix while the scenes load
+      audio = new StudioAudioEngine((await fetchInputs()).mix, undefined, undefined, (f) => loader?.audio(f));
+    }
+    // (the live player warms the first frame of each clip: no stall at a clip boundary. Exports render every frame anyway.)
+    await engine.init(onlySet ? (e) => onlySet.has(e.id) : undefined, onProgress, !EXPORT);
   } catch (e) {
     loader?.fail(String((e as Error)?.message ?? e));
     throw e;
@@ -46,7 +58,7 @@ async function boot() {
   document.title = project.title;
 
   if (EXPORT) return setupExport();
-  const studio = setupPlayer((f) => loader?.audio(f));
+  const studio = setupPlayer(audio!);
   // the overlay stays until the mix is decoded: before that the studio cannot play
   await studio.audioReady;
   loader?.audio(1, true);
@@ -116,6 +128,15 @@ function sender(url: string, inflight: number): Promise<Sender> {
 
 function setupExport() {
   document.body.classList.add('export');
+  // `pve probe --cams`: every render records its camera and viewport. Off unless a probe turns it on (it costs a little per render)
+  let camsOn = false;
+  const r = engine.renderer, render = r.render.bind(r), vp = new Vector4();
+  r.render = (scene, cam) => {
+    render(scene, cam);
+    if (!camsOn) return;
+    r.getCurrentViewport(vp);
+    recordRender(cam, [vp.x, vp.y, vp.z, vp.w]);
+  };
   const api = {
     project: project.id,
     engine,
@@ -130,6 +151,10 @@ function setupExport() {
     still(t: number, samples: number | AdaptiveSampling = 1, shutter = 0.5, fps = 60) { return engine.render(t, 1 / fps, true, samples, shutter); },
     /** The named objects of the last rendered frame (scenes call `mark`), boxes in 1920x1080 px. */
     marks() { return [...marks()]; },
+    /** The metrics (scenes call `metric`) and, when `recordCams(true)`, the cameras of the last rendered frame. */
+    metrics() { return [...metrics()]; },
+    cameras() { return [...cameras()]; },
+    recordCams(on: boolean) { camsOn = on; },
     /** The last rendered frame as a full-resolution (PW x PH) PNG, base64 (for stills at scale > 1). */
     async png() {
       const px = await engine.readPixelsAsync(), row = PW * 4;
@@ -263,7 +288,7 @@ function setupExport() {
 }
 
 // ------------------------------------------------------------------ preview player
-function setupPlayer(onAudioLoad: (fraction: number) => void) {
+function setupPlayer(audio: StudioAudioEngine) {
   const errs = document.getElementById('errs');
   if (errs && engine.errors.length) {
     errs.textContent = engine.errors.join('\n\n');
@@ -273,7 +298,7 @@ function setupPlayer(onAudioLoad: (fraction: number) => void) {
   const projLabel = document.getElementById('project-name');
   if (projLabel) projLabel.textContent = project.id;
 
-  return new NleStudio(engine, inputs, TIMELINE, canvas, FROM, onAudioLoad);
+  return new NleStudio(engine, inputs, TIMELINE, canvas, FROM, audio);
 }
 
 boot().catch((e) => {

@@ -255,30 +255,41 @@ export class NleTransport {
     }
   }
 
+  /** What the bar shows now: update writes the DOM only where this changes (a write every frame restyles the bar). */
+  private shown = new Map<HTMLElement | string, string | number | boolean>();
+
+  private changed(k: HTMLElement | string, v: string | number | boolean): boolean {
+    if (this.shown.get(k) === v) return false;
+    this.shown.set(k, v);
+    return true;
+  }
+
+  private setLcd(el: HTMLElement, text: string) {
+    if (this.changed(el, text)) el.innerHTML = renderLcdDigits(text);
+  }
+
   update(s: Partial<TransportState>) {
     if (s.time !== undefined) {
       const frameNum = Math.floor(s.time * 30);
-      this.vfdMain.innerHTML = renderLcdDigits(String(frameNum).padStart(4, '0'));
+      this.setLcd(this.vfdMain, String(frameNum).padStart(4, '0'));
 
       const m = Math.floor(s.time / 60);
       const sec = s.time % 60;
-      const str = `${String(m).padStart(2, '0')}:${sec.toFixed(2).padStart(5, '0')}`;
-      this.vfdTime.innerHTML = renderLcdDigits(str);
+      this.setLcd(this.vfdTime, `${String(m).padStart(2, '0')}:${sec.toFixed(2).padStart(5, '0')}`);
     }
 
     if (s.bar !== undefined && s.beat !== undefined) {
       const barNum = Math.max(1, Math.floor(s.bar) + 1);
       const beatNum = Math.floor(s.beat % 4) + 1;
-      const str = `${String(barNum).padStart(3, '0')}.${beatNum}`;
-      this.vfdBar.innerHTML = renderLcdDigits(str);
+      this.setLcd(this.vfdBar, `${String(barNum).padStart(3, '0')}.${beatNum}`);
     }
 
     if (s.bpm !== undefined) {
-      this.vfdBpm.innerHTML = renderLcdDigits(s.bpm.toFixed(1).padStart(5, ' '));
+      this.setLcd(this.vfdBpm, s.bpm.toFixed(1).padStart(5, ' '));
     }
 
 
-    if (s.playing !== undefined) {
+    if (s.playing !== undefined && this.changed('playing', s.playing)) {
       this.btnPlay.classList.toggle('daw-on', s.playing);
       const iconPlay = this.el.querySelector('#icon-play') as HTMLElement;
       const iconPause = this.el.querySelector('#icon-pause') as HTMLElement;
@@ -295,7 +306,7 @@ export class NleTransport {
     if (s.follow !== undefined) {
       this.btnFollow.classList.toggle('active', s.follow);
     }
-    if (s.speed !== undefined) {
+    if (s.speed !== undefined && this.changed('speed', s.speed)) {
       const sp = s.speed;
       this.el.querySelector('#btn-speed-025')?.classList.toggle('active', Math.abs(sp - 0.25) < 0.01);
       this.el.querySelector('#btn-speed-05')?.classList.toggle('active', Math.abs(sp - 0.5) < 0.01);
@@ -304,7 +315,7 @@ export class NleTransport {
     }
 
 
-    if (s.clipId !== undefined) {
+    if (s.clipId !== undefined && this.changed('clipId', s.clipId)) {
       this.clipLabel.textContent = s.clipId || '—';
     }
 

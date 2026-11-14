@@ -1,5 +1,6 @@
 import { expect, test } from 'bun:test';
-import { cues, languages, toSrt, toTtml, type Cue } from '../src/subs';
+import { toSrt, toTtml, type Cue } from 'lyricsync/formats';
+import { cues, languages } from '../src/subs';
 import type { Subtitles } from '../../../app/src/subtitles';
 
 // one line, "ko nichi" over "今日": the Japanese units are sung inside the romaji words

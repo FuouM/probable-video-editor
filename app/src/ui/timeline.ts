@@ -83,6 +83,8 @@ export class NleTimeline {
   }
 
   setTime(t: number) {
+    // (paused: nothing moved, and every other change redraws by itself)
+    if (t === this.currentTime) return;
     this.currentTime = t;
     if (this.follow && this.viewDuration < this.data.duration) {
       // Continuous follow: smoothly scroll viewport so playhead tracks continuously

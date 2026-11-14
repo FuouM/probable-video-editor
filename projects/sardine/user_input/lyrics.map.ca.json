@@ -1,0 +1,19 @@
+{"v": 1, "song": "sardine", "calibrated": "lyrics.calibrated.ca.json", "raw": {"jp": "lyrics.raw.jp.txt", "en": "lyrics.raw.en.aligned.txt"}, "note": "Companion of lyrics.calibrated.ca.json. Times live there only. jp: one slot per calibrated syllable, space separated. '~' = same glyph as the slot before. '_' = ghost syllable (none in this song). Glyphs are the kana the raw file writes, no kanji added. A long-vowel mark is its own glyph on its own syllable (ホ ー ム). A sokuon and a moraic n are own glyphs on their own syllables (っ, ん). Quotes are plain. en: [fromSyl,toSyl(excl),text,'~'?] phrases in English reading order, '~' = loose split, a syllable may have no phrase. skip = raw lines (1-based) that are not sung by this singer. ig = raw text not in the calibration. The English raw file with the same line numbers as the Japanese one is lyrics.raw.en.aligned.txt: it is lyrics.raw.en.txt without its first two lines (header '### English translation by 25239x' and a blank line). Footnote marker [1] on the moon line is ig.", "skip": [1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19, 21, 23, 24, 25, 26, 27, 30, 32, 34, 36, 38, 40, 42, 44, 47, 49, 51, 53, 55, 57, 59, 61],
+"lines":[
+{"i":0,"r":29,"t":"ashita no koto wa shitteiru","n":12,"jp":"あ し た の こ と は し っ て い る","en":[[7,12,"I know"],[4,7,"what'll happen","~"],[0,4,"tomorrow"]]},
+{"i":1,"r":31,"t":"iwashi ga tsuchi kara haetekuru nda","n":15,"jp":"イ ワ シ が つ ち か ら は え て く る ん だ","en":[[0,4,"A sardine"],[8,15,"will grow"],[4,8,"from the soil"]]},
+{"i":2,"r":33,"t":"eki no hoomu ni ana ga aku","n":12,"jp":"え き の ホ ー ム に あ な が あ く","en":[[7,12,"It'll pierce a hole through"],[0,3,"the railway station's"],[3,7,"platform"]]},
+{"i":3,"r":35,"t":"sunoko ga kieru nda","n":9,"jp":"す の こ が き え る ん だ","en":[[0,4,"and its drainboards"],[4,9,"will disappear"]]},
+{"i":4,"r":37,"t":"kinou no kioku wa kieta kedo","n":13,"jp":"き の う の き お く は き え た け ど","en":[[4,8,"My memories"],[0,4,"from yesterday"],[8,12,"have vanished but"]]},
+{"i":5,"r":39,"t":"kieta tte koto mo yoku wakaranai nda","n":17,"jp":"き え た っ て こ と も よ く わ か ら な い ん だ","en":[[0,8,"even that's something","~"],[8,17,"I'm not really sure of"]]},
+{"i":6,"r":41,"t":"sora no ue kara biru ga tatsu","n":12,"jp":"そ ら の う え か ら ビ ル が た つ","en":[[7,10,"A building"],[10,12,"rises"],[0,7,"from the top of the sky"]]},
+{"i":7,"r":43,"t":"me ga mienakunattekita","n":11,"jp":"め が み え な く な っ て き た","en":[[0,11,"It got so dark, I couldn't see"]]},
+{"i":8,"r":46,"t":"ashita no koto wa shitteiru","n":12,"jp":"あ し た の こ と は し っ て い る","en":[[7,12,"I know"],[4,7,"what'll happen","~"],[0,4,"tomorrow"]]},
+{"i":9,"r":48,"t":"iwashi ga tsuchi kara haetekuru nda","n":15,"jp":"イ ワ シ が つ ち か ら は え て く る ん だ","en":[[0,4,"A sardine"],[8,15,"will grow"],[4,8,"from the soil"]]},
+{"i":10,"r":50,"t":"eki no hoomu ni ana ga aku","n":12,"jp":"え き の ホ ー ム に あ な が あ く","en":[[7,12,"It'll pierce a hole through"],[0,3,"the railway station's"],[3,7,"platform"]]},
+{"i":11,"r":52,"t":"sunoko ga kieru nda","n":9,"jp":"す の こ が き え る ん だ","en":[[0,4,"and its drainboards"],[4,9,"will disappear"]]},
+{"i":12,"r":54,"t":"kinou no kioku wa kieta kedo","n":13,"jp":"き の う の き お く は き え た け ど","en":[[4,8,"My memories"],[0,4,"from yesterday"],[8,12,"have vanished but"]]},
+{"i":13,"r":56,"t":"kieta tte koto mo yoku wakaranai nda","n":17,"jp":"き え た っ て こ と も よ く わ か ら な い ん だ","en":[[0,8,"even that's something","~"],[8,17,"I'm not really sure of"]]},
+{"i":14,"r":58,"t":"sora no ue kara biru ga tatsu","n":12,"jp":"そ ら の う え か ら ビ ル が た つ","en":[[7,10,"A building"],[10,12,"rises"],[0,7,"from the top of the sky"]]},
+{"i":15,"r":60,"t":"me ga mienakunattekita","n":11,"jp":"め が み え な く な っ て き た","en":[[0,11,"It got so dark, I couldn't see"]]}
+]}

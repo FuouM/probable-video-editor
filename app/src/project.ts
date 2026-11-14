@@ -29,7 +29,7 @@ export async function loadProject(): Promise<EngineProject> {
   Object.assign(project, { id: inputs.id, title: video.title, mix: inputs.mix, fps: video.fps });
 
   const scene = <T>(name: string) => () => {
-    const ts = sceneTimestamps.get(name) ?? sceneTimestamps.get('*');
+    const ts = sceneTimestamps.get(name);
     if (ts) {
       return import(/* @vite-ignore */ `/projects/${inputs.id}/video/scenes/${name}.ts?t=${ts}`) as Promise<{ default: T }>;
     }
@@ -47,6 +47,7 @@ export async function loadProject(): Promise<EngineProject> {
     // the engine draws the overlap of an xfade: the clip runs on past the cut
     end: c.end + (c.xfade ?? 0),
     ...(c.scene ? (c.params ? { params: c.params } : {}) : { params: { ...c.params, brief: c.brief ?? '' } }),
+    ...(c.scene && inputs.versions?.[c.scene] ? { version: inputs.versions[c.scene] } : {}),
     ...(c.samples ? { maxSamples: c.samples.max } : {}),
   }));
   for (const tr of video.transitions) {
@@ -58,6 +59,7 @@ export async function loadProject(): Promise<EngineProject> {
       end: tr.end,
       over: true,
       params: { ...tr.params, at: tr.at },
+      ...(inputs.versions?.[tr.scene] ? { version: inputs.versions[tr.scene] } : {}),
       ...(tr.samples ? { maxSamples: tr.samples.max } : {}),
     });
   }

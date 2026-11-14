@@ -37,9 +37,22 @@ export interface Song {
 
 /** Reads the four input files of the song folder `dir`. A missing file gives an error that names it. */
 export async function loadSong(dir: string): Promise<Song> {
+  return read(dir);
+}
+
+/**
+ * The same song for one singer of user_input/singers.json (not the lead): that singer's calibrated lyrics
+ * (`lyrics.calibrated.<id>.json`) and lyric map (`lyrics.map.<id>.json`). The beat grid and the features are the song's.
+ * The lyric map is undefined when the singer has none.
+ */
+export async function loadSinger(dir: string, singerId: string): Promise<Song> {
+  return read(dir, singerId);
+}
+
+function read(dir: string, singerId?: string): Song {
   const prompt = readSongPrompt(dir);
   const beats = readTimingAi(dir);
-  const lyrics = readCalibrated(dir);
+  const lyrics = readCalibrated(dir, singerId);
   const features: Features = readFeatures(dir);
   const timing: SongTiming = {
     duration: beats.duration,
@@ -60,15 +73,15 @@ export async function loadSong(dir: string): Promise<Song> {
     })),
     sections: lyrics.sections.map((s) => ({ name: s.name, start: s.start, end: s.end })),
   };
-  return { dir, prompt, timing, features, lyrics, lyricMap: readLyricMap(dir) };
+  return { dir, prompt, timing, features, lyrics, lyricMap: readLyricMap(dir, singerId === undefined ? LYRIC_MAP_FILE : `lyrics.map.${singerId}.json`) };
 }
 
 /** The file name of the lyric map in user_input/. */
 export const LYRIC_MAP_FILE = 'lyrics.map.json';
 
-function readLyricMap(dir: string): Song['lyricMap'] {
+function readLyricMap(dir: string, name = LYRIC_MAP_FILE): Song['lyricMap'] {
   const userInput = path.join(dir, 'user_input');
-  const file = path.join(userInput, LYRIC_MAP_FILE);
+  const file = path.join(userInput, name);
   if (!fs.existsSync(file)) return undefined;
   let doc: LyricMapDoc;
   try {
@@ -80,10 +93,10 @@ function readLyricMap(dir: string): Song['lyricMap'] {
   return { doc, raw: { jp: lines(doc.raw.jp), en: lines(doc.raw.en) } };
 }
 
-function readCalibrated(dir: string): CalibrationDoc {
+function readCalibrated(dir: string, singerId?: string): CalibrationDoc {
   const file = songFolderPaths(dir).calibratedFile;
-  if (!fs.existsSync(file)) {
+  if (singerId === undefined && !fs.existsSync(file)) {
     throw new Error(`Calibrated lyrics not found: ${file}. Finish the song in Lyric-Sync: calibrate the lyrics, set the sections and save.`);
   }
-  return readCalibratedLyrics(dir);
+  return readCalibratedLyrics(dir, singerId);
 }

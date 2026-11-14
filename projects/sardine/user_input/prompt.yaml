@@ -1,0 +1,29 @@
+project_code: sardine
+song_name: "イワシがつちからはえてくるんだ"
+timing_mode: ai
+nearest_bpm: 135
+grid: fixed
+first_downbeat_s: 0
+beat_pins:
+  - beat: 0
+    at: 0
+  - beat: 16
+    at: 7.111
+  - beat: 32
+    at: 14.222
+  - beat: 64
+    at: 28.444
+  - beat: 128
+    at: 56.889
+  - beat: 192
+    at: 85.023
+  - beat: 208
+    at: 92.444
+  - beat: 240
+    at: 106.667
+  - beat: 304
+    at: 135.111
+  - beat: 368
+    at: 163.556
+files:
+  song: "0484.wav"

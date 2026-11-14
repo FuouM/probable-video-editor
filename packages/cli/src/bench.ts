@@ -5,6 +5,7 @@
 //   other names:     the benchmarks whose id contains the name (`post`, `lines.10k`)
 import path from 'node:path';
 import type { BenchOptions, BenchRecord } from '@pve/engine/bench/types';
+import { addBoard, BOARD_T0 } from './board';
 import { assertNoBrowserErrors, chromeVersion, ensureServer, openPage, type PveWindow } from './browser';
 import { table } from './out';
 import { appendRecords, compare, formatCompare, gitState, machine, RESULTS } from './records';
@@ -23,6 +24,8 @@ export interface BenchArgs {
   dry?: boolean;
   compareRef?: string;
   out?: string;
+  /** Scene files that video.json does not name (pve board scenes): `src` is the path on the dev server. */
+  boards?: { src: string; id: string }[];
 }
 
 export interface BenchRun {
@@ -32,11 +35,12 @@ export interface BenchRun {
 
 /** Runs the benchmarks and prints the table, the budget lines and the compare. Appends unless `dry`. */
 export async function runBench(a: BenchArgs): Promise<BenchRun> {
+  const boards = a.boards ?? [];
   const clips = a.names.filter((x) => a.clipIds.includes(x));
-  const filter = a.names.map((x) => (clips.includes(x) ? `scene.${x}` : x));
+  const filter = [...a.names.map((x) => (clips.includes(x) ? `scene.${x}` : x)), ...boards.map((b) => `scene.${b.id}`)];
   const opts: BenchOptions = { n: a.n ?? 30, scenes: a.scenes ?? true, ...(filter.length ? { filter } : {}) };
-  // only clips named: load only them (faster boot, no other scene compiles)
-  const only = clips.length && clips.length === a.names.length ? clips.join(',') : undefined;
+  // only clips named: load only them (faster boot, no other scene compiles). Only boards named: load no clip.
+  const only = boards.length && !clips.length ? 'none' : clips.length && clips.length === a.names.length ? clips.join(',') : undefined;
   const { commit, dirty } = gitState();
   const out = a.out ?? RESULTS;
 
@@ -44,6 +48,8 @@ export async function runBench(a: BenchArgs): Promise<BenchRun> {
   try {
     const { browser, page, logs } = await openPage(url, a.project, { scale: a.scale ?? 1, only });
     try {
+      // boards: scene files that video.json does not name, each a one-second clip 10 s after the one before
+      for (const [i, b] of boards.entries()) await addBoard(page, b.src, b.id, BOARD_T0 + 10 * i);
       const chrome = chromeVersion(browser);
       const res = await page.evaluate((o) => (window as unknown as PveWindow).__pve!.bench(o), opts);
       if (logs.length) console.error('BROWSER LOG:\n' + logs.join('\n'));

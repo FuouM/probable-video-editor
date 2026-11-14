@@ -1,0 +1,5 @@
+{ "v": 1, "singers": [
+  { "id": "te", "voiceDir": "重音テト音声ライブラリー", "lead": true },
+  { "id": "ca", "voiceDir": "CACTLOID VCV" },
+  { "id": "ko", "voiceDir": "koronba_04c" }
+] }

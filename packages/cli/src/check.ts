@@ -5,9 +5,11 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { lintVideo, OFF_BEAT_TOLERANCE_SEC, type Features } from '@pve/core';
+import { assetsError, MANIFEST_FILE, readManifest, verifyAssets } from './assets';
 import { CliError, fmtBarBeat, fmtTime, type Problem } from './out';
 import { readNotes } from './notes';
 import { loadProject, SCENES_DIR, VIDEO_FILE, type Project, type ProjectRef } from './project';
+import { KIT_FILE, kitStale } from './kit';
 
 export interface CheckReport {
   problems: Problem[];
@@ -131,6 +133,16 @@ export async function checkProject(ref: ProjectRef): Promise<CheckReport> {
     if (!(e instanceof CliError)) throw e;
     problems.push({ severity: 'error', ...e.problem });
   }
+  // the asset files of the release (video/assets.json): missing or changed files are an error that names `pve assets fetch`
+  if (existsSync(path.join(ref.dir, MANIFEST_FILE))) {
+    try {
+      const bad = verifyAssets(ref, readManifest(ref));
+      if (bad.length) problems.push({ severity: 'error', ...assetsError(ref, bad).problem });
+    } catch (e) {
+      if (!(e instanceof CliError)) throw e;
+      problems.push({ severity: 'error', ...e.problem });
+    }
+  }
   const sceneDir = path.join(ref.dir, SCENES_DIR);
   const sceneFiles = existsSync(sceneDir) ? readdirSync(sceneDir).filter((f) => f.endsWith('.ts')).sort() : [];
 
@@ -177,6 +189,9 @@ export async function checkProject(ref: ProjectRef): Promise<CheckReport> {
         });
       }
     }
+  }
+  if (kitStale(ref)) {
+    problems.push({ severity: 'warning', rule: 'kit-stale', file: KIT_FILE, message: 'the kit index does not match the scene modules', fix: `pve kit -p ${ref.id}` });
   }
 
   if (!project) return { problems, sceneFiles: sceneFiles.length };

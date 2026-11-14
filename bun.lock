@@ -37,12 +37,16 @@
         "typescript": "^7.0.2",
       },
     },
+    "packages/aviutl": {
+      "name": "@pve/aviutl",
+    },
     "packages/cli": {
       "name": "@pve/cli",
       "bin": {
         "pve": "./src/main.ts",
       },
       "dependencies": {
+        "@pve/aviutl": "workspace:*",
         "@pve/core": "workspace:*",
         "@pve/engine": "workspace:*",
         "playwright-core": "^1.63.0",
@@ -57,6 +61,7 @@
     "packages/engine": {
       "name": "@pve/engine",
       "dependencies": {
+        "@dimforge/rapier3d-deterministic-compat": "0.21",
         "opentype.js": "^2.0.0",
         "three": "^0.186.0",
       },
@@ -93,6 +98,8 @@
 
     "@dimforge/rapier3d-compat": ["@dimforge/rapier3d-compat@0.12.0", "", {}, "sha512-uekIGetywIgopfD97oDL5PfeezkFpNhwlzlaEYNOA0N6ghdsOvh/HYjSMek5Q2O1PYvRSDFcqFVJl4r4ZBwOow=="],
 
+    "@dimforge/rapier3d-deterministic-compat": ["@dimforge/rapier3d-deterministic-compat@0.21.0", "", {}, "sha512-n7JuU62Obljlgq+OeH2DHhTmRSjRzwuJPl54tS9pFIzVQyvXsO5CH+a5KkIRBtnFWDbg1Zicv9BulG0jfBAopA=="],
+
     "@lezer/common": ["@lezer/common@1.5.4", "", {}, "sha512-xt3Q4z64xM+xhg4M7NXqw1N//1O74bUFo5kz6fwMeC4qwxSuRdwkYSmjcqCEEKYkNw5e67f2hcNqBoNERAEU0w=="],
 
     "@lezer/css": ["@lezer/css@1.3.9", "", { "dependencies": { "@lezer/common": "^1.2.0", "@lezer/highlight": "^1.0.0", "@lezer/lr": "^1.3.0" } }, "sha512-ZmzgvTOBdJWGIsY/ItAfN7UW8DV802oZG+jeG6E508SwEzz5YhuAajptpWPICvIyqYAD2+VjMdOS40GgGkyEOQ=="],
@@ -110,6 +117,8 @@
     "@marijn/find-cluster-break": ["@marijn/find-cluster-break@1.0.4", "", {}, "sha512-Wy0V7+SGUjnF9/TkiM1hKVDPj7jKXduPNboMVtHTA8dySMURWqfg/JZ9E2Sq8JgSJmkl7k7Qe9FLeMSrSraWmQ=="],
 
     "@oxc-project/types": ["@oxc-project/types@0.154.0", "", {}, "sha512-KYOUGQFlLWR+s4QMV2Q9ko38TZm7EdO87Qm7rvZLqk/webse/cDjtyxKhg/47l0byCbs/k46LT8qc4PKjAikzA=="],
+
+    "@pve/aviutl": ["@pve/aviutl@workspace:packages/aviutl"],
 
     "@pve/cli": ["@pve/cli@workspace:packages/cli"],
 

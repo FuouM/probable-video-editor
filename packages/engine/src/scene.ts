@@ -32,6 +32,19 @@ export interface SceneCtx {
   ensureClip(id: string): Promise<void>;
   /** Render already-loaded timeline entry `id` at song time `t` into `target` and return `target.texture`. */
   renderClip(id: string, t: number, target: THREE.WebGLRenderTarget, dt?: number): THREE.Texture | null;
+  /**
+   * Await between heavy steps of init(): `await this.ctx.slice()`. In the studio a clip that reloads (an edited scene)
+   * stops there until the next frame has time to spare. Exports and the loading screen never wait.
+   */
+  slice(): Promise<void> | void;
+  /**
+   * The result of `compute` from an earlier load of this clip (the studio keeps it between page loads), or `compute()`.
+   * Use it for slow, pure work in init(): bakes, built geometry as typed arrays. The value must be structured-clonable
+   * (plain objects, arrays, typed arrays: no class instances, no three.js objects). A stored value is used only while
+   * the code of the scene (with the files it imports and the engine), the project inputs, the asset files and the
+   * clip params are the same. Exports, and a clip without a code version, always compute.
+   */
+  memo<T>(name: string, compute: () => T | Promise<T>): Promise<T>;
 }
 
 export interface Frame {
