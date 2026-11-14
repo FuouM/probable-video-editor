@@ -35,7 +35,7 @@ The PVE PLAYER mark at the top left is a link to that page, so a visitor can cho
 
 ## Motion blur
 
-The offline render blurs by drawing sub-frames and averaging them. The player draws one sample by default. The BLUR list asks for 4 or 12 sub-frames (`Engine.render` in adaptive mode, shutter 0.5 of a frame of the film, so the blur is as wide as in the render). The caps in `video.json` still apply: a clip with `samples.max` 1 stays sharp and costs one sample. In god_ish that is every clip, so only the transitions blur (`feed`, `forme`). The choice stays in the browser.
+The offline render blurs by drawing sub-frames and averaging them. The player draws one sample by default. The BLUR list asks for 4 or 12 sub-frames (`Engine.render` in adaptive mode, shutter 0.5 of a frame of the film, so the blur is as wide as in the render). The caps in `video.json` still apply: a clip with `samples.max` 1 stays sharp and costs one sample. In god_ish that is every clip, so only the transitions blur (`feed`, `forme`). The choice stays in the browser. A project whose `video/player.ts` exports `motionBlur = false` has no blur in the player and no BLUR list: `sardine` (pixel art, which a sub-frame average smears).
 
 Cost: each blurred frame draws once per sub-frame. In a transition of god_ish on headless software GL the CPU time of one frame went from 3.5 ms (no blur) to 7 to 9 ms (4 or 12 samples). A clip that is capped at 1 sample costs the same as without blur. Adaptive sampling needs scenes without state between frames (`Scene.stateful`). No scene of the two videos has state.
 
@@ -52,7 +52,7 @@ The line shows 0.25 s before its first token and 0.7 s after its last. A token t
 
 ### A project's own look
 
-A video that draws no subtitle line of its own gives the player its look: `subtitles` (type `SubtitleStyle`, `packages/engine/src/options.ts`) in `projects/<id>/video/player.ts`. It names the faces (files in `video/assets/`), the size and the row height, the place over the bottom edge, capitals or not, and the colours of the ink, its outline and the strip behind it. Sizes are pixels of a frame 360 px high, so the line scales with the picture. In this look a token that has started shows on its strip and a token to come keeps its place but does not show, so the line builds up as it is sung. The subtitles of such a video are on until the viewer turns them off, and that choice is kept for the video alone. `sardine` uses it: the English line of the game (Silkscreen, capitals, an outline and a dark strip).
+A video that draws no subtitle line of its own gives the player its look: `subtitles` (type `SubtitleStyle`, `packages/engine/src/options.ts`) in `projects/<id>/video/player.ts`. It names the faces (files in `video/assets/`), the size and the row height, the place over the bottom edge, capitals or not, and the colours of the ink, its outline and the strip behind it. Sizes are pixels of a frame 360 px high, so the line scales with the picture. In this look a token that has started shows on its strip and a token to come keeps its place but does not show, so the line builds up as it is sung. The subtitles of such a video are on until the viewer turns them off, and that choice is kept for the video alone. `jaWords` makes the Japanese track one token for each romaji word instead of one for each unit of the map (`site:data` reads it), for a map of single kana. `sardine` uses both: the English line of the game (Silkscreen, capitals, an outline and a dark strip), and Japanese by word.
 
 ### The files for YouTube
 

@@ -33,16 +33,18 @@ a.nle-menu-item { text-decoration: none; }
 .pl-subs .tk.s2 { color: #fff; }
 .pl-subs .tk.s1 { color: #ffd84a; }
 /* a project's own look (`subtitles` in projects/<id>/video/player.ts): its face and size, an outline, a solid strip behind each
-   token that has started; a token to come keeps its place but does not show, so the line builds up as it is sung */
+   token that has started; a token to come keeps its place but does not show, so the line builds up as it is sung. The strip is
+   a pseudo-element under the line (z-index -1 in the stacking context of .pl-subs): the strip of one token never covers the
+   glyphs of the token before it */
 .pl-subs.styled { bottom: var(--sub-bottom); padding: 0; background: none; max-width: 94%;
   font: var(--sub-size) / var(--sub-row) var(--sub-family); text-transform: var(--sub-case); color: var(--sub-ink);
   -webkit-font-smoothing: none; font-smooth: never; }
-.pl-subs.styled .tk { color: var(--sub-ink); background: var(--sub-back); padding: 0 var(--sub-pad); margin: 0 calc(-1 * var(--sub-pad));
-  -webkit-box-decoration-break: clone; box-decoration-break: clone; white-space: pre-wrap;
+.pl-subs.styled .tk { position: relative; color: var(--sub-ink); white-space: pre-wrap;
   text-shadow: var(--sub-edge-w) 0 var(--sub-edge), calc(-1 * var(--sub-edge-w)) 0 var(--sub-edge), 0 var(--sub-edge-w) var(--sub-edge),
     0 calc(-1 * var(--sub-edge-w)) var(--sub-edge), var(--sub-edge-w) var(--sub-edge-w) var(--sub-edge),
     calc(-1 * var(--sub-edge-w)) calc(-1 * var(--sub-edge-w)) var(--sub-edge), var(--sub-edge-w) calc(-1 * var(--sub-edge-w)) var(--sub-edge),
     calc(-1 * var(--sub-edge-w)) var(--sub-edge-w) var(--sub-edge); }
+.pl-subs.styled .tk::before { content: ''; position: absolute; inset: 0 calc(-1 * var(--sub-pad)); background: var(--sub-back); z-index: -1; }
 .pl-subs.styled .tk.s0 { visibility: hidden; }
 .pl-subs.styled .tk.s1, .pl-subs.styled .tk.s2 { color: var(--sub-ink); }
 

@@ -9,6 +9,8 @@
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
+import type { SubtitleStyle } from '@pve/engine/options';
 import { projectInputs } from './inputs';
 import { projectDir } from './project';
 import { siteDir, sourceHashes, type SiteManifest } from './site-sources';
@@ -63,7 +65,13 @@ if (keepAudio) {
 }
 
 writeFileSync(path.join(out, 'inputs.json'), JSON.stringify(inputs));
-writeFileSync(path.join(out, 'subtitles.json'), JSON.stringify(buildSubtitles(inputs.lines)));
+// the project's own subtitle look (video/player.ts) can ask for Japanese tokens by word. The project is chosen on the
+// command line, so its module can only be imported at run time.
+interface PlayerModule { subtitles?: SubtitleStyle }
+const playerFile = path.join(dir, 'video/player.ts');
+const playerMod: PlayerModule | null = existsSync(playerFile) ? await import(pathToFileURL(playerFile).href) : null;
+const jaWords = playerMod?.subtitles?.jaWords === true;
+writeFileSync(path.join(out, 'subtitles.json'), JSON.stringify(buildSubtitles(inputs.lines, { jaWords })));
 
 // the cover: the PNG of the project's thumbnail scene (pve board, or video/make-thumbnail.ts), as a 1280x720 JPEG
 const cover = path.join(dir, 'out/thumbnail.png');

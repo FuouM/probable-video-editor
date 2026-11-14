@@ -34,4 +34,6 @@ export interface SubtitleStyle {
   back: string;
   /** The subtitles are on until the viewer turns them off (the video draws no line of its own). */
   on: boolean;
+  /** The Japanese track joins the units of the lyric map into words, one token for each romaji word (a map of single kana). */
+  jaWords: boolean;
 }

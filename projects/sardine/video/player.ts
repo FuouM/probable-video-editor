@@ -4,6 +4,9 @@ import type { PlayerOption, SubtitleStyle } from '@pve/engine/options';
 
 export const options: PlayerOption[] = [];
 
+/** No motion blur: the picture is pixel art at 640 x 360, and a sub-frame average smears its pixels. The player hides BLUR. */
+export const motionBlur = false;
+
 export const subtitles: SubtitleStyle = {
   fonts: [
     { family: 'Silkscreen', file: 'Silkscreen-Regular.ttf' },
@@ -18,4 +21,5 @@ export const subtitles: SubtitleStyle = {
   edge: '#0c0c14',
   back: '#0a0c14',
   on: true,
+  jaWords: true,
 };

@@ -136,7 +136,7 @@ async function main() {
   void audio.ready.then(() => loader?.audio(1, true));
 
   // the options of the project (a remembered choice takes effect before the first scene loads) and the look of its subtitles
-  const playerModules = import.meta.glob<{ options: PlayerOption[]; subtitles?: SubtitleStyle }>('../../projects/*/video/player.ts');
+  const playerModules = import.meta.glob<{ options: PlayerOption[]; subtitles?: SubtitleStyle; motionBlur?: boolean }>('../../projects/*/video/player.ts');
   const playerModule = playerModules[`../../projects/${id}/video/player.ts`];
   const playerMod = playerModule ? await playerModule() : null;
   const options = playerMod ? playerMod.options : [];
@@ -258,9 +258,12 @@ async function main() {
   const stepSpeed = (d: number) => setSpeed(SPEEDS.indexOf(Number(speedSel.value) as (typeof SPEEDS)[number]) + d);
 
   // motion blur: the film's own, with 4 sub-frames. A clip or transition that video.json caps at 1 sample stays sharp
-  // and costs one. The shutter is that of a frame of the film (its fps), not of the screen's refresh.
+  // and costs one. The shutter is that of a frame of the film (its fps), not of the screen's refresh. A project whose
+  // player.ts sets `motionBlur` false has no blur and no BLUR list.
   const blurSel = $<HTMLSelectElement>('blur');
-  let blur: AdaptiveSampling | null = BLUR[store.get('blur') ?? ''] ?? null;
+  const blurAllowed = playerMod?.motionBlur !== false;
+  $('field-blur').hidden = !blurAllowed;
+  let blur: AdaptiveSampling | null = blurAllowed ? BLUR[store.get('blur') ?? ''] ?? null : null;
   const frameDt = 1 / project.fps;
   blurSel.innerHTML = `<option value="off">Off</option>${Object.keys(BLUR).map((k) => `<option value="${k}">${k} samples</option>`).join('')}`;
   blurSel.value = Object.keys(BLUR).find((k) => BLUR[k] === blur) ?? 'off';
