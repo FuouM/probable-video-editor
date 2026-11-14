@@ -1,6 +1,6 @@
 # The web player (GitHub Pages)
 
-The site plays the videos of this repository in real time: `breaked_neuro` and `god_ish`. The visitor's browser runs the engine and draws every frame to the song. The site holds no video file. The page looks like the studio (`app/src/ui/daw.css`) and has no timeline or editor.
+The site plays the videos of this repository in real time: `breaked_neuro`, `god_ish` and `sardine`. The visitor's browser runs the engine and draws every frame to the song. The site holds no video file. The page looks like the studio (`app/src/ui/daw.css`) and has no timeline or editor.
 
 ## Controls
 
@@ -46,9 +46,13 @@ Cost: each blurred frame draws once per sub-frame. In a transition of god_ish on
 | Song | Tracks |
 |---|---|
 | No lyric map (`breaked_neuro`) | English: the words. |
-| Lyric map (`god_ish`, `user_input/lyrics.map.json`) | English: the phrases of the map. Romaji: the words. Japanese: the glyph units of the map. |
+| Lyric map (`god_ish`, `sardine`, `user_input/lyrics.map.json`) | English: the phrases of the map. Romaji: the words. Japanese: the glyph units of the map. |
 
 The line shows 0.25 s before its first token and 0.7 s after its last. A token that is sung now is yellow, a token that was sung is white, and a token to come is dim. English phrases are in reading order, so their highlight can jump in a line. The choice (on or off, and the language of each video) stays in the browser.
+
+### A project's own look
+
+A video that draws no subtitle line of its own gives the player its look: `subtitles` (type `SubtitleStyle`, `packages/engine/src/options.ts`) in `projects/<id>/video/player.ts`. It names the faces (files in `video/assets/`), the size and the row height, the place over the bottom edge, capitals or not, and the colours of the ink, its outline and the strip behind it. Sizes are pixels of a frame 360 px high, so the line scales with the picture. In this look a token that has started shows on its strip and a token to come keeps its place but does not show, so the line builds up as it is sung. The subtitles of such a video are on until the viewer turns them off, and that choice is kept for the video alone. `sardine` uses it: the English line of the game (Silkscreen, capitals, an outline and a dark strip).
 
 ### The files for YouTube
 

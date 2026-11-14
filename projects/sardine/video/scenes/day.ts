@@ -33,9 +33,8 @@ import { Builder, LitAtlas, allFaces, at, camera, enableShadows, instanced, litM
 import { LitView } from '@pve/engine/litview';
 import { TextLayer } from '@pve/engine/textlayer';
 import { BAR, SPB, FR } from './_time';
-import { lineAt, loadFonts, type Fonts } from './_fonts';
+import { loadFonts, type Fonts } from './_fonts';
 import { PaintedText } from './_captionCarriers';
-import { subtitle } from './_subtitle';
 import { Jellyfish } from './_jelly';
 import { Home } from './_home';
 import type { TapeBox } from './_homeBoxes';
@@ -760,9 +759,7 @@ export default class Day extends Scene {
     const st = this.rig.state(t);
     this.rig.compose(r, this.view, st, (win, v) => this.renderWin(win, v, t));
     this.text.clear();
-    const line = lineAt(this.lines, t);
     this.rig.draw(this.text, st);
-    if (line) subtitle(this.text, this.fonts, line, t);
     this.text.commit();
     this.view.present(r, out, { exposure: 1.1, bloom: 0.4, top: this.rig.top }, this.text);
     return NO_FILM_POST;

@@ -7,7 +7,7 @@
 // at the same song time. A video is a project: the palette is baked into the engine modules, so a change of video
 // loads the page again with ?project=.
 import { Engine, type AdaptiveSampling } from '@pve/engine/engine';
-import type { PlayerOption } from '@pve/engine/options';
+import type { PlayerOption, SubtitleStyle } from '@pve/engine/options';
 import { PW, PH, SCALE } from '@pve/engine/gl';
 import { DATA, fetchInputs, projectId, siteProjects, type SiteProject } from '../src/inputs';
 import { loadProject, project } from '../src/project';
@@ -135,10 +135,12 @@ async function main() {
   const audio = new StudioAudioEngine(inputs.mix, undefined, () => ended(), (f) => loader?.audio(f));
   void audio.ready.then(() => loader?.audio(1, true));
 
-  // the options of the project: a remembered choice takes effect before the first scene loads
-  const optionModules = import.meta.glob<{ options: PlayerOption[] }>('../../projects/*/video/player.ts');
-  const optionModule = optionModules[`../../projects/${id}/video/player.ts`];
-  const options = optionModule ? (await optionModule()).options : [];
+  // the options of the project (a remembered choice takes effect before the first scene loads) and the look of its subtitles
+  const playerModules = import.meta.glob<{ options: PlayerOption[]; subtitles?: SubtitleStyle }>('../../projects/*/video/player.ts');
+  const playerModule = playerModules[`../../projects/${id}/video/player.ts`];
+  const playerMod = playerModule ? await playerModule() : null;
+  const options = playerMod ? playerMod.options : [];
+  const subStyle = playerMod?.subtitles;
   const assetsUrl = `${DATA}${id}/assets/`;
   const chosen = new Map<string, string>();
   for (const o of options) {
@@ -348,10 +350,27 @@ async function main() {
   const subGroup = $('sub-group'), btnSub = $('btn-sub'), subLang = $<HTMLSelectElement>('sub-lang');
   let tracks: SubTrack[] = [];
   let subTrack: SubTrack | null = null;
-  let subOn = store.get('sub') === 'on';
+  // a project that styles its subtitles draws no line of its own: its subtitles have their own on/off, on by default
+  const subKey = subStyle ? `sub.on.${id}` : 'sub';
+  const subSaved = store.get(subKey);
+  let subOn = subSaved === null ? subStyle?.on === true : subSaved === 'on';
   let subLine: SubLine | null = null;
   let subSpans: HTMLElement[] = [];
   let subState: number[] = [];
+  if (subStyle) {
+    // sizes are pixels of a 360 px high frame: 1 px = 100/360 cqh of the picture
+    const px = (n: number) => `${(n * 100) / 360}cqh`;
+    for (const f of subStyle.fonts) {
+      void new FontFace(f.family, `url(${assetsUrl}${f.file})`).load().then((face) => document.fonts.add(face), (e: unknown) => console.error(e));
+    }
+    subsEl.classList.add('styled');
+    const vars: Record<string, string> = {
+      '--sub-family': subStyle.family, '--sub-size': px(subStyle.size), '--sub-row': px(subStyle.row), '--sub-bottom': px(subStyle.bottom),
+      '--sub-pad': px(2), '--sub-edge-w': px(1), '--sub-case': subStyle.upper ? 'uppercase' : 'none',
+      '--sub-ink': subStyle.ink, '--sub-edge': subStyle.edge, '--sub-back': subStyle.back,
+    };
+    for (const [k, v] of Object.entries(vars)) subsEl.style.setProperty(k, v);
+  }
   const applySub = () => {
     btnSub.classList.toggle('active', subOn);
     btnSub.setAttribute('aria-pressed', String(subOn));
@@ -360,7 +379,7 @@ async function main() {
   };
   btnSub.addEventListener('click', () => {
     subOn = !subOn;
-    store.set('sub', subOn ? 'on' : 'off');
+    store.set(subKey, subOn ? 'on' : 'off');
     applySub();
   });
   subLang.addEventListener('change', () => {
@@ -389,7 +408,10 @@ async function main() {
       subsEl.hidden = !line;
       if (line) {
         const join = subTrack!.joiner;
-        subsEl.innerHTML = line.tokens.map((k) => `<span class="tk">${esc(k[0])}</span>`).join(join);
+        // a styled line keeps the joiner inside each token, so the strips of two tokens meet
+        subsEl.innerHTML = subStyle
+          ? line.tokens.map((k, i) => `<span class="tk">${esc(i + 1 < line.tokens.length ? k[0] + join : k[0])}</span>`).join('')
+          : line.tokens.map((k) => `<span class="tk">${esc(k[0])}</span>`).join(join);
         subSpans = [...subsEl.querySelectorAll<HTMLElement>('.tk')];
         subState = subSpans.map(() => -1);
       }

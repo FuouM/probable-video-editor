@@ -27,9 +27,8 @@ import { Builder, LH, LW, allFaces, at, camera, enableShadows, instanced, litMes
 import { LitView, type Sky } from '@pve/engine/litview';
 import { TextLayer } from '@pve/engine/textlayer';
 import { SPB, bar, FR } from './_time';
-import { HOLD, loadFonts, type Fonts } from './_fonts';
+import { loadFonts, type Fonts } from './_fonts';
 import { PaintedText } from './_captionCarriers';
-import { subtitle } from './_subtitle';
 import { Fish, SwimPath, type SwimKey } from './_fish';
 import { HoverArrow } from './_editor';
 import { Scissors } from './_scissors';
@@ -805,11 +804,8 @@ export default class Ride extends Scene {
     }
     this.rig.compose(r, this.view, st, (win, v) => this.renderCar(win, v, t));
     this.text.clear();
-    const line = t < T_STRIP ? -1 : this.lines.findIndex((l) => t >= l.written!.units[0]!.start && t <= l.end + HOLD);
     this.rig.draw(this.text, st, (l, s) => this.over(l, s, t));
     this.drawDay(t);
-    // the subtitle goes over the chrome; the cursor is over everything (its own layer, `rig.top`)
-    if (line >= 0) subtitle(this.text, this.fonts, this.lines[line]!, t);
     this.text.commit();
     this.view.present(r, out, { exposure: 1.05, bloom: 0.45, top: this.rig.top }, this.text);
     return NO_FILM_POST;

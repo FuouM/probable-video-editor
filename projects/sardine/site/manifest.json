@@ -1,0 +1,21 @@
+{
+  "project": "sardine",
+  "sources": {
+    "generated/features.json": "cafeba8730f410140e67454a16f717793d508724ef077a36e3bf1aa132d23294",
+    "generated/timing.ai.json": "e002d6f2c7b883692a89800429febce6956821a23dc5caec06c94c865f2df664",
+    "user_input/lyrics.calibrated.json": "be85b094b6ef13981e60f68423f584ee8abfb5522857537007e7d3ef0246588e",
+    "user_input/lyrics.map.json": "269517d6e4dd603e46b9ce9e1ff84bedc10b6e9fe8b57ae7b2f9d3bd3b214439",
+    "video/assets/DotGothic16-Regular.ttf": "9f94daa5f8bd80591c7ff6bf3b4f2da0e98a4975075da1e44d631f47cddaf1a9",
+    "video/assets/Silkscreen-Regular.ttf": "dc453feb72a716e17e6beedec62f16b3f7715b65bf9347b3f0f7c50dd263c903",
+    "video/assets/dotgothic16.OFL.txt": "c34527e3b645ce065a5f62d7b18c8cf91144352f6444d3ea776183a58da71ca2",
+    "video/assets/midi.json": "93f6d07e734b91803c9c502b706702e69eba074f5aa78cc9c230e56ac700e7cb",
+    "video/assets/silkscreen.OFL.txt": "86c5e9c9382cdcc5948704fdfe60f2aa164a719746931219a42736ecd9cefbd3",
+    "video/video.json": "81f417c81ce3c4273fa837cc3a0bd8153e944e58523d2115ee861125cb1d93cf"
+  },
+  "audio": {
+    "file": "sardine.mp3",
+    "duration": 170.667,
+    "sha256": "51c6cf3f9256d1bb2dc3528279a131e3a568eaf0c0fb3b52f641411c4e6d099e",
+    "release": "site-audio"
+  }
+}

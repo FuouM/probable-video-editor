@@ -331,7 +331,7 @@ Every seam has a carrier: an object, a window or an input that is on both sides 
 - **Quiet landings.** A syllable lands with a small motion that fits its carrier: a lamp that lights, a flap that turns, a 2-frame press. A slam is for a punchline only.
 - **A line that has ended goes.** Its carrier clears itself in its own way (flaps turn blank, a tooltip closes) before the next line.
 - **Syllables** appear on the calibrated times. Always the full line. A syllable that is held over two notes shows the second note (`あ`, then `あー`).
-- **English** is the fan layer: one calm line in Silkscreen, low in the frame, drawn last from one shared function. Keep the subject of a shot clear of it.
+- **English** is the fan layer. The video draws no English line. The web player shows it as its subtitles, in the look of the game (Silkscreen at 8 px, capitals, an outline and a dark strip, low and centred: `subtitles` in `video/player.ts`). For YouTube, `pve subs` writes the subtitle files.
 - **The `ko` voice** sings the tuna lines in chorus 2 and chorus 3. It never shares the lead's carrier.
 - **The `ca` voice** doubles the lead in chorus 2: a second copy of the lead's carrier, 1–2 px off.
 - Fonts: DotGothic16 for kana, Silkscreen for Latin.

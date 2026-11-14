@@ -30,8 +30,7 @@ import { LW, LitAtlas, camera, enableShadows, litMaterial } from '@pve/engine/li
 import { LitView } from '@pve/engine/litview';
 import { TextLayer } from '@pve/engine/textlayer';
 import { clamp, projectToRect, smooth } from '@pve/engine/util';
-import { lineAt, loadFonts, type Fonts } from './_fonts';
-import { subtitle } from './_subtitle';
+import { loadFonts, type Fonts } from './_fonts';
 import { carriedPass } from './_ticket';
 import {
   FULL, centreOf, clickAt, contentRect, winButtons,
@@ -394,8 +393,6 @@ export default class Bridge extends Scene {
     this.text.clear();
     this.rig.draw(this.text, st);
     this.drawMapText(st.windows.find((w) => w.id === 'map'), t);
-    const ln = lineAt(this.lines, t);
-    if (ln) subtitle(this.text, this.fonts, ln, t);
     this.text.commit();
     // the first frames: the dark of the tunnel, then the headlights
     const fade = 0.6 * (1 - smooth((t - T_START) / 0.3));

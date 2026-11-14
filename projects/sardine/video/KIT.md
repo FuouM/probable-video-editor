@@ -8,14 +8,14 @@ Use: find the module and the export here, then read only that range (`file:line`
 
 | Scene | Lines | Imports |
 |---|---|---|
-| `bridge.ts` | 475 | _fonts, _subtitle, _ticket, _playerTypes, _playerTrack, _playerChrome, _playerWindows, _playerRig, _playerCams, _bridgepath, _time, _bridgeworld, _bridgelights, _bassheave, _bridgeletters, _oob, _sceneKit |
-| `chorus2.ts` | 385 | _time, _fonts, _subtitle, _c2shared, _fish, _gameWorld, _c2world, _buddy, _bsod, _playerTypes, _playerTrack, _playerRig, _playerCams, _sceneKit, _c2script, _c2clock |
-| `chorus3.ts` | 587 | _time, _fonts, _subtitle, _jelly, _fish, _station, _route, _c2shared, _c2apps, _c3fall, _c3unload, _playerChrome, _outro, _c3stage, _versefx, _c3lights, _playerTypes, _playerTrack, _playerWindows, _playerRig, _playerCams, _sceneKit, _c3ride, _c3games, _c3hud, _c3map, _c3mosh, _c3copy |
-| `day.ts` | 781 | _time, _fonts, _captionCarriers, _subtitle, _jelly, _home, _homeBoxes, _padSheets, _gameWorld, _station, _fish, _duckboard, _ticket, ride, _playerTypes, _playerTrack, _playerRig, _playerCams |
-| `interlude.ts` | 424 | _time, _fonts, _subtitle, _wreck, _playerTypes, _playerTrack, _playerWindows, _playerRig, _playerCams, _gameWorld, _station, _versefx, _sceneKit, _interludeClock, _interludeTrain, _interludeRoom, _interludeVerse, _interludeMap |
-| `night.ts` | 621 | day, _time, _fonts, _captionCarriers, _subtitle, _fish, _ticket, _playerTypes, _playerTrack, _playerChrome, _playerWindows, _playerRig, _playerCams, _gameWorld, _route, _pit, _paint |
+| `bridge.ts` | 472 | _fonts, _ticket, _playerTypes, _playerTrack, _playerChrome, _playerWindows, _playerRig, _playerCams, _bridgepath, _time, _bridgeworld, _bridgelights, _bassheave, _bridgeletters, _oob, _sceneKit |
+| `chorus2.ts` | 380 | _time, _fonts, _c2shared, _fish, _gameWorld, _c2world, _buddy, _bsod, _playerTypes, _playerTrack, _playerRig, _playerCams, _sceneKit, _c2script, _c2clock |
+| `chorus3.ts` | 584 | _time, _fonts, _jelly, _fish, _station, _route, _c2shared, _c2apps, _c3fall, _c3unload, _playerChrome, _outro, _c3stage, _versefx, _c3lights, _playerTypes, _playerTrack, _playerWindows, _playerRig, _playerCams, _sceneKit, _c3ride, _c3games, _c3hud, _c3map, _c3mosh, _c3copy |
+| `day.ts` | 778 | _time, _fonts, _captionCarriers, _jelly, _home, _homeBoxes, _padSheets, _gameWorld, _station, _fish, _duckboard, _ticket, ride, _playerTypes, _playerTrack, _playerRig, _playerCams |
+| `interlude.ts` | 421 | _time, _fonts, _wreck, _playerTypes, _playerTrack, _playerWindows, _playerRig, _playerCams, _gameWorld, _station, _versefx, _sceneKit, _interludeClock, _interludeTrain, _interludeRoom, _interludeVerse, _interludeMap |
+| `night.ts` | 618 | day, _time, _fonts, _captionCarriers, _fish, _ticket, _playerTypes, _playerTrack, _playerChrome, _playerWindows, _playerRig, _playerCams, _gameWorld, _route, _pit, _paint |
 | `opening.ts` | 163 | _time, _fonts, _home, _homeFurniture, _playerCams, _crt |
-| `ride.ts` | 917 | _time, _fonts, _captionCarriers, _subtitle, _fish, _editor, _scissors, _ticket, _playerTypes, _playerTrack, _playerChrome, _playerRig, _playerCams, _rideMusic, _gameWorld, _route, _carry |
+| `ride.ts` | 913 | _time, _fonts, _captionCarriers, _fish, _editor, _scissors, _ticket, _playerTypes, _playerTrack, _playerChrome, _playerRig, _playerCams, _rideMusic, _gameWorld, _route, _carry |
 | `thumbnail.ts` | 228 | _fonts, _playerChrome, _fish, _jelly, _gameWorld, ride |
 
 - `bridge.ts`: Bridge (clip bridge, 56.889-85.333 s, bars 33-48; it also renders [56.0, 56.889), which `night.ts` shows through `ctx.renderClip('bridge', t, rt)`; treatment v8 "Plate 5").
@@ -509,7 +509,7 @@ Imported by: _bridgeworld, _c2shared, _c2world, _carry, _interludeRoom, _interlu
 
 The fonts and the lyric lanes of the lit renderer (treatment "Typography"). - `loadFonts`: the pixel fonts of the lyrics and of the game chrome. - `loadLanes`: the other voices, `ko` (the tuna) and `ca` (the double of the lead), lines in the same shape as the lead lane. - `lineAt`, `writtenOf`, `HOLD`: the line that s…
 
-Imported by: _bridgeBench, _bridgeletters, _bsod, _buddy, _c2apps, _c2script, _c2shared, _c3hud, _c3mosh, _captionCarriers, _crt, _duckboard, _editor, _gameWorld, _interludeMap, _interludeRoom, _interludeVerse, _kana, _outro, _padSheets, _playerChrome, _playerRig, _playerWindows, _subtitle, _ticket, _typing, bridge, chorus2, chorus3, day, interlude, joint-board, kit-editor-board, night, opening, ride, scale-board, thumbnail.
+Imported by: _bridgeBench, _bridgeletters, _bsod, _buddy, _c2apps, _c2script, _c2shared, _c3hud, _c3mosh, _captionCarriers, _crt, _duckboard, _editor, _gameWorld, _interludeMap, _interludeRoom, _interludeVerse, _kana, _outro, _padSheets, _playerChrome, _playerRig, _playerWindows, _ticket, _typing, bridge, chorus2, chorus3, day, interlude, joint-board, kit-editor-board, night, opening, ride, scale-board, thumbnail.
 
 - type `Fonts` (_fonts.ts:12)
 - `loadFonts(assets)` (_fonts.ts:21)
@@ -1045,15 +1045,6 @@ Imported by: _c2world, _c3games, _c3stage, _gameWorld, _pit, chorus3, day, inter
 - type `LineSideOpts` (_station.ts:347)
 - class `LineSide` (_station.ts:558) — The scenery along a track path (flat ground assumed under it, GROUND_Y).
   - root, lights, crossingU, crossingFrame, poleS, setNight(on), setTime(t, down)
-
-### _subtitle.ts (69 lines)
-
-The subtitle (`subtitle`): the English fan line, one calm Silkscreen line at one fixed place for the whole video. Each phrase appears when it starts. A long line wraps to two rows. Every scene calls it last.
-
-Imported by: bridge, chorus2, chorus3, day, interlude, night, ride.
-
-- const `SUBTITLE_Y` (_subtitle.ts:60) — Baseline of the subtitle: the same for every scene.
-- `subtitle(l, f, line, t)` (_subtitle.ts:66) — The English fan line of `line` as the subtitle of the video.
 
 ### _ticket.ts (269 lines)
 

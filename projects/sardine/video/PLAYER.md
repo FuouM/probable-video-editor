@@ -215,7 +215,7 @@ Act 3, `reminderWindow(fonts, { id, title, rect, line, ca?, body?, views?, statu
 
 ### The subtitle
 
-`subtitle(l, fonts, line, t)` draws the English fan line: one Silkscreen line at 1x, centred, with a dark outline and a solid dark strip behind it (2 px padding, as long as the phrases that have started). It sits at one fixed place (`SUBTITLE_Y` = 332, the last row; a long line wraps upward). The strip ends at y = 334, above the bottom toolbar (from y = 338) and above the status bar of a maximized window, so it never touches the chrome. It is the only function that draws the line. Every scene calls it last, after the chrome, the cursor and every other text, and only in one place. A toggle comes later: it will sit in this function.
+The video draws no English line. The web player shows the English as its subtitles, in the look the line had in the video: one Silkscreen line at 8 px, capitals, centred, with a dark outline and a solid dark strip behind the phrases that have started (`subtitles` in `video/player.ts`, the type `SubtitleStyle` in `@pve/engine/options`). The strip ends 26 px over the bottom edge of the 640 x 360 frame, above the bottom toolbar and the status bar of a maximized window.
 
 ### The missing texture
 

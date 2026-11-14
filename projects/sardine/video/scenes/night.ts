@@ -33,9 +33,8 @@ import { Builder, allFaces, at, camera, enableShadows, instanced, litMesh, v3 } 
 import { LitView, type Sky } from '@pve/engine/litview';
 import { TextLayer } from '@pve/engine/textlayer';
 import { BAR, FR } from './_time';
-import { lineAt, loadFonts, type Fonts } from './_fonts';
+import { loadFonts, type Fonts } from './_fonts';
 import { PaintedText, drawNewsTicker } from './_captionCarriers';
-import { subtitle } from './_subtitle';
 import { Fish, SwimPath } from './_fish';
 import { carriedPass, type Ticket } from './_ticket';
 import { centreOf, clickAt, toolButton, winButtons, type PlayerInput, type PlayerState, type Rect, type Vec2, type WinSpec, type WinState } from './_playerTypes';
@@ -596,14 +595,12 @@ export default class Night extends Scene {
     this.rig.compose(r, this.view, st, (win, v) => this.renderWin(win, v, t));
 
     this.text.clear();
-    const line = t < this.tFall ? null : lineAt(this.lines, t);
     this.rig.draw(this.text, st, (l, s) => {
       if (s.maximized) return;
       const l11 = this.lines[2]!;
       if (t >= l11.written!.units[0]!.start && t < T12 - 0.5) drawNewsTicker(l, this.fonts, l11, t, { rect: TICKER_RECT });
       this.drawClearTip(l, s, t);
     });
-    if (line) subtitle(this.text, this.fonts, line, t);
     this.text.commit();
     this.view.present(r, out, { exposure: 1.05, bloom: 0.35, top: this.rig.top }, this.text);
     return NO_FILM_POST;

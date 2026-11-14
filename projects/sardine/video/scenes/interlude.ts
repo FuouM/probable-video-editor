@@ -43,8 +43,7 @@ import { LH, LW, camera, col, enableShadows, setLitTexture, v3, type Col } from 
 import { LitView, type Output, type Sky } from '@pve/engine/litview';
 import { TextLayer } from '@pve/engine/textlayer';
 import { FR } from './_time';
-import { lineAt, loadFonts, type Fonts } from './_fonts';
-import { subtitle } from './_subtitle';
+import { loadFonts, type Fonts } from './_fonts';
 import { T_HIT, V0 } from './_wreck';
 import { centreOf, clickAt, type PlayerInput, type Rect, type WinSpec, type WinState } from './_playerTypes';
 import { PlayerTrack } from './_playerTrack';
@@ -380,8 +379,6 @@ export default class Interlude extends Scene {
     this.rig.draw(this.text, st);
     if (t >= T_VERSE) {
       this.maps.drawMini(st.windows.find((w) => w.id === 'mini'), t);
-      const ln = lineAt(this.lines, t);
-      if (ln) subtitle(this.text, this.fonts, ln, t);
     }
     this.text.commit();
     if (this.verse) this.verse.holdLast(r, this.view, st, t);

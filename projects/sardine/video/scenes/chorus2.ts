@@ -37,8 +37,7 @@ import { LitView, type Output, type Sky } from '@pve/engine/litview';
 import { TextLayer } from '@pve/engine/textlayer';
 import { CELL_H, CELL_W, TextMode, WHOLE, type Collapse } from '@pve/engine/textmode';
 import { BAR, SPB, FR } from './_time';
-import { lineAt, loadFonts, loadLanes, type Fonts } from './_fonts';
-import { subtitle } from './_subtitle';
+import { loadFonts, loadLanes, type Fonts } from './_fonts';
 import { acquireC2, carMatrix, LAP, lapAt, releaseC2, settleC2, SIDE_ARM, SPEED, T_CROSS, upright, type C2Shared } from './_c2shared';
 import type { Fish } from './_fish';
 import type { GameWorld } from './_gameWorld';
@@ -235,8 +234,6 @@ export default class Chorus2 extends Scene {
     if (t >= T_SINK && t < T_REVEAL) {
       l.clear();
       paintBsod(l, this.fonts, t);
-      const ln = lineAt(this.lead, t);
-      if (ln) subtitle(l, this.fonts, ln, t);
       l.commit();
       return { exposure: 1.05, bloom: 0.5 };
     }
@@ -263,8 +260,6 @@ export default class Chorus2 extends Scene {
       });
       if (t >= FILL[0]) this.tear(t);
     }
-    const ln = lineAt(this.lead, t);
-    if (ln) subtitle(l, this.fonts, ln, t);
     l.commit();
     this.buddy.render(r, this.view, t);
     return { exposure: 1.05, bloom: 0.5, top: this.rig.top };

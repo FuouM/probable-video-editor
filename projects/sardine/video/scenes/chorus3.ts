@@ -36,8 +36,7 @@ import { LitView, posedOnce, type Output, type Sky } from '@pve/engine/litview';
 import { TextLayer } from '@pve/engine/textlayer';
 import type { TrackFrame } from '@pve/engine/track';
 import { SPB, FR } from './_time';
-import { lineAt, loadFonts, loadLanes, type Fonts } from './_fonts';
-import { subtitle } from './_subtitle';
+import { loadFonts, loadLanes, type Fonts } from './_fonts';
 import { Jellyfish } from './_jelly';
 import { Fish } from './_fish';
 import { GROUND_Y } from './_station';
@@ -535,8 +534,6 @@ export default class Chorus3 extends Scene {
       const project = this.projector(t, st);
       if (project) this.hud.draw(t, project);
     }
-    const ln = lineAt(this.lead, t);
-    if (ln) subtitle(this.text, this.fonts, ln, t);
     this.text.commit();
     return { exposure: 1.05, bloom: 0.2, top: this.rig.top };
   }
