@@ -8,10 +8,11 @@ The agent workflow is in [`skills/pve/SKILL.md`](skills/pve/SKILL.md).
 |---|---|---|
 | `breaked_neuro` | [**Play**](https://fuoum.github.io/probable-video-editor/?project=breaked_neuro) | [**Watch in 4K**](https://www.youtube.com/watch?v=Tzy9nyStei8) |
 | `god_ish` | [**Play**](https://fuoum.github.io/probable-video-editor/?project=god_ish) | [**Watch**](https://www.youtube.com/watch?v=J8DgUCVm_04) |
+| `sardine` | [**Play**](https://fuoum.github.io/probable-video-editor/?project=sardine) | [**Watch**](https://www.youtube.com/watch?v=9vcmzFr_olU) |
 
 ## Projects
 
-This repository contains three code-rendered music videos:
+This repository contains four code-rendered music videos:
 
 ### 1. `breaked_neuro`
 - **Watch**: [**Play it in your browser**](https://fuoum.github.io/probable-video-editor/?project=breaked_neuro) or [watch it on YouTube in 4K](https://www.youtube.com/watch?v=Tzy9nyStei8). Your browser draws every frame live to the song, so it is not a video file. It needs WebGL2, and a desktop GPU is best. A resolution list (0.5x, 1x, 2x) and fullscreen are in the player.
@@ -27,7 +28,14 @@ This repository contains three code-rendered music videos:
 - **Architecture**: 13 clips and 6 transitions. Each era is a scene that copies the page of the era before it.
 - **Making Of**: Read the comprehensive post-mortem paper in [`docs/making_of/god_ish.md`](docs/making_of/god_ish.md).
 
-### 3. `pdoom_original` - mexicat
+### 3. `sardine`
+- **Watch**: [**Play it in your browser**](https://fuoum.github.io/probable-video-editor/?project=sardine) or [watch it on YouTube](https://www.youtube.com/watch?v=9vcmzFr_olU).
+- **Track**: Koronba, "イワシがつちからはえてくるんだ" (A Sardine Grows from the Soil). A UTAU song, 135 BPM (170.667 s duration).
+- **Idea**: A train simulator played too many times on the night before moving out. The sardine is the part of the player that is ready to leave. The game wears down like an old cartridge: every glitch is a fault of a game. The treatment is in [`projects/sardine/video/treatment.md`](projects/sardine/video/treatment.md).
+- **Architecture**: 11 clips on one shared game world. Lit low-poly 3D at 640x360 with a Bayer dither, a cursor that moves like a human hand, Rapier physics baked at init, MIDI-driven lights, a datamosh with camera-only motion vectors and a world that unloads in chunks.
+- **Making Of**: Read the post-mortem paper in [`docs/making_of/sardine.md`](docs/making_of/sardine.md).
+
+### 4. `pdoom_original` - mexicat
 - **Track**: "I'm Upping My P(doom)" (156.650 s duration).
 - **Architecture**: 22 clips and 42 scene modules with word-synced karaoke typography, GPU line batches, raymarched rooms, and procedural Shoggoth iris shaders.
 - **Treatment**: The creative concept and plate-by-plate treatment are in [`docs/TREATMENT.md`](docs/TREATMENT.md).
@@ -35,7 +43,7 @@ This repository contains three code-rendered music videos:
 
 ## Repository Layout
 
-- `projects/<id>/` — Project workspaces (`breaked_neuro`, `god_ish`, `pdoom_original`). Each project holds timing files from Lyric-Sync, edit definitions in `video/video.json`, scene modules in `video/scenes/`, and assets in `video/assets/`.
+- `projects/<id>/` — Project workspaces (`breaked_neuro`, `god_ish`, `sardine`, `pdoom_original`). Each project holds timing files from Lyric-Sync, edit definitions in `video/video.json`, scene modules in `video/scenes/`, and assets in `video/assets/`.
 - `packages/engine/` — `@pve/engine`: Three.js renderer core, post-processing pipeline (bloom, halation, grain, blur), typography, GPU line batches, HUD, and benchmark harness.
 - `packages/core/` — `@pve/core`: Schema validation for `video.json`, time expression resolver, lyric queries, and project loader.
 - `packages/cli/` — `@pve/cli`: Command-line tools for agents and human directors (`init`, `check`, `outline`, `find`, `at`, `scene new`, `still`, `look`, `board`, `probe`, `bench`, `perf`, `render`, `subs`, `notes`, `first-frame`, `gate`, `commit`, `doctor`).
@@ -62,6 +70,8 @@ bunx --bun vite
 Open the studio in your browser:
 - `breaked_neuro`: http://localhost:5173/?project=breaked_neuro
 - `pdoom_original`: http://localhost:5173/?project=pdoom_original
+- `god_ish`: http://localhost:5173/?project=god_ish
+- `sardine`: http://localhost:5173/?project=sardine
 
 Add `&t=40` to start at 40 seconds. Add `&scale=2` to preview at 4K resolution.
 
@@ -144,6 +154,7 @@ bun run determinism
 - **`breaked_neuro`**: Neurofunk Drum & Bass track, 200 BPM. Video written and directed with autonomous coding agents.
 - **`pdoom_original`**: "I'm Upping My P(doom)". Lyrics by osmarks and MusicPerson. Sung version by deckard.
 - **`god_ish`**: "God-ish". Lyrics are in `projects/god_ish/user_input/` (`lyrics.map.json` holds the hand-written Japanese and English).
+- **`sardine`**: "イワシがつちからはえてくるんだ" by Koronba. Original MV by Koronba. Timing from the UTAU projects and a fan MIDI. English is a fan translation.
 - **Fonts**: Archivo, IBM Plex Mono, Cormorant Garamond, UnifrakturMaguntia, Pirata One, IM Fell English (SIL Open Font License). Single-stroke EMS and Hershey fonts (OFL and Public Domain).
 
 ## License
