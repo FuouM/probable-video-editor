@@ -776,15 +776,18 @@ const COMMANDS: Record<string, Command> = {
   },
   'first-frame': {
     args: '<video> <image>',
-    summary: 'replace the first frame of a video with an image (thumbnail for video platforms), copying audio untouched and re-encoding video with x264 (--out file; --crf 14; --preset slow)',
-    options: { out: { type: 'string', short: 'o' }, crf: { type: 'string' }, preset: { type: 'string' } },
+    summary: 'replace the first frame of a video with an image (thumbnail for video platforms), copying audio untouched and re-encoding video with NVENC (--encoder nvenc|x264; --out file; --crf 16 (x264: 14); --preset p7 (x264: slow))',
+    options: { out: { type: 'string', short: 'o' }, encoder: { type: 'string' }, crf: { type: 'string' }, preset: { type: 'string' } },
     async run(a) {
       if (a.positionals.length !== 2) throw new UsageError('first-frame takes <video> <image>');
       const [video, image] = a.positionals as [string, string];
+      const encoder = str(a, 'encoder', 'nvenc');
+      if (encoder !== 'nvenc' && encoder !== 'x264') throw new UsageError('--encoder takes nvenc or x264');
       const out = replaceFirstFrame({
         video,
         image,
         out: typeof a.values.out === 'string' ? a.values.out : undefined,
+        encoder,
         crf: typeof a.values.crf === 'string' ? a.values.crf : undefined,
         preset: typeof a.values.preset === 'string' ? a.values.preset : undefined,
       });

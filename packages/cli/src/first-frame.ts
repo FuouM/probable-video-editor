@@ -8,7 +8,11 @@ export interface FirstFrameOptions {
   video: string;
   image: string;
   out?: string;
+  /** `nvenc` (default): H.264 on the GPU. `x264`: H.264 on the CPU. */
+  encoder?: 'nvenc' | 'x264';
+  /** Constant quality: NVENC `-cq` (default 16), x264 `-crf` (default 14). */
   crf?: string;
+  /** NVENC `p1`..`p7` (default p7), x264 preset name (default slow). */
   preset?: string;
 }
 
@@ -41,14 +45,16 @@ export function replaceFirstFrame(opts: FirstFrameOptions): string {
     `[1:v]scale=${w}:${h}:force_original_aspect_ratio=increase:flags=lanczos,crop=${w}:${h},scale=out_color_matrix=${matrix}:out_range=tv,format=${stream.pix_fmt}[img];` +
     `[0:v][img]overlay=enable='eq(n\\,0)':eof_action=repeat,format=${stream.pix_fmt}[v]`;
 
-  const crf = opts.crf ?? '14';
-  const preset = opts.preset ?? 'slow';
+  const encoder = opts.encoder ?? 'nvenc';
+  const video_codec = encoder === 'nvenc'
+    ? ['-c:v', 'h264_nvenc', '-preset', opts.preset ?? 'p7', '-tune', 'hq', '-rc', 'vbr', '-cq', opts.crf ?? '16', '-b:v', '0', '-profile:v', 'high']
+    : ['-c:v', 'libx264', '-preset', opts.preset ?? 'slow', '-crf', opts.crf ?? '14'];
 
   const args = [
     'ffmpeg', '-y', '-hide_banner', '-loglevel', 'error',
     '-i', video, '-i', image,
     '-filter_complex', filter, '-map', '[v]', '-map', '0:a?',
-    '-c:v', 'libx264', '-preset', preset, '-crf', crf, '-pix_fmt', stream.pix_fmt,
+    ...video_codec, '-pix_fmt', stream.pix_fmt,
     '-c:a', 'copy', '-movflags', '+faststart', out,
   ];
 
