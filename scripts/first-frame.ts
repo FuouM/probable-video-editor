@@ -8,13 +8,14 @@ const { values, positionals } = parseArgs({
   allowPositionals: true,
   options: {
     out: { type: 'string', short: 'o' },
-    crf: { type: 'string', default: '14' },
-    preset: { type: 'string', default: 'slow' },
+    encoder: { type: 'string', default: 'nvenc' },
+    crf: { type: 'string' },
+    preset: { type: 'string' },
   },
 });
 
-if (positionals.length !== 2) {
-  console.error('usage: bun run first-frame <video> <image> [--out <file>] [--crf 14] [--preset slow]');
+if (positionals.length !== 2 || (values.encoder !== 'nvenc' && values.encoder !== 'x264')) {
+  console.error('usage: bun run first-frame <video> <image> [--out <file>] [--encoder nvenc|x264] [--crf 16 (x264: 14)] [--preset p7 (x264: slow)]');
   process.exit(1);
 }
 
@@ -25,6 +26,7 @@ try {
     video,
     image,
     out: values.out,
+    encoder: values.encoder,
     crf: values.crf,
     preset: values.preset,
   });

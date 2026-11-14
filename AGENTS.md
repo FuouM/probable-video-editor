@@ -25,6 +25,7 @@ The engine guide and drawing APIs are in [`docs/ENGINE.md`](docs/ENGINE.md). The
 
 - Commit only when the human asks.
 - Never write absolute, machine-specific paths (drive letters, home folders) into code, tests, fixtures or docs.
+
 ## Token efficiency
 
 Each message turn re-reads the full conversation context from prompt cache (often 100k to 200k tokens per turn). Chain commands and batch tool calls to save turns:
@@ -32,12 +33,10 @@ Each message turn re-reads the full conversation context from prompt cache (ofte
 - **Loop seam:** run `bun run pve seam -p <id>`. Never write throwaway Python image diff scripts.
 - **Order faults:** when `bun run determinism` fails or a still changes between renders, run `bun run pve order -p <id> <time> ...`. Never write throwaway probe scripts for the page.
 - **Review stills:** run `bun run pve still -p <id> <times...> --sheet <out.png>`. It renders the stills and compiles an annotated contact sheet in one browser run. Read that one image. Never write Python PIL grid scripts.
-- **Long jobs:** run `bun run pve job <command> [args] --wait`. It runs with a hidden console and returns the output in one turn. Never sleep for a fixed time in eval.
 - **Pre-commit checks:** run `bun run pve gate -p <id>`. It runs all workspace typechecks, the project linter and unit tests in parallel in ~7 s. Never run them as separate tool calls.
-- **Commits:** run `bun run pve commit -p <id> -m "<msg>"`. It runs the gate and commits in one command. Never run separate `git add`, `git commit`, `git status`, `git log` turns.
+- **Commits:** run `bun run pve commit -p <id> -m "<msg>" --paths <a>,<b>`. It runs the gate and commits `projects/<id>/` and the listed paths in one command. Separate the paths with commas, not spaces. Never run separate `git add`, `git commit`, `git status`, `git log` turns.
 - **CLI help:** every command accepts `--help` and `-h` (such as `bun run pve look --help` or `bun run pve help look`). Never guess command options.
 - **Batch tool calls:** issue independent tool calls (`read`, `grep`, `edit`) in the same turn. Never serialize independent reads across multiple turns.
-
 
 ## Windows
 
@@ -64,6 +63,11 @@ Each message turn re-reads the full conversation context from prompt cache (ofte
 | Command | Does |
 |---|---|
 | `bun run pve <command> -p <id>` | The unified CLI. Run `bun run pve help` to list all subcommands. `skills/pve/SKILL.md` documents the agent workflow. |
+| `bun run pve init <song folder>` | Make `projects/<id>/` from a finished Lyric-Sync song folder, with a storyboard `video.json` (one clip per section). |
+| `bun run pve doctor` | Check Bun, ffmpeg, Chrome, the GPU, timer query support, the Lyric-Sync link and Vite. |
+| `bun run pve outline -p <id> [clip...]` | Print the resolved edit and the song: clips, markers, sections, lyric lines and notes, with times and bar.beat. |
+| `bun run pve find -p <id> <text>` | Find lyric lines, words, syllables, sections, markers and clips that match, each with a time expression. |
+| `bun run pve scene new <name> -p <id>` | Write `video/scenes/<name>.ts` from the scene template. |
 | `bun run pve check -p <id>` | Lint inputs, `video.json`, expressions, and scene files. Use `--watch` to check again on file changes. |
 | `bun run pve kit -p <id>` | Write `video/KIT.md`: an index of the scene modules (purpose, exports with `file:line` and doc, importers). Read it before you search the scene modules. `pve check` warns when it is out of date. `--check` only tests it. |
 | `bun run pve at -p <id> "<where>"` | Locate a bar, frame, time, lyric or range as JSON lines. See `docs/LYRICMAP.md`. |
@@ -73,17 +77,19 @@ Each message turn re-reads the full conversation context from prompt cache (ofte
 | `bun run pve look -p <id> [clips\|cuts\|range]` | Render contact sheet boards with timestamps and bar numbers. |
 | `bun run pve diff <a.png> <b.png>` | Compare two PNGs: prints mean channel diff, max diff, differing px (`--tol n`, default 0). |
 | `bun run pve seam -p <id>` | Render frame 0 and frame (duration - 1/fps) and compare them in one command (`--tol n`, default 0.28). |
+| `bun run pve probe -p <id> <time\|from..to>` | Numbers instead of stills. Lists the named objects of scenes (`mark`) at times. `--target <name>` tracks one object. `--cams` gives the main camera per frame (position, yaw/pitch/roll, lens, step from the frame before), `--jumps` keeps only the frames where a step stands out, `--metrics` prints the values that scenes report. Use it to check motion and seams. |
 | `bun run pve order -p <id> <target> [times]` | Find the frame that leaves state behind: render the target on a new page, then again after the other times, and compare. `--seed n --chain` replays the order of the determinism check, `--bisect` shortens the list, `--precision float` tells the GPU's 16-bit blend rounding from an order fault, `--draws` / `--outputs` / `--watch <call>` compare the draw calls, `--culprit --good <time>` leaves draw calls out until the target is right. Run `--help` first. |
 | `bun run pve board <scene-file> -p <id>` | Render a standalone exploratory board or cover scene (such as `video/scenes/thumbnail.ts`) to PNG. `--at a,b,c --sheet <out.png>` makes one labeled contact sheet with a tile for each time (`--cols n`): use it for a scene that shows another candidate at each time. |
 | `bun run pve subs -p <id>` | Export synchronized YouTube and offline subtitles (`--format ttml\|srt\|ass\|ytt\|all`, default `ttml`). The cue model and the writers are in `lyricsync/formats`. |
-| `bun run pve first-frame <video> <image>` | Replace frame 0 of a video file with a cover image. Copies audio untouched and encodes video with x264. |
+| `bun run pve first-frame <video> <image>` | Replace frame 0 of a video file with a cover image. Copies audio untouched and encodes video with NVENC on the GPU (`--encoder nvenc\|x264`, `--crf`, `--preset`, `--out`). |
+| `bun run pve bench -p <id> [clip...\|effect...]` | GPU benchmark of the effects and clips, or the named ones. Appends to `bench/results.jsonl`. `--board <files>` also benchmarks scene files that `video.json` does not name. |
 |`bun run pve perf [clip...] -p <id>`|Play clips in real time and report CPU frame times and missed frames (`--from/--to <time\|bar\|expr>`, `--step n`, `--frames`, `--slow <ms>`, `--profile`, `--gpu-canvas`). `--draws` counts, per frame, the render calls, the draw calls and the program lookups of three by cause. Do not read times from a run with `--draws`.|
 |`bun run pve job <command> [args]`|Start a pve command in the background with a log in `out/jobs/` (`--wait` blocks until done and prints the log in one turn).|
 |`bun run pve wait [id]`|Block until the job (default: the newest) ends, then print its log and exit with its code. Exit 3 when it still runs after `--timeout s` (default 175).|
-| `bun run pve render -p <id>` | Render full video or ranges (`--samples auto`, `--shutter s`, `--first-frame <image>`). |
+| `bun run pve render -p <id>` | Render full video or ranges (`--from/--to`, `--samples auto`, `--shutter s`, `--first-frame <image>`). Lossless segments per clip, then one encode on the GPU (`--encoder x264` encodes on the CPU). |
 | `bun run pve notes -p <id> [filter]` | List and filter open review notes from `video/notes.json` and `video/notes/*.md`. |
-| `bun run pve gate -p <id>` | Run all pre-commit checks in parallel. Stops at the first failure (`--quick`, `--only <step,...>`, `--golden auto\|always\|never`, `--skip <step,...>`). |
-| `bun run pve commit -p <id> -m "<msg>"` | Run the gate, then commit project files and explicit `--paths` only (`--push` pushes to origin). Commit only when the human asks. |
+| `bun run pve gate -p <id>` | Run all pre-commit checks in parallel. Stops at the first failure (`--quick`, `--only <step,...>`, `--golden auto\|always\|never`, `--skip <step,...>`, `--keep-going`). |
+| `bun run pve commit -p <id> -m "<msg>"` | Run the gate, then commit `projects/<id>/` and the `--paths` only (comma-separated: `--paths a,b`). `--dry` prints the files. `--push` pushes to origin. Commit only when the human asks. |
 
 ### Repository Verification
 
@@ -94,7 +100,7 @@ Each message turn re-reads the full conversation context from prompt cache (ofte
 | `bun test` | Run all unit tests (core, CLI, bench coverage, timeline parity). |
 | `bun run golden` | Compare one still per timeline entry with `tests/golden/` (max abs diff 0). |
 | `bun run determinism` | Render 100 seeded times in order and shuffled, then compare pixels (`--project <id>`, `--n`, `--seed`, `--precision both\|float\|half`, default `both`). A difference at 32-bit HDR precision is an order fault and fails. A difference at 16 bits only is the blend rounding of the GPU: the check reports it and passes. See "Precision" in `docs/ENGINE.md`. |
-| `bun run bench` | Run reference GPU workload in headless Chrome and append to `bench/results.jsonl`. |
+| `bun run bench` | Run the reference GPU workload (`pve bench -p pdoom_original`) in headless Chrome and append to `bench/results.jsonl`. |
 | `bun run verify-export -- --project <id>` | Check full render export integrity (decode, duration, video size, fps, AAC). |
 
 ### Web Player and Static Site
