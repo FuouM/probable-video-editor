@@ -132,7 +132,8 @@ export function gateSteps(ref: ProjectRef, o: GateOptions, porcelain: string): {
   ];
   const needed = goldenNeeded(porcelain);
   const golden = o.golden === 'always' ? 'always' : o.golden === 'never' ? 'off (--golden never)' : needed ? 'on: the work tree changes the engine or pdoom_original' : 'off: no change in ' + GOLDEN_PATHS.join(', ');
-  if (o.golden === 'always' || (o.golden === 'auto' && needed)) steps.push({ name: 'golden', cmd: ['bun', 'scripts/golden.ts'] });
+  // head: the golden lines come first; the browser log (stderr) follows them and must not push them out of the report
+  if (o.golden === 'always' || (o.golden === 'auto' && needed)) steps.push({ name: 'golden', cmd: ['bun', 'packages/cli/src/main.ts', 'golden'], show: 'head' });
   let active = steps;
   if (o.only?.length) active = active.filter((s) => o.only!.some((k) => s.name === k || s.name.startsWith(`${k}:`)));
   active = active.filter((s) => !o.skip.some((k) => s.name === k || s.name.startsWith(`${k}:`)));

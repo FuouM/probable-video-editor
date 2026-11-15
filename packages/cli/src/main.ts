@@ -16,7 +16,9 @@ import { at } from './locate';
 import { CliError, EXIT, fmtBarBeat, fmtCounts, fmtProblem, fmtTime, table, UsageError } from './out';
 import { find, focusOutline, formatFind, formatOutline, outline } from './outline';
 import { appendRecords, gitState, machine } from './records';
-import { clipAt, expandTimes, findProject, openProject, openView, PROJECTS, servedId, SONG_FILE, timeOf, transitionTimes, type Project, type ProjectRef } from './project';
+import { clipAt, expandTimes, findProject, openProject, openView, servedId, SONG_FILE, timeOf, transitionTimes, type Project, type ProjectRef } from './project';
+import { PROJECTS } from '@pve/core/projects';
+import { renderName } from '@pve/core';
 import { runPerf } from './perf';
 import { encodeVideo, parseSamples, renderFrames, renderRecord, sheet, stills, type SegmentCodec, type SheetTile } from './render';
 import { camStep, cropStrip, frameState, framesAt, judgeSyllable, jumps, JUMP_FLOOR, mainCamera, marksAt, nameMatcher, sungSyllables, union, type LyricCheck, type Rect } from './probe';
@@ -30,9 +32,12 @@ import { cues, languages, render, type Format } from './subs';
 import { SUB_FORMATS } from 'lyricsync/formats';
 import { replaceFirstFrame } from './first-frame';
 import { KIT_FILE, kitIndex } from './kit';
-import { findJob, logPath, MAX_WAIT_S, startJob, waitJob } from './jobs';
-import { decodePng, diffImages } from './png';
-import { findCulprit, runOrder, seededTimes } from './order';
+import { findJob, logPath, MAX_WAIT_S, startJob, waitJob, type WaitResult } from './jobs';
+import { decodePng, diffImages, type Image } from './png';
+import { findCulprit, runOrder } from './order';
+import { runDeterminism, seededTimes } from './determinism';
+import { GOLDEN_PROJECT, runGolden } from './golden';
+import { verifyExport } from './verify-export';
 import type { Subtitles } from '../../../app/src/subtitles';
 
 interface Args {
@@ -40,22 +45,39 @@ interface Args {
   values: Record<string, string | boolean | (string | boolean)[] | undefined>;
 }
 
+/** One option of a command: its parseArgs type and the line of the help text. */
+interface Opt {
+  type: 'string' | 'boolean';
+  short?: string;
+  desc: string;
+}
+type Opts = Record<string, Opt>;
+
 interface Command {
   /** Arguments after the command name, for the usage text. */
   args: string;
+  /** What the command does, in short. The options carry their own text. */
   summary: string;
-  options?: ParseArgsOptionsConfig;
-  /** Take the arguments as they are, with no option parsing (`job` passes them on to another command). */
+  options?: Opts;
+  /** Take the arguments as they are, with no option parsing (`job` passes them on to another command). The options are for the help text only. */
   raw?: boolean;
   run(a: Args): Promise<number>;
 }
 
-const PROJECT_OPT: ParseArgsOptionsConfig = { project: { type: 'string', short: 'p' } };
-const JSON_OPT: ParseArgsOptionsConfig = { json: { type: 'boolean' } };
-const SAMPLE_OPT: ParseArgsOptionsConfig = {
-  samples: { type: 'string' }, 'min-samples': { type: 'string' }, 'max-samples': { type: 'string' }, tol: { type: 'string' }, refine: { type: 'string' },
-  shutter: { type: 'string' }, scale: { type: 'string' },
+const sOpt = (desc: string): Opt => ({ type: 'string', desc });
+const bOpt = (desc: string): Opt => ({ type: 'boolean', desc });
+const PROJECT_OPT: Opts = { project: { type: 'string', short: 'p', desc: 'project id or folder (default: PVE_PROJECT, else the folder with video/video.json at or above the current folder)' } };
+const JSON_OPT: Opts = { json: bOpt('print JSON') };
+const SAMPLE_OPT: Opts = {
+  samples: sOpt('sub-frames per frame (motion blur): a whole number, or auto (adaptive until the error is under --tol; default 1)'),
+  'min-samples': sOpt('--samples auto: fewest sub-frames (default 4)'),
+  'max-samples': sOpt('--samples auto: most sub-frames (default 324)'),
+  tol: sOpt('--samples auto: stop when the estimated error is under this many 8-bit levels (default 3)'),
+  refine: sOpt('--samples auto: tiles (decide per 32 px tile, default) or frame (for the whole frame)'),
+  shutter: sOpt('shutter open time as a part of one frame (default 0.5)'),
+  scale: sOpt('output scale, a whole number (default 1: 1920x1080; 2: 3840x2160)'),
 };
+const PRECISION_OPT: Opts = { precision: sOpt('half (16-bit HDR targets, as the renders; default) or float (32-bit: free of the 16-bit blend rounding of the GPU, for pixel compares; docs/ENGINE.md)') };
 const projectOf = (a: Args) => (typeof a.values.project === 'string' ? a.values.project : undefined);
 const print = (value: unknown) => console.log(JSON.stringify(value, null, 2));
 
@@ -103,6 +125,51 @@ function onlyOf(p: Project, times: number[]): string | undefined {
   return ids.length > 0 && ids.length <= 4 ? ids.join(',') : undefined;
 }
 
+/** `--precision`: half (default) or float. */
+function hdrOf(a: Args): 'half' | 'float' {
+  const precision = str(a, 'precision', 'half');
+  if (precision !== 'half' && precision !== 'float') throw new UsageError('--precision takes half or float');
+  return precision;
+}
+
+/** `01-24-320`: a time for a file name. */
+const fileTime = (t: number) => fmtTime(t).replace(/[:.]/g, '-');
+/** The PNG file of the still at `t` in `dir`. */
+const stillFile = (dir: string, t: number) => path.join(dir, `still_${fileTime(t)}.png`);
+
+/** A scene file under the project folder: its absolute path and its path from the repository root (the dev server path without the slash). */
+function resolveBoardFile(p: Project, file: string): { abs: string; rel: string } {
+  const abs = path.resolve(p.dir, file);
+  const rel = path.relative(ROOT, abs).split(path.sep).join('/');
+  if (rel.startsWith('..') || !existsSync(abs)) throw new UsageError(`${file}: no such file under ${path.relative(process.cwd(), p.dir)}`);
+  return { abs, rel };
+}
+
+/** Prints the log of a waited job and returns its exit code. A job that still runs: the last `tail` lines, EXIT.running. */
+function reportJob(r: WaitResult, tail: number): number {
+  const secs = ((Date.now() - r.job.start) / 1000).toFixed(1);
+  const lines = r.log.trimEnd().split('\n');
+  if (r.code === undefined && !r.lost) {
+    console.log(lines.slice(-tail).join('\n'));
+    console.log(`job ${r.job.id}: still running after ${secs} s (pid ${r.job.pid})`);
+    return EXIT.running;
+  }
+  console.log(lines.join('\n'));
+  if (r.lost) {
+    console.log(`job ${r.job.id}: the process ended without an exit code (killed or crashed) after ${secs} s`);
+    return EXIT.error;
+  }
+  console.log(`job ${r.job.id}: exit ${r.code} after ${secs} s`);
+  return r.code!;
+}
+
+/** Compares two pictures for `diff` and `seam`: ok when the mean channel diff is at most `tol`, and the line that says so. */
+function diffLine(a: Image, b: Image, tol: number): { ok: boolean; line: string } {
+  const d = diffImages(a, b);
+  const ok = d.meanDiff <= tol;
+  return { ok, line: `mean ${d.meanDiff.toFixed(4)} (tol ${tol})  max ${d.maxDiff}  differing ${d.pixels} px${d.box ? `  box ${d.box[0]},${d.box[1]}-${d.box[2]},${d.box[3]}` : ''}${ok ? '  ok' : '  FAIL'}` };
+}
+
 /** One `pve check` run: prints the report and returns the number of errors. `compact`: one JSON line. */
 async function runCheck(ref: ProjectRef, json: boolean, compact: boolean): Promise<number> {
   const t0 = performance.now();
@@ -143,6 +210,14 @@ function gateOptions(a: Args): GateOptions {
   return { golden: mode, failFast: a.values['keep-going'] !== true, skip, only };
 }
 
+/** The options of `gate` that `commit` passes on to its gate. */
+const GATE_OPT: Opts = {
+  golden: sOpt('auto (default: when the work tree changes the engine, pdoom_original or tests/golden), always or never'),
+  skip: sOpt('leave these steps out: typecheck (or one typecheck:<project>), check, test, golden'),
+  only: sOpt('run only these steps (names as --skip)'),
+  quick: bOpt('skip test and golden'),
+};
+
 const COMMANDS: Record<string, Command> = {
   init: {
     args: '<song folder>',
@@ -159,11 +234,11 @@ const COMMANDS: Record<string, Command> = {
   },
   aup: {
     args: '<file.aup>',
-    summary: 'read an AviUtl project (ExEdit) and write video/assets/timeline.json: fps, size, sections, sprite placements with their sheet grids, lyric texts. The sprite PNG files must be in video/assets/. --skip a.bmp,b.png leaves out the objects of those image files. Stops with a list when an object has a script or effect that the reader does not know. See docs/AVIUTL.md',
-    options: { ...PROJECT_OPT, skip: { type: 'string' } },
+    summary: 'read an AviUtl project (ExEdit) and write video/assets/timeline.json: fps, size, sections, sprite placements with their sheet grids, lyric texts. The sprite PNG files must be in video/assets/. Stops with a list when an object has a script or effect that the reader does not know. See docs/AVIUTL.md',
+    options: { ...PROJECT_OPT, skip: sOpt('leave out the objects of these image files (a.bmp,b.png)') },
     async run(a) {
       if (a.positionals.length !== 1) throw new UsageError('aup takes one .aup file');
-      const ref = findProject(projectOf(a), undefined, process.env.PVE_PROJECT, SONG_FILE);
+      const ref = findProject(projectOf(a), undefined, undefined, SONG_FILE);
       const skip = str(a, 'skip', '').split(',').map((s) => s.trim()).filter(Boolean);
       const { out, timeline: t } = await importAup(ref, a.positionals[0]!, skip);
       console.log(JSON.stringify({
@@ -176,12 +251,12 @@ const COMMANDS: Record<string, Command> = {
   },
   assets: {
     args: 'pack | fetch',
-    summary: 'the files of video/assets/ are assets of the GitHub release <id>-assets, not git files, and video/assets.json lists them (path, SHA-256, size). pack writes the manifest from the local folder and prints the gh release upload command (it does not run it). fetch downloads the missing or changed files with gh and checks each SHA-256. pve check also compares the local files with the manifest',
+    summary: 'the files of video/assets/ are assets of the GitHub release <id>-assets, not git files. video/assets.json lists them (path, SHA-256, size). pack: write the manifest from the local folder and print the gh release upload command (not run). fetch: download the missing or changed files with gh and check each SHA-256. pve check also compares the local files with the manifest',
     options: PROJECT_OPT,
     async run(a) {
       const sub = a.positionals[0];
       if (a.positionals.length !== 1 || (sub !== 'pack' && sub !== 'fetch')) throw new UsageError('assets takes pack or fetch');
-      const ref = findProject(projectOf(a), undefined, process.env.PVE_PROJECT, SONG_FILE);
+      const ref = findProject(projectOf(a), undefined, undefined, SONG_FILE);
       if (sub === 'pack') {
         const r = packAssets(ref);
         const bytes = r.manifest.assets.reduce((n, x) => n + x.size, 0);
@@ -198,7 +273,7 @@ const COMMANDS: Record<string, Command> = {
   check: {
     args: '',
     summary: 'validate and lint: inputs, video.json, expressions, overlaps, cuts off the beat, scene files, banned calls, missing features',
-    options: { ...PROJECT_OPT, ...JSON_OPT, watch: { type: 'boolean' } },
+    options: { ...PROJECT_OPT, ...JSON_OPT, watch: bOpt('check again 150 ms after each change in video/ or user_input/ until Ctrl-C (one JSON line per run with --json)') },
     async run(a) {
       const ref = findProject(projectOf(a));
       const json = a.values.json === true;
@@ -261,8 +336,8 @@ const COMMANDS: Record<string, Command> = {
   },
   kit: {
     args: '',
-    summary: `write ${KIT_FILE}: an index of the scene modules (purpose, exports with file:line and doc, importers). Agents read it instead of searching the modules. --check: exit 1 when the file is out of date, write nothing`,
-    options: { ...PROJECT_OPT, check: { type: 'boolean' } },
+    summary: `write ${KIT_FILE}: an index of the scene modules (purpose, exports with file:line and doc, importers). Agents read it instead of searching the modules`,
+    options: { ...PROJECT_OPT, check: bOpt(`exit 1 when ${KIT_FILE} is out of date; write nothing`) },
     async run(a) {
       const ref = findProject(projectOf(a));
       const file = path.join(ref.dir, KIT_FILE);
@@ -279,8 +354,13 @@ const COMMANDS: Record<string, Command> = {
   },
   at: {
     args: '<where> [; <where>...]',
-    summary: 'locate anything, one JSON object per line: bar 111, bar 111.3, beat 250, f5665, 1:34.4, line 38, syl 38.5, @marker, any time expression, a range a..b, or lyric text in romaji, Japanese or English. Gives time, frame, bar.beat, beat offset, section, clip, line and syllable with its glyph and phrase. --syl adds syllables, glyph units and phrases with times (--frames: as frames). Works on a song folder without video.json',
-    options: { ...PROJECT_OPT, syl: { type: 'boolean' }, frames: { type: 'boolean' }, max: { type: 'string' } },
+    summary: 'locate anything, one JSON object per line: bar 111, bar 111.3, beat 250, f5665, 1:34.4, line 38, syl 38.5, @marker, any time expression, a range a..b, or lyric text in romaji, Japanese or English. Gives time, frame, bar.beat, beat offset, section, clip, line and syllable with its glyph and phrase. Works on a song folder without video.json',
+    options: {
+      ...PROJECT_OPT,
+      syl: bOpt('add the syllables, glyph units and phrases with times'),
+      frames: bOpt('with --syl: times as frames'),
+      max: sOpt('most hits of a text query (default 20; add #n to the text to pick one)'),
+    },
     async run(a) {
       if (!a.positionals.length) throw new UsageError('at needs a place, for example: bar 111');
       const v = await openView(projectOf(a));
@@ -314,8 +394,17 @@ const COMMANDS: Record<string, Command> = {
   },
   still: {
     args: '<time|from..to...> | --transition <id>',
-    summary: 'PNG stills at times (seconds or expressions: @marker, lyric:text, clip:id.start, bar:12+2b) or over a range (from..to, one still every --step seconds, default 0.1, at most 240); --transition <id> --count n (default 6) gives n stills from the start to the end of an Over transition; --sheet <out.png> stitches the stills into a labeled contact sheet grid (--cols n); --crop x,y,w,h (1920x1080 px) makes each sheet tile that part of the frame, zoomed in whole pixels (for UI details); --precision float: 32-bit HDR targets (default half, 16-bit), for a pixel comparison that is free of the blend rounding of the GPU (docs/ENGINE.md)',
-    options: { ...PROJECT_OPT, ...SAMPLE_OPT, out: { type: 'string' }, step: { type: 'string' }, transition: { type: 'string' }, count: { type: 'string' }, sheet: { type: 'string' }, cols: { type: 'string' }, crop: { type: 'string' }, precision: { type: 'string' } },
+    summary: 'PNG stills at times (seconds or expressions: @marker, lyric:text, clip:id.start, bar:12+2b) or over ranges from..to (at most 240 stills), or across an Over transition',
+    options: {
+      ...PROJECT_OPT, ...SAMPLE_OPT, ...PRECISION_OPT,
+      out: sOpt('folder of the PNG files (default <project>/out/stills)'),
+      step: sOpt('seconds between the stills of a range (default 0.1)'),
+      transition: sOpt('also n stills (--count) from the start to the end of this Over transition'),
+      count: sOpt('stills of --transition (default 6)'),
+      sheet: sOpt('also stitch the stills into a labeled contact sheet grid, this PNG file'),
+      cols: sOpt('columns of the sheet (default: the number of stills up to 4, else 2)'),
+      crop: sOpt('x,y,w,h in 1920x1080 px: each sheet tile shows that part of the frame, zoomed in whole pixels (makes a sheet, default <out>/sheet.png)'),
+    },
     async run(a) {
       const tr = typeof a.values.transition === 'string' ? a.values.transition : undefined;
       if (!a.positionals.length && !tr) throw new UsageError('still needs at least one time (or --transition <id>)');
@@ -325,15 +414,13 @@ const COMMANDS: Record<string, Command> = {
       if (!(step > 0)) throw new UsageError('--step takes a positive number of seconds');
       const dir = path.resolve(str(a, 'out', path.join(p.dir, 'out/stills')));
       const times = [...expandTimes(p, a.positionals, step, 240), ...(tr ? transitionTimes(p, tr, num(a, 'count', 6)) : [])];
-      const items = times.map((t) => ({ t, file: path.join(dir, `still_${fmtTime(t).replace(/[:.]/g, '-')}.png`) }));
+      const items = times.map((t) => ({ t, file: stillFile(dir, t) }));
       const cropOpt = typeof a.values.crop === 'string' ? a.values.crop.split(',').map(Number) : undefined;
       if (cropOpt && (cropOpt.length !== 4 || cropOpt.some((v) => !Number.isFinite(v)) || cropOpt[2]! <= 0 || cropOpt[3]! <= 0)) throw new UsageError('--crop takes x,y,w,h in 1920x1080 px');
       const crop = cropOpt as [number, number, number, number] | undefined;
-      const sheetOpt = a.values.sheet;
-      const sheetFile = typeof sheetOpt === 'string' ? path.resolve(sheetOpt) : sheetOpt === true || crop ? path.join(dir, 'sheet.png') : undefined;
+      const sheetFile = typeof a.values.sheet === 'string' ? path.resolve(a.values.sheet) : crop ? path.join(dir, 'sheet.png') : undefined;
       const cols = num(a, 'cols', times.length <= 4 ? times.length : 2);
-      const precision = typeof a.values.precision === 'string' ? a.values.precision : 'half';
-      if (precision !== 'half' && precision !== 'float') throw new UsageError('--precision takes half or float');
+      const precision = hdrOf(a);
       const counts = await withPage(servedId(p), { scale: o.scale, only: onlyOf(p, times), hdr: precision }, async (page) => {
         const c = await stills(page, items, o);
         if (sheetFile) {
@@ -349,15 +436,19 @@ const COMMANDS: Record<string, Command> = {
   },
   board: {
     args: '<scene-file>',
-    summary: 'one PNG of a scene file that video.json does not name, an exploratory board (type specimen, layout sketch, contact board of candidates): the file under the project folder, e.g. video/scenes/script-board.ts, drawn --at s seconds into the scene (default 0.5); --out png (default <project>/out/boards/<file>.png). --sheet <out.png> with --at a,b,c: one labeled contact sheet with a tile for each time (--cols n), for a scene that shows another candidate at each time. The scene is added to the page as a one-second clip long after the song',
-    options: { ...PROJECT_OPT, ...SAMPLE_OPT, out: { type: 'string' }, at: { type: 'string' }, sheet: { type: 'string' }, cols: { type: 'string' } },
+    summary: 'one PNG of a scene file under the project folder that video.json does not name (e.g. video/scenes/script-board.ts), an exploratory board: type specimen, layout sketch, contact board of candidates. The scene is added to the page as a one-second clip long after the song',
+    options: {
+      ...PROJECT_OPT, ...SAMPLE_OPT,
+      out: sOpt('PNG file (default <project>/out/boards/<file>.png)'),
+      at: sOpt('seconds into the scene, from 0 to under 1 (default 0.5); with --sheet: a,b,c, one tile each'),
+      sheet: sOpt('one labeled contact sheet PNG with a tile for each --at time (a scene that shows another candidate at each time)'),
+      cols: sOpt('columns of the sheet (default: the tiles up to 3)'),
+    },
     async run(a) {
       const file = a.positionals[0];
       if (!file || a.positionals.length > 1) throw new UsageError('board takes one scene file under the project folder');
       const p = await openProject(projectOf(a));
-      const abs = path.resolve(p.dir, file);
-      const rel = path.relative(ROOT, abs).split(path.sep).join('/');
-      if (rel.startsWith('..') || !existsSync(abs)) throw new UsageError(`${file}: no such file under ${path.relative(process.cwd(), p.dir)}`);
+      const { abs, rel } = resolveBoardFile(p, file);
       const o = { ...sampling(a, '1'), fps: p.resolved.fps };
       const id = slug(path.basename(abs, path.extname(abs)));
       if (typeof a.values.sheet === 'string') {
@@ -380,8 +471,13 @@ const COMMANDS: Record<string, Command> = {
   },
   subs: {
     args: '',
-    summary: 'the subtitles of the project for YouTube, with the highlight of the player (sung now: yellow, sung before: white, to come: grey; every change is its own cue): <project>/out/subs/<id>.<lang>.<format>, one file per language, upload each as its own track. en: the English words or phrases. ja (a song with a lyric map): two rows, romaji above Japanese. --lang en,ja (default: all); --format ttml|srt|ass|ytt|all (default ttml; ytt is YouTube timed text, srv3); --out dir. Reads <project>/site/subtitles.json (generates it if missing)',
-    options: { ...PROJECT_OPT, lang: { type: 'string' }, format: { type: 'string' }, out: { type: 'string' } },
+    summary: 'the subtitles of the project for YouTube, with the highlight of the player (sung now: yellow, sung before: white, to come: grey; every change is its own cue): <project>/out/subs/<id>.<lang>.<format>, one file per language, upload each as its own track. en: the English words or phrases. ja (a song with a lyric map): two rows, romaji above Japanese. Reads <project>/site/subtitles.json (generates it if missing)',
+    options: {
+      ...PROJECT_OPT,
+      lang: sOpt('languages, such as en,ja (default: all)'),
+      format: sOpt('ttml (default), srt, ass, ytt (YouTube timed text, srv3), a list, or all'),
+      out: sOpt('folder (default <project>/out/subs)'),
+    },
     async run(a) {
       if (a.positionals.length) throw new UsageError('subs takes no arguments');
       const p = await openProject(projectOf(a));
@@ -419,8 +515,15 @@ const COMMANDS: Record<string, Command> = {
   },
   look: {
     args: '[clip...|clips|cuts|from..to...] | --transition <id>',
-    summary: 'contact sheet of real frames with time, clip and bar.beat on each tile: the whole song, the named clips (--n tiles each), `clips` (one tile per clip, or --n each), both sides of every cut, times and ranges from..to (a time gives one tile; a range gives --n tiles spread over it, or one every --step seconds), or --transition <id> (--n tiles across an Over transition)',
-    options: { ...PROJECT_OPT, ...SAMPLE_OPT, n: { type: 'string' }, step: { type: 'string' }, transition: { type: 'string' }, cols: { type: 'string' }, out: { type: 'string' } },
+    summary: 'contact sheet of real frames with time, clip and bar.beat on each tile: the whole song, the named clips, `clips` (one tile per clip), `cuts` (both sides of every cut), times and ranges from..to (a time gives one tile, a range gives tiles spread over it), or an Over transition',
+    options: {
+      ...PROJECT_OPT, ...SAMPLE_OPT,
+      n: sOpt('tiles for the song, each named clip, each range or the transition (default 12; with `clips`: 1)'),
+      step: sOpt('seconds between the tiles of a range (instead of --n)'),
+      transition: sOpt('--n tiles across this Over transition'),
+      cols: sOpt('columns (default 4)'),
+      out: sOpt('PNG file (default <project>/out/look/<label>.png)'),
+    },
     async run(a) {
       const p = await openProject(projectOf(a));
       const o = { ...sampling(a, '1'), fps: p.resolved.fps };
@@ -466,12 +569,20 @@ const COMMANDS: Record<string, Command> = {
   },
   probe: {
     args: '<time|from..to...> | --lyrics <clip...>',
-    summary: 'named objects (scenes call mark from @pve/engine/marks): list them at times; --target <name|glob> tracks one (box, move, zoomed crop strip); --rect x,y,w,h crops a fixed box; --lyrics checks every sung syllable of clips is marked on screen. --cams: the true camera of the picture on each frame (position, yaw/pitch/roll, lens) and its step from the frame before; --all-cams: every camera that drew. --metrics: the values scenes report (metric from @pve/engine/marks; --target filters names). --jumps: only the frames where a step stands out of its neighbours (a cut, a pop, a jerk). Times step one frame by default (--step s)',
+    summary: 'named objects (scenes call mark from @pve/engine/marks): list them at times, track one, or crop a fixed box; check that sung syllables are on screen; report cameras and metrics per frame',
     options: {
       ...PROJECT_OPT, ...SAMPLE_OPT, ...JSON_OPT,
-      target: { type: 'string', short: 't' }, rect: { type: 'string' }, pad: { type: 'string' }, zoom: { type: 'string' }, step: { type: 'string' },
-      lyrics: { type: 'boolean' }, out: { type: 'string' },
-      cams: { type: 'boolean' }, 'all-cams': { type: 'boolean' }, metrics: { type: 'boolean' }, jumps: { type: 'boolean' },
+      target: { type: 'string', short: 't', desc: 'mark name or glob to track (box, move, zoomed crop strip); with --metrics: the metric names to show' },
+      rect: sOpt('x,y,w,h in frame px: crop this fixed box instead'),
+      pad: sOpt('px around the box in the crop strip (default 24)'),
+      zoom: sOpt('zoom of the crop strip (default 2)'),
+      step: sOpt('seconds between the times of a range (default one frame)'),
+      lyrics: bOpt('the arguments are clip ids: check that every sung syllable of them is marked on screen'),
+      out: sOpt('PNG of the crop strip (default <project>/out/probe/<target>_<time>.png)'),
+      cams: bOpt('the true camera of the picture on each frame (position, yaw/pitch/roll, lens) and its step from the frame before'),
+      'all-cams': bOpt('as --cams, for every camera that drew'),
+      metrics: bOpt('the values that scenes report (metric from @pve/engine/marks)'),
+      jumps: bOpt('with --cams/--metrics: only the frames where a step stands out of its neighbours (a cut, a pop, a jerk)'),
     },
     async run(a) {
       const p = await openProject(projectOf(a));
@@ -590,7 +701,7 @@ const COMMANDS: Record<string, Command> = {
           const x = Math.max(0, Math.min(1920 - w, b[0] + b[2] / 2 - w / 2)), y = Math.max(0, Math.min(1080 - h, b[1] + b[3] / 2 - h / 2));
           return { t, rect: [x, y, w, h] as Rect, label: frameLabel(p, t) };
         });
-        const out = path.resolve(str(a, 'out', path.join(p.dir, `out/probe/${slug(target ?? 'rect')}_${fmtTime(times[0]!).replace(/[:.]/g, '-')}.png`)));
+        const out = path.resolve(str(a, 'out', path.join(p.dir, `out/probe/${slug(target ?? 'rect')}_${fileTime(times[0]!)}.png`)));
         await cropStrip(page, tiles, zoom, out, o);
         if (a.values.json) print({ out, rows });
         else {
@@ -603,16 +714,23 @@ const COMMANDS: Record<string, Command> = {
   },
   bench: {
     args: '[clip...|effect...]',
-    summary: `GPU benchmarks: every effect and clip, or the named clips and effects; prints scene cost against the ${(1000 / 60).toFixed(1)} ms preview budget; appends to bench/results.jsonl. --board file,file: also benchmark scene files that video.json does not name (as for pve board), and run only those when no other name is given`,
-    options: { ...PROJECT_OPT, compare: { type: 'string' }, n: { type: 'string' }, 'no-scenes': { type: 'boolean' }, scale: { type: 'string' }, dry: { type: 'boolean' }, out: { type: 'string' }, board: { type: 'string' } },
+    summary: `GPU benchmarks: every effect and clip, or the named clips and effects; prints scene cost against the ${(1000 / 60).toFixed(1)} ms preview budget; appends to bench/results.jsonl`,
+    options: {
+      ...PROJECT_OPT,
+      compare: sOpt('compare with the records of this commit (or `last`: the newest earlier run) of the same machine, scale and project; marks changes over 10 % and over the spread'),
+      n: sOpt('measured frames per benchmark (default 30)'),
+      'no-scenes': bOpt('effects only: no scene benchmarks'),
+      scale: sOpt('output scale (default 1; the budget table shows at scale 1 only)'),
+      dry: bOpt('print the results, append nothing'),
+      out: sOpt('JSONL file to append to (default bench/results.jsonl)'),
+      board: sOpt('file,file[#Class]: also benchmark scene files that video.json does not name (as pve board; each exported scene class, or the named one), and only those when no other name is given'),
+    },
     async run(a) {
       const p = await openProject(projectOf(a));
       // --board: scene files under the project folder that video.json does not name (as `pve board`), benchmarked as scene.<file name>
       const boards = typeof a.values.board === 'string' ? a.values.board.split(',').flatMap((file) => {
         const [cleanPath, exp] = file.trim().split('#');
-        const abs = path.resolve(p.dir, cleanPath!);
-        const rel = path.relative(ROOT, abs).split(path.sep).join('/');
-        if (rel.startsWith('..') || !existsSync(abs)) throw new UsageError(`${cleanPath}: no such file under ${path.relative(process.cwd(), p.dir)}`);
+        const { abs, rel } = resolveBoardFile(p, cleanPath!);
         if (exp) {
           return [{ src: `/${rel}#${exp}`, id: slug(exp) }];
         }
@@ -641,12 +759,17 @@ const COMMANDS: Record<string, Command> = {
   },
   perf: {
     args: '[clip...]',
-    summary: 'real-time playback: plays the clips (all without names) one frame per animation frame, as the live preview does, with the software 2D canvas of every headless render (--gpu-canvas: the GPU canvas, to compare; --step n: every n-th frame; --from/--to: seconds or bar/expressions; --frames: list every frame; --slow <ms>: list slow frames only); prints the CPU time of each render, the interval between frames, frames that missed a display refresh and the fps reached; --profile adds the functions with the most CPU self time per clip; --draws adds, per frame, the render calls, the draw calls (and those into shadow maps) and the times that three looked the program of a material up again, by cause (lightsStateVersion: the set of lights changed between two renders; instancing: one material drew a mesh and an instanced mesh in turn). The counters cost time: do not read times from a run with --draws',
+    summary: 'real-time playback: plays the clips (all without names) one frame per animation frame, as the live preview does, with the software 2D canvas of every headless render; prints the CPU time of each render, the interval between frames, frames that missed a display refresh and the fps reached',
     options: {
       ...PROJECT_OPT, ...JSON_OPT,
-      from: { type: 'string' }, to: { type: 'string' },
-      step: { type: 'string' }, profile: { type: 'boolean' }, 'gpu-canvas': { type: 'boolean' }, draws: { type: 'boolean' },
-      frames: { type: 'boolean' }, slow: { type: 'string' },
+      from: sOpt('start: seconds or a time expression (bar:12)'),
+      to: sOpt('end: seconds or a time expression'),
+      step: sOpt('play every n-th frame (default 1)'),
+      profile: bOpt('add the functions with the most CPU self time per clip'),
+      'gpu-canvas': bOpt('the GPU 2D canvas of the live preview instead of the software canvas, to compare'),
+      draws: bOpt('add, per frame, the render calls, the draw calls (and those into shadow maps) and the program lookups of three by cause (lightsStateVersion: the set of lights changed between two renders; instancing: one material drew a mesh and an instanced mesh in turn). The counters cost time: do not read times from such a run'),
+      frames: bOpt('list every frame'),
+      slow: sOpt('list only the frames whose CPU time or interval is at least this many ms'),
     },
     async run(a) {
       const p = await openProject(projectOf(a));
@@ -699,15 +822,32 @@ const COMMANDS: Record<string, Command> = {
   },
   render: {
     args: '',
-    summary: 'MP4 of a range (--from/--to: seconds or expressions) or the whole video: lossless segments per clip first (--frames or PVE_FRAMES sets their disk), then one encode on the GPU (--encoder x264 for the CPU); writes frames.jsonl and a render record',
+    summary: 'MP4 of a range or the whole video: lossless segments per clip first, then one encode (NVENC on the GPU by default); writes frames.jsonl and a render record (bench/results.jsonl)',
     options: {
       ...PROJECT_OPT, ...SAMPLE_OPT,
-      from: { type: 'string' }, to: { type: 'string' }, name: { type: 'string' }, clips: { type: 'string' }, resume: { type: 'boolean' },
-      'no-encode': { type: 'boolean' }, 'encode-only': { type: 'boolean' }, frames: { type: 'string' }, fps: { type: 'string' },
-      'segment-codec': { type: 'string' }, webcodecs: { type: 'boolean' },
-      encoder: { type: 'string' }, quality: { type: 'string' }, preset: { type: 'string' }, x264: { type: 'string' }, workers: { type: 'string' }, chunk: { type: 'string' },
-      'mem-gb': { type: 'string' }, noaudio: { type: 'boolean' }, out: { type: 'string' }, headed: { type: 'boolean' },
-      'progress-json': { type: 'boolean' }, 'first-frame': { type: 'string' },
+      from: sOpt('start: seconds or a time expression (default 0)'),
+      to: sOpt('end: seconds or a time expression (default the end of the song)'),
+      name: sOpt('render folder out/render/<name>/ (default <from>_<to> for a range, else full, 4k at --scale 2, or <height>p)'),
+      clips: sOpt('render the segments of these clips (comma-separated) of the render --name again, then encode'),
+      resume: bOpt('render the segments of the render --name that are not complete, then encode'),
+      'no-encode': bOpt('render the segments only, no MP4'),
+      'encode-only': bOpt('render nothing: encode the segments of the render --name'),
+      frames: sOpt('root folder of the segments (default PVE_FRAMES, else out/render/<name>/frames): the segments go to <root>/<project>/<name>'),
+      fps: sOpt('frames per second (default video.json)'),
+      'segment-codec': sOpt('codec of the lossless segments: ffv1 (default), x264 or nvenc'),
+      webcodecs: bOpt('the pages encode H.264 with WebCodecs: the segments and the MP4 copy that stream (no lossless segments, no second encode)'),
+      encoder: sOpt('nvenc (H.264 on the GPU, default) or x264 (on the CPU, about 3 times slower)'),
+      quality: sOpt('constant quality: NVENC -cq, x264 -crf (default 16)'),
+      preset: sOpt('x264 preset (default slow)'),
+      x264: sOpt('x264 parameters (default aq-mode=3)'),
+      workers: sOpt('Chrome pages that render at the same time (default 2)'),
+      chunk: sOpt('frames that a page renders per request (default 8)'),
+      'mem-gb': sOpt('GB of finished frames that may wait for the segment writer before the pages pause (default 1)'),
+      noaudio: bOpt('no audio track (default: the song mix, AAC)'),
+      out: sOpt('MP4 file (default out/render/<name>/<project>-<name>.mp4)'),
+      headed: bOpt('show the Chrome windows'),
+      'progress-json': bOpt('print PROGRESS: <json> lines (frames, fps, eta, clips) for a UI'),
+      'first-frame': sOpt('after the encode, replace frame 0 of the MP4 with this image (thumbnail, as pve first-frame)'),
     },
     async run(a) {
       const p = await openProject(projectOf(a));
@@ -715,7 +855,7 @@ const COMMANDS: Record<string, Command> = {
       const o = sampling(a, '1');
       const ranged = a.values.from !== undefined || a.values.to !== undefined;
       const fromExpr = str(a, 'from', '0'), toExpr = str(a, 'to', 'end');
-      const defaultName = ranged ? `${fromExpr}_${toExpr}` : (o.scale === 2 ? '4k' : (o.scale > 1 ? `${Math.round(o.scale * 1080)}p` : 'full'));
+      const defaultName = ranged ? `${fromExpr}_${toExpr}` : renderName(o.scale);
       const name = slug(str(a, 'name', defaultName));
       const dir = path.join(p.dir, 'out/render', name);
       const redo = typeof a.values.clips === 'string' ? a.values.clips.split(',').map((s) => s.trim()).filter(Boolean) : undefined;
@@ -776,8 +916,13 @@ const COMMANDS: Record<string, Command> = {
   },
   'first-frame': {
     args: '<video> <image>',
-    summary: 'replace the first frame of a video with an image (thumbnail for video platforms), copying audio untouched and re-encoding video with NVENC (--encoder nvenc|x264; --out file; --crf 16 (x264: 14); --preset p7 (x264: slow))',
-    options: { out: { type: 'string', short: 'o' }, encoder: { type: 'string' }, crf: { type: 'string' }, preset: { type: 'string' } },
+    summary: 'replace the first frame of a video with an image (thumbnail for video platforms): the audio is copied, the video encoded again',
+    options: {
+      out: { type: 'string', short: 'o', desc: 'output file (default: next to the video)' },
+      encoder: sOpt('nvenc (default) or x264'),
+      crf: sOpt('constant quality: NVENC -cq (default 16), x264 -crf (default 14)'),
+      preset: sOpt('NVENC p1..p7 (default p7), x264 preset (default slow)'),
+    },
     async run(a) {
       if (a.positionals.length !== 2) throw new UsageError('first-frame takes <video> <image>');
       const [video, image] = a.positionals as [string, string];
@@ -798,7 +943,7 @@ const COMMANDS: Record<string, Command> = {
   notes: {
     args: '[<filter> | resolve <id>]',
     summary: 'the open director notes (from video/notes.json and video/notes/*.md) with time, bar.beat, clip and position; <filter> filters by note id or text; resolve marks a JSON note done',
-    options: { ...PROJECT_OPT, ...JSON_OPT, all: { type: 'boolean' } },
+    options: { ...PROJECT_OPT, ...JSON_OPT, all: bOpt('also the resolved notes') },
     async run(a) {
       const [sub, id, ...rest] = a.positionals;
       if (sub === 'resolve') {
@@ -821,8 +966,8 @@ const COMMANDS: Record<string, Command> = {
   },
   gate: {
     args: '',
-    summary: 'every pre-commit check at once: tsc of each project of `bun run typecheck`, pve check, bun test, and the golden stills when the work tree changes the engine or pdoom_original. Stops at the first failure and prints its first lines (--keep-going; --quick skips test & golden; --only typecheck,check; --golden auto|always|never; --skip ...)',
-    options: { ...PROJECT_OPT, ...JSON_OPT, golden: { type: 'string' }, skip: { type: 'string' }, only: { type: 'string' }, quick: { type: 'boolean' }, 'keep-going': { type: 'boolean' } },
+    summary: 'every pre-commit check at once: tsc of each project of `bun run typecheck`, pve check, bun test, and the golden stills when the work tree changes the engine or pdoom_original. Stops at the first failure and prints its first lines',
+    options: { ...PROJECT_OPT, ...JSON_OPT, ...GATE_OPT, 'keep-going': bOpt('run every step to its end after a failure') },
     async run(a) {
       const ref = findProject(projectOf(a));
       const report = await runGate(ref, gateOptions(a), porcelain());
@@ -833,8 +978,15 @@ const COMMANDS: Record<string, Command> = {
   },
   commit: {
     args: '-m "<summary>"',
-    summary: 'run the gate, then commit projects/<id>/ and the --paths (comma-separated) and nothing else, with a Ran: list of the steps that passed (--dry: print the files without committing; --no-gate skips the gate; --push pushes to origin after commit). Run it only when the human asks for a commit',
-    options: { ...PROJECT_OPT, message: { type: 'string', short: 'm' }, paths: { type: 'string' }, dry: { type: 'boolean' }, 'no-gate': { type: 'boolean' }, golden: { type: 'string' }, skip: { type: 'string' }, only: { type: 'string' }, quick: { type: 'boolean' }, push: { type: 'boolean' } },
+    summary: 'run the gate, then commit projects/<id>/ and the --paths and nothing else, with a Ran: list of the steps that passed. Run it only when the human asks for a commit',
+    options: {
+      ...PROJECT_OPT, ...GATE_OPT,
+      message: { type: 'string', short: 'm', desc: 'the summary line of the commit (required)' },
+      paths: sOpt('more paths to commit, comma-separated'),
+      dry: bOpt('print the files, commit nothing'),
+      'no-gate': bOpt('skip the gate'),
+      push: bOpt('push to origin after the commit'),
+    },
     async run(a) {
       const summary = typeof a.values.message === 'string' ? a.values.message.trim() : '';
       if (!summary) throw new UsageError('commit needs -m "<summary>"');
@@ -883,7 +1035,8 @@ const COMMANDS: Record<string, Command> = {
   },
   job: {
     args: '<command> [args] [--wait]',
-    summary: `start a pve command in the background and return at once: prints the job id, the pid and the log (out/jobs/<id>.log). With --wait: blocks until the job ends, prints the log and exits with the job's exit code. Use it for each command that can take longer than about a minute (look, render, bench, perf, gate)`,
+    summary: `start a pve command in the background and return at once: prints the job id, the pid and the log (out/jobs/<id>.log). Use it for each command that can take longer than about a minute (look, render, bench, perf, gate)`,
+    options: { wait: bOpt(`block until the job ends (at most ${MAX_WAIT_S} s), print the log and exit with the job's exit code`) },
     raw: true,
     async run(a) {
       let wait = false;
@@ -898,27 +1051,13 @@ const COMMANDS: Record<string, Command> = {
         console.log(`job ${job.id}  pid ${job.pid}  log ${path.relative(process.cwd(), logPath(job.id))}`);
         return EXIT.ok;
       }
-      const r = await waitJob(job, MAX_WAIT_S);
-      const secs = ((Date.now() - r.job.start) / 1000).toFixed(1);
-      const lines = r.log.trimEnd().split('\n');
-      if (r.code === undefined && !r.lost) {
-        console.log(lines.slice(-15).join('\n'));
-        console.log(`job ${r.job.id}: still running after ${secs} s (pid ${r.job.pid})`);
-        return EXIT.running;
-      }
-      console.log(lines.join('\n'));
-      if (r.lost) {
-        console.log(`job ${r.job.id}: the process ended without an exit code (killed or crashed) after ${secs} s`);
-        return EXIT.error;
-      }
-      console.log(`job ${r.job.id}: exit ${r.code} after ${secs} s`);
-      return r.code!;
+      return reportJob(await waitJob(job, MAX_WAIT_S), 15);
     },
   },
   diff: {
     args: '<imageA.png> <imageB.png>',
-    summary: 'compare two PNG files: prints mean channel diff, max diff, differing pixels and their box (x0,y0-x1,y1). --tol n (default 0): exit 0 when mean diff <= tol, else exit 1',
-    options: { tol: { type: 'string' } },
+    summary: 'compare two PNG files: prints mean channel diff, max diff, differing pixels and their box (x0,y0-x1,y1). Exit 0 when the mean diff is at most --tol, else exit 1',
+    options: { tol: sOpt('largest mean channel diff that passes (default 0)') },
     async run(a) {
       if (a.positionals.length !== 2) throw new UsageError('diff takes <imageA.png> <imageB.png>');
       const [pA, pB] = a.positionals as [string, string];
@@ -926,17 +1065,15 @@ const COMMANDS: Record<string, Command> = {
       if (!existsSync(pB)) throw new UsageError(`file not found: ${pB}`);
       const imA = decodePng(readFileSync(pA));
       const imB = decodePng(readFileSync(pB));
-      const d = diffImages(imA, imB);
-      const tol = num(a, 'tol', 0);
-      const ok = d.meanDiff <= tol;
-      console.log(`diff: mean ${d.meanDiff.toFixed(4)} (tol ${tol})  max ${d.maxDiff}  differing ${d.pixels} px${d.box ? `  box ${d.box[0]},${d.box[1]}-${d.box[2]},${d.box[3]}` : ''}${ok ? '  ok' : '  FAIL'}`);
+      const { ok, line } = diffLine(imA, imB, num(a, 'tol', 0));
+      console.log(`diff: ${line}`);
       return ok ? EXIT.ok : EXIT.error;
     },
   },
   seam: {
     args: '',
-    summary: 'render the first frame (t = 0) and the last frame (t = duration - 1/fps) and compare them (loop seam check). --tol n (default 0.28): exit 0 when mean diff <= tol, else exit 1',
-    options: { ...PROJECT_OPT, ...SAMPLE_OPT, tol: { type: 'string' } },
+    summary: 'render the first frame (t = 0) and the last frame (t = duration - 1/fps) and compare them (loop seam check). Exit 0 when the mean diff is at most --tol, else exit 1',
+    options: { ...PROJECT_OPT, ...SAMPLE_OPT, tol: sOpt('largest mean channel diff that passes (default 0.28; with --samples auto also the sampling tolerance)') },
     async run(a) {
       const p = await openProject(projectOf(a));
       const o = { ...sampling(a, '1'), fps: p.resolved.fps };
@@ -944,23 +1081,36 @@ const COMMANDS: Record<string, Command> = {
       const t0 = 0;
       const tLast = d - 1 / p.resolved.fps;
       const dir = path.join(p.dir, 'out/stills');
-      const f0 = path.join(dir, `still_${fmtTime(t0).replace(/[:.]/g, '-')}.png`);
-      const fLast = path.join(dir, `still_${fmtTime(tLast).replace(/[:.]/g, '-')}.png`);
+      const f0 = stillFile(dir, t0);
+      const fLast = stillFile(dir, tLast);
       const items = [{ t: t0, file: f0 }, { t: tLast, file: fLast }];
       await withPage(servedId(p), { scale: o.scale, only: onlyOf(p, [t0, tLast]) }, (page) => stills(page, items, o));
-      const imA = decodePng(readFileSync(f0));
-      const imB = decodePng(readFileSync(fLast));
-      const res = diffImages(imA, imB);
-      const tol = num(a, 'tol', 0.28);
-      const ok = res.meanDiff <= tol;
-      console.log(`seam ${p.id}: mean diff ${res.meanDiff.toFixed(4)} (tol ${tol})  max diff ${res.maxDiff}  differing ${res.pixels} px${ok ? '  ok' : '  FAIL'}`);
+      const { ok, line } = diffLine(decodePng(readFileSync(f0)), decodePng(readFileSync(fLast)), num(a, 'tol', 0.28));
+      console.log(`seam ${p.id}: ${line}`);
       return ok ? EXIT.ok : EXIT.error;
     },
   },
   order: {
     args: '<target> [time|from..to...]',
-    summary: 'find the frame that leaves state behind: render the target on a new page (the reference), then again after other frames, and compare (a frame must be a pure function of its time). The page loads only the clips of these frames. Default: one page, each time then the target. --fresh: a new page for each time. --chain: a new page, all the times in order, then the target (--repeat n: n times, each on a new page). --bisect: as --chain, then drop times while the target still differs (prints a short list that is enough). --seed n [--n 400]: the times are the frames before the target in the shuffled order of scripts/determinism.ts (use with --chain or --bisect; --last k keeps the last k). --precision float: 32-bit HDR targets (default half, 16-bit): a fault that shows at half only is the blend rounding of the GPU, not an order fault (docs/ENGINE.md). --draws: when the target differs, compare its draw calls with the reference (what three drew, in which order, and the calls whose inputs differ: matrices, vertex and instance data, uniforms, data textures, GL state). --outputs: also read the picture back after each draw and name the first draw whose picture differs (slow; a readback can hide a rounding fault). --watch <call>: read back after that draw only; on one page it lists the texels that differ and compares what the GPU holds (uniforms, vertex buffers, shader source). --between <js>: run code on the page before the target (`e` is the engine) to test a guess, such as e.renderer.resetState(). --culprit --good <time>: with one bad time, leave draw calls of the bad frame out until the target is right, and print the calls that are enough. --png <dir>: write ref.png, and got-NN.png + mask-NN.png (white: differs) for each trial that differs. Exit 1 when a trial differs',
-    options: { ...PROJECT_OPT, ...JSON_OPT, fresh: { type: 'boolean' }, chain: { type: 'boolean' }, bisect: { type: 'boolean' }, draws: { type: 'boolean' }, outputs: { type: 'boolean' }, culprit: { type: 'boolean' }, good: { type: 'string' }, precision: { type: 'string' }, watch: { type: 'string' }, between: { type: 'string' }, repeat: { type: 'string' }, seed: { type: 'string' }, n: { type: 'string' }, last: { type: 'string' }, step: { type: 'string' }, png: { type: 'string' } },
+    summary: 'find the frame that leaves state behind: render the target on a new page (the reference), then again after other frames, and compare (a frame must be a pure function of its time). The page loads only the clips of these frames. Default: one page, each time then the target. Exit 1 when a trial differs',
+    options: {
+      ...PROJECT_OPT, ...JSON_OPT, ...PRECISION_OPT,
+      fresh: bOpt('a new page for each time: the time, then the target'),
+      chain: bOpt('a new page: all the times in order, then the target'),
+      repeat: sOpt('with --chain: n trials, each on a new page (default 1)'),
+      bisect: bOpt('as --chain, then drop times while the target still differs (prints a short list that is enough)'),
+      seed: sOpt('add the frames before the target in the shuffled order of pve determinism with this seed (use with --chain or --bisect)'),
+      n: sOpt('with --seed: the number of times of the determinism run (default 400)'),
+      last: sOpt('keep only the last k times'),
+      step: sOpt('seconds between the times of a range (default 1)'),
+      draws: bOpt('when the target differs, compare its draw calls with the reference (what three drew, in which order, and the calls whose inputs differ: matrices, vertex and instance data, uniforms, data textures, GL state)'),
+      outputs: bOpt('with --draws: also read the picture back after each draw and name the first draw whose picture differs (slow; a readback can hide a rounding fault)'),
+      watch: sOpt('with --draws: read back after this draw call only; on one page it lists the texels that differ and compares what the GPU holds (uniforms, vertex buffers, shader source)'),
+      between: sOpt('JavaScript to run on the page before the target (`e` is the engine), to test a guess such as e.renderer.resetState()'),
+      culprit: bOpt('with <target> <bad time> --good <time>: leave draw calls of the bad frame out until the target is right, and print the calls that are enough'),
+      good: sOpt('with --culprit: a frame of the same clip that makes the target right again'),
+      png: sOpt('folder: write ref.png, and got-NN.png + mask-NN.png (white: differs) for each trial that differs'),
+    },
     async run(a) {
       const p = await openProject(projectOf(a));
       if (a.positionals.length < 1) throw new UsageError('order takes <target> [time|from..to...]');
@@ -976,8 +1126,7 @@ const COMMANDS: Record<string, Command> = {
       if (after.length === 0) throw new UsageError('order needs the times to render before the target (or --seed)');
       const mode = a.values.bisect ? 'bisect' : a.values.chain ? 'chain' : a.values.fresh ? 'fresh' : 'each';
       const only = [...new Set([target, ...after].map((t) => clipAt(p, t)?.id).filter((id) => id !== undefined))].join(',');
-      const precision = typeof a.values.precision === 'string' ? a.values.precision : 'half';
-      if (precision !== 'half' && precision !== 'float') throw new UsageError('--precision takes half or float');
+      const precision = hdrOf(a);
       if (a.values.culprit) {
         // the subtractive search: leave draw calls of the bad frame out until the target is right
         if (after.length !== 1 || typeof a.values.good !== 'string') throw new UsageError('--culprit takes <target> <bad time> --good <time>: the frame that makes the target wrong, and a frame of the same clip that makes it right again');
@@ -1000,27 +1149,51 @@ const COMMANDS: Record<string, Command> = {
   },
   wait: {
     args: '[id]',
-    summary: `block until a job ends (default: the newest job), then print its log and exit with its exit code. It returns on the poll tick after the command ends. --timeout s (default and maximum ${MAX_WAIT_S}): when the job still runs, print the last lines of the log and exit 3. Wait again, or stop it with taskkill /PID <pid> /T /F`,
-    options: { timeout: { type: 'string' }, tail: { type: 'string' } },
+    summary: 'block until a job ends (default: the newest job), then print its log and exit with its exit code. It returns on the poll tick after the command ends. When the job still runs at the timeout: print the last lines of the log and exit 3. Wait again, or stop it with taskkill /PID <pid> /T /F',
+    options: {
+      timeout: sOpt(`seconds to wait (default and maximum ${MAX_WAIT_S})`),
+      tail: sOpt('log lines to print when the job still runs (default 15)'),
+    },
     async run(a) {
       if (a.positionals.length > 1) throw new UsageError('wait takes at most one job id');
       const timeout = num(a, 'timeout', MAX_WAIT_S);
       if (!(timeout > 0)) throw new UsageError('--timeout takes a positive number of seconds');
-      const r = await waitJob(findJob(a.positionals[0]), timeout);
-      const secs = ((Date.now() - r.job.start) / 1000).toFixed(1);
-      const lines = r.log.trimEnd().split('\n');
-      if (r.code === undefined && !r.lost) {
-        console.log(lines.slice(-num(a, 'tail', 15)).join('\n'));
-        console.log(`job ${r.job.id}: still running after ${secs} s (pid ${r.job.pid})`);
-        return EXIT.running;
-      }
-      console.log(lines.join('\n'));
-      if (r.lost) {
-        console.log(`job ${r.job.id}: the process ended without an exit code (killed or crashed) after ${secs} s`);
-        return EXIT.error;
-      }
-      console.log(`job ${r.job.id}: exit ${r.code} after ${secs} s`);
-      return r.code!;
+      return reportJob(await waitJob(findJob(a.positionals[0]), timeout), num(a, 'tail', 15));
+    },
+  },
+  golden: {
+    args: '',
+    summary: `compare one still of ${GOLDEN_PROJECT} per timeline entry (at its middle, scale 1, 1 sample) with tests/golden/<id>.png. Pass: max diff 0. A still that differs by 1 level in at most 2 pixels renders once more, and that render must have max diff 0. Exit 1 on a failure`,
+    options: { capture: bOpt('write tests/golden/<id>.png instead of comparing') },
+    async run(a) {
+      if (a.positionals.length) throw new UsageError('golden takes no arguments');
+      return (await runGolden(a.values.capture === true)) ? EXIT.ok : EXIT.error;
+    },
+  },
+  determinism: {
+    args: '',
+    summary: 'seek determinism: render seeded random times in time order, then shuffled, and compare the pixels of each time. A difference at 32-bit HDR precision is an order fault and fails. A difference at 16 bits only is the blend rounding of the GPU: reported, and the check passes (docs/ENGINE.md). Find the cause with pve order --seed',
+    options: {
+      project: { type: 'string', short: 'p', desc: 'project id (default pdoom_original)' },
+      n: sOpt('number of times (default 100)'),
+      seed: sOpt('seed of the times and of the shuffle (default 1337)'),
+      precision: sOpt('both (32 bits, then 16 bits; default), float (32 bits only) or half (16 bits only: a difference fails)'),
+    },
+    async run(a) {
+      if (a.positionals.length) throw new UsageError('determinism takes no arguments');
+      const precision = str(a, 'precision', 'both');
+      if (precision !== 'both' && precision !== 'float' && precision !== 'half') throw new UsageError('--precision takes both, float or half');
+      const ok = await runDeterminism({ project: str(a, 'project', 'pdoom_original'), n: num(a, 'n', 100), seed: num(a, 'seed', 1337), precision });
+      return ok ? EXIT.ok : EXIT.error;
+    },
+  },
+  'verify-export': {
+    args: '',
+    summary: 'check a full render: it decodes with no stream errors, its duration is the song duration (within 0.05 s), the video is H.264 at the size and fps of video.json, the audio is AAC with 2 channels at the sample rate of the mix',
+    options: { ...PROJECT_OPT, input: sOpt('MP4 file (default <project>/out/render/full/<id>-full.mp4, the render with no range)') },
+    async run(a) {
+      if (a.positionals.length) throw new UsageError('verify-export takes no arguments');
+      return verifyExport(await openProject(projectOf(a)), typeof a.values.input === 'string' ? a.values.input : undefined) ? EXIT.ok : EXIT.error;
     },
   },
 };
@@ -1028,7 +1201,7 @@ const COMMANDS: Record<string, Command> = {
 function usage(): string {
   const w = Math.max(...Object.entries(COMMANDS).map(([n, c]) => `${n} ${c.args}`.length));
   const lines = Object.entries(COMMANDS).map(([n, c]) => `  ${`${n} ${c.args}`.padEnd(w)}  ${c.summary}`);
-  return `usage: pve <command> [args] [--project <id|path>] [--json]\n\ncommands:\n${lines.join('\n')}`;
+  return `usage: pve <command> [args] [options]\nMost commands take --project <id|path> (-p). pve help <command> (or --help) lists the options of a command.\n\ncommands:\n${lines.join('\n')}`;
 }
 function commandHelp(name: string, cmd: Command): string {
   const lines = [
@@ -1036,17 +1209,12 @@ function commandHelp(name: string, cmd: Command): string {
     '',
     `usage: pve ${name}${cmd.args ? ` ${cmd.args}` : ''}`,
   ];
-  if (cmd.options && Object.keys(cmd.options).length > 0) {
+  const opts = Object.entries(cmd.options ?? {});
+  if (opts.length) {
     lines.push('', 'options:');
-    const opts = Object.entries(cmd.options);
-    const w = Math.max(...opts.map(([k, opt]) => {
-      const s = opt.short ? `-${opt.short}, ` : '';
-      return `${s}--${k}${opt.type === 'string' ? ' <val>' : ''}`.length;
-    }));
-    for (const [k, opt] of opts) {
-      const flag = `${opt.short ? `-${opt.short}, ` : '    '}--${k}${opt.type === 'string' ? ' <val>' : ''}`.padEnd(w + 4);
-      lines.push(`  ${flag}`);
-    }
+    const flags = opts.map(([k, opt]) => `${opt.short ? `-${opt.short}, ` : '    '}--${k}${opt.type === 'string' ? ' <val>' : ''}`);
+    const w = Math.max(...flags.map((f) => f.length));
+    opts.forEach(([, opt], i) => lines.push(`  ${flags[i]!.padEnd(w)}  ${opt.desc}`));
   }
   return lines.join('\n');
 }
@@ -1077,7 +1245,8 @@ async function main(argv: string[]): Promise<number> {
   }
   let args: Args;
   try {
-    const options: ParseArgsOptionsConfig = { ...cmd.options, help: { type: 'boolean', short: 'h' } };
+    const options: ParseArgsOptionsConfig = { help: { type: 'boolean', short: 'h' } };
+    for (const [k, opt] of Object.entries(cmd.options ?? {})) options[k] = opt.short ? { type: opt.type, short: opt.short } : { type: opt.type };
     args = cmd.raw ? { positionals: rest, values: {} } : parseArgs({ args: rest, options, allowPositionals: true, strict: true });
     if (args.values.help) {
       console.log(commandHelp(name, cmd));

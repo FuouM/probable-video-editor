@@ -1,5 +1,5 @@
-// The browser session of every command that renders (still, look, bench, render) and of the root check
-// scripts (golden, determinism): the Vite dev server and one headless Chrome on the app's export mode
+// The browser session of every command that renders (still, look, bench, render, order, golden,
+// determinism): the Vite dev server and headless Chrome pages on the app's export mode
 // (?export=1&project=<id>, window.__pve).
 // Chrome runs with a persistent profile (its GPU shader cache keeps compiled shaders between runs). Two
 // Chromes cannot share a profile, so a lock file guards each one. A command takes the first free profile of a
@@ -275,21 +275,57 @@ export async function closeBrowser(browser: BrowserContext): Promise<void> {
   await deadline(browser.close(), 10_000, 'closing Chrome').catch(() => {});
 }
 
-/** Runs `fn` with a page of `project`: starts the server if needed, closes everything after. Fails on browser errors. */
-export async function withPage<T>(project: string, o: OpenOptions & { url?: string }, fn: (page: Page, logs: string[]) => Promise<T>): Promise<T> {
+/** The pages of one `withPages` run. Closing a page prints its log first. */
+export interface Pages {
+  /** Opens a page of the project (the options of `withPages`, then these). */
+  open(o?: OpenOptions): Promise<OpenPage>;
+  /** Prints the log of the page, then closes it. */
+  close(p: OpenPage): Promise<void>;
+  /** Closes every open page. */
+  closeAll(): Promise<void>;
+  /** Closes every open page, then throws when a page logged an error (`assertNoBrowserErrors`). */
+  check(): Promise<void>;
+}
+
+/**
+ * Runs `fn` with pages of `project`: starts the server if needed, closes every page (log first) and the server after.
+ * Fails on browser errors of any page.
+ */
+export async function withPages<T>(project: string, o: OpenOptions & { url?: string }, fn: (pages: Pages) => Promise<T>): Promise<T> {
   const { url, stop } = await ensureServer(o.url);
+  const open = new Set<OpenPage>();
+  const logs: string[] = [];
+  const pages: Pages = {
+    async open(more = {}) {
+      const p = await openPage(url, project, { ...o, ...more });
+      open.add(p);
+      return p;
+    },
+    async close(p) {
+      if (!open.delete(p)) return;
+      if (p.logs.length) console.error('BROWSER LOG:\n' + p.logs.slice(0, 40).join('\n'));
+      logs.push(...p.logs);
+      await closeBrowser(p.browser);
+    },
+    async closeAll() {
+      for (const p of [...open]) await pages.close(p);
+    },
+    async check() {
+      await pages.closeAll();
+      assertNoBrowserErrors(logs);
+    },
+  };
   try {
-    const { browser, page, logs } = await openPage(url, project, o);
-    let result: T;
-    try {
-      result = await fn(page, logs);
-    } finally {
-      if (logs.length) console.error('BROWSER LOG:\n' + logs.slice(0, 40).join('\n'));
-      await closeBrowser(browser);
-    }
-    assertNoBrowserErrors(logs);
+    const result = await fn(pages);
+    await pages.check();
     return result;
   } finally {
+    await pages.closeAll();
     stop();
   }
+}
+
+/** Runs `fn` with one page of `project` (see `withPages`). */
+export function withPage<T>(project: string, o: OpenOptions & { url?: string }, fn: (page: Page) => Promise<T>): Promise<T> {
+  return withPages(project, o, async (pages) => fn((await pages.open()).page));
 }

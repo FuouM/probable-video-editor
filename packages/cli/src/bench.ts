@@ -6,7 +6,7 @@
 import path from 'node:path';
 import type { BenchOptions, BenchRecord } from '@pve/engine/bench/types';
 import { addBoard, BOARD_T0 } from './board';
-import { assertNoBrowserErrors, chromeVersion, ensureServer, openPage, type PveWindow } from './browser';
+import { chromeVersion, withPages, type PveWindow } from './browser';
 import { table } from './out';
 import { appendRecords, compare, formatCompare, gitState, machine, RESULTS } from './records';
 
@@ -44,47 +44,38 @@ export async function runBench(a: BenchArgs): Promise<BenchRun> {
   const { commit, dirty } = gitState();
   const out = a.out ?? RESULTS;
 
-  const { url, stop } = await ensureServer();
-  try {
-    const { browser, page, logs } = await openPage(url, a.project, { scale: a.scale ?? 1, only });
-    try {
-      // boards: scene files that video.json does not name, each a one-second clip 10 s after the one before
-      for (const [i, b] of boards.entries()) await addBoard(page, b.src, b.id, BOARD_T0 + 10 * i);
-      const chrome = chromeVersion(browser);
-      const res = await page.evaluate((o) => (window as unknown as PveWindow).__pve!.bench(o), opts);
-      if (logs.length) console.error('BROWSER LOG:\n' + logs.join('\n'));
-      // a scene with a broken shader measures nothing: no records
-      assertNoBrowserErrors(logs);
-      if (!res.results.length) throw new Error(`no benchmark matches ${a.names.join(', ') || '(all)'}`);
-      const ts = new Date().toISOString();
-      const records: BenchRecord[] = res.results.map((r) => ({ ...r, ts, commit, dirty, machine: machine(res.gpu, chrome), project: a.project, scale: res.scale }));
+  // withPages prints the browser log and fails on a page error before any record is made (a broken shader measures nothing)
+  const { res, chrome } = await withPages(a.project, { scale: a.scale ?? 1, only }, async (pages) => {
+    const { browser, page } = await pages.open();
+    // boards: scene files that video.json does not name, each a one-second clip 10 s after the one before
+    for (const [i, b] of boards.entries()) await addBoard(page, b.src, b.id, BOARD_T0 + 10 * i);
+    const chrome = chromeVersion(browser);
+    return { chrome, res: await page.evaluate((o) => (window as unknown as PveWindow).__pve!.bench(o), opts) };
+  });
+  if (!res.results.length) throw new Error(`no benchmark matches ${a.names.join(', ') || '(all)'}`);
+  const ts = new Date().toISOString();
+  const records: BenchRecord[] = res.results.map((r) => ({ ...r, ts, commit, dirty, machine: machine(res.gpu, chrome), project: a.project, scale: res.scale }));
 
-      console.log(`${res.gpu} | chrome ${chrome} | ${res.method} | scale ${res.scale} | ${a.project}`);
-      console.log(table(
-        records.map((r) => [r.id, r.method, String(r.n), r.medianMs.toFixed(3), r.p90Ms.toFixed(3), r.wallMedianMs.toFixed(3), r.compileMs.toFixed(3)]),
-        ['id', 'method', 'n', 'median', 'p90', 'wall med', 'compile'],
-      ));
-      const scenes = records.filter((r) => r.kind === 'scene');
-      if (scenes.length && res.scale === 1) {
-        console.log(`\nbudget: median scene cost under ${BUDGET_MS.toFixed(1)} ms (60 fps preview)`);
-        console.log(table(scenes.map((r) => [r.id, `${r.medianMs.toFixed(2)} ms`, `${((100 * r.medianMs) / BUDGET_MS).toFixed(0)} %`, r.medianMs > BUDGET_MS ? 'OVER BUDGET' : 'ok'])));
-      }
-      let marks = 0;
-      if (a.compareRef) {
-        const c = compare(a.compareRef, records);
-        marks = c.rows.filter((r) => r.mark).length;
-        console.log(`\n${formatCompare(a.compareRef, c)}`);
-      }
-      if (a.dry) console.log('dry run: nothing written');
-      else {
-        appendRecords(records, out);
-        console.log(`appended ${records.length} lines to ${path.relative(process.cwd(), out)}`);
-      }
-      return { records, marks };
-    } finally {
-      await browser.close();
-    }
-  } finally {
-    stop();
+  console.log(`${res.gpu} | chrome ${chrome} | ${res.method} | scale ${res.scale} | ${a.project}`);
+  console.log(table(
+    records.map((r) => [r.id, r.method, String(r.n), r.medianMs.toFixed(3), r.p90Ms.toFixed(3), r.wallMedianMs.toFixed(3), r.compileMs.toFixed(3)]),
+    ['id', 'method', 'n', 'median', 'p90', 'wall med', 'compile'],
+  ));
+  const scenes = records.filter((r) => r.kind === 'scene');
+  if (scenes.length && res.scale === 1) {
+    console.log(`\nbudget: median scene cost under ${BUDGET_MS.toFixed(1)} ms (60 fps preview)`);
+    console.log(table(scenes.map((r) => [r.id, `${r.medianMs.toFixed(2)} ms`, `${((100 * r.medianMs) / BUDGET_MS).toFixed(0)} %`, r.medianMs > BUDGET_MS ? 'OVER BUDGET' : 'ok'])));
   }
+  let marks = 0;
+  if (a.compareRef) {
+    const c = compare(a.compareRef, records);
+    marks = c.rows.filter((r) => r.mark).length;
+    console.log(`\n${formatCompare(a.compareRef, c)}`);
+  }
+  if (a.dry) console.log('dry run: nothing written');
+  else {
+    appendRecords(records, out);
+    console.log(`appended ${records.length} lines to ${path.relative(process.cwd(), out)}`);
+  }
+  return { records, marks };
 }

@@ -5,10 +5,11 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { lintVideo, OFF_BEAT_TOLERANCE_SEC, type Features } from '@pve/core';
+import { VIDEO_FILE } from '@pve/core/projects';
 import { assetsError, MANIFEST_FILE, readManifest, verifyAssets } from './assets';
 import { CliError, fmtBarBeat, fmtTime, type Problem } from './out';
 import { readNotes } from './notes';
-import { loadProject, SCENES_DIR, VIDEO_FILE, type Project, type ProjectRef } from './project';
+import { loadProject, SCENES_DIR, type Project, type ProjectRef } from './project';
 import { KIT_FILE, kitStale } from './kit';
 
 export interface CheckReport {

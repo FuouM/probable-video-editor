@@ -1,5 +1,5 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": { "types": ["bun"], "customConditions": ["bun"] },
-  "include": ["scripts", "tests", "projects/*/video/*.ts"]
+  "include": ["tests", "projects/*/video/*.ts"]
 }

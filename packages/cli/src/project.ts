@@ -8,7 +8,6 @@ import { LYRIC_MAP_FILE, loadSong, type Song } from '@pve/core/load';
 import { listProjects, PROJECTS, VIDEO_FILE } from '@pve/core/projects';
 import { CliError, type Problem } from './out';
 
-export { PROJECTS, VIDEO_FILE };
 /** A song folder that Lyric-Sync finished has this file. The locator commands work on it without an edit. */
 export const SONG_FILE = 'user_input/lyrics.calibrated.json';
 export const SCENES_DIR = 'video/scenes';

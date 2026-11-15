@@ -4,21 +4,8 @@
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
 import type { Page } from 'playwright-core';
-import { mulberry32 } from '@pve/engine/util';
-import { closeBrowser, deadline, ensureServer, FRAME_MS, openPage, type PveWindow } from './browser';
+import { deadline, FRAME_MS, withPage, withPages, type PveWindow } from './browser';
 import { decodePng, diffImages, encodePng, type Image } from './png';
-
-/** The times of the determinism check (scripts/determinism.ts): `n` seeded random times in time order, and the same times shuffled. */
-export function seededTimes(seed: number, n: number, duration: number): { times: number[]; shuffled: number[] } {
-  const rand = mulberry32(seed);
-  const times = Array.from({ length: n }, () => Math.round(rand() * duration * 1000) / 1000).sort((a, b) => a - b);
-  const shuffled = [...times];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(rand() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!];
-  }
-  return { times, shuffled };
-}
 
 /** One comparison of the target against the reference. `after`: the frames rendered before the target in this trial. */
 export interface OrderRow {
@@ -271,14 +258,12 @@ function maskOf(a: Image, b: Image): Image {
 }
 
 export async function runOrder(o: OrderOptions): Promise<OrderRow[]> {
-  const { url, stop } = await ensureServer();
-  const rows: OrderRow[] = [];
-  let n = 0;
-  try {
-    const open = () => openPage(url, o.project, { only: o.only, hdr: o.hdr });
+  return withPages(o.project, { only: o.only, hdr: o.hdr }, async (pages) => {
+    const rows: OrderRow[] = [];
+    let n = 0;
     // the reference: the target as the first frame of a new page
     const t0 = performance.now();
-    let cur = await open();
+    const cur = await pages.open();
     const t1 = performance.now();
     const { hash: refHash, draws: refDraws } = await renderSeq(cur.page, [o.target], o.draws, o.watch, '');
     o.log(`page ready in ${((t1 - t0) / 1000).toFixed(1)} s (clips: ${o.only}), reference frame in ${((performance.now() - t1) / 1000).toFixed(1)} s`);
@@ -305,13 +290,13 @@ export async function runOrder(o: OrderOptions): Promise<OrderRow[]> {
     };
     /** A trial on a new page. */
     const freshTrial = async (seq: number[]): Promise<OrderRow> => {
-      const pg = await open();
-      try { return await trial(pg.page, seq, seq); } finally { await closeBrowser(pg.browser); }
+      const pg = await pages.open();
+      try { return await trial(pg.page, seq, seq); } finally { await pages.close(pg); }
     };
     try {
       if (o.mode === 'each') for (const t of o.after) rows.push(await trial(cur.page, [t], [t]));
     } finally {
-      await closeBrowser(cur.browser);
+      await pages.close(cur);
     }
     if (o.mode === 'fresh') for (const t of o.after) rows.push(await freshTrial([t]));
     if (o.mode === 'chain' || o.mode === 'bisect') {
@@ -338,10 +323,8 @@ export async function runOrder(o: OrderOptions): Promise<OrderRow[]> {
         }
       }
     }
-  } finally {
-    stop();
-  }
-  return rows;
+    return rows;
+  });
 }
 
 /** Renders time `t` on the page, but draws only the calls `from` <= index < `to` (the other calls are left out). Returns what each call is. */
@@ -380,37 +363,29 @@ export interface CulpritOptions {
  * Returns the lines of the report: the smallest run of calls `from`..`to` that is enough to make the target wrong.
  */
 export async function findCulprit(o: CulpritOptions): Promise<string[]> {
-  const { url, stop } = await ensureServer();
-  try {
-    const { browser, page } = await openPage(url, o.project, { only: o.only, hdr: o.hdr });
-    try {
-      const refHash = (await renderSeq(page, [o.target], false, -1, '')).hash;
-      let keys: string[] = [];
-      /** True when the target is wrong after `bad` drawn with the calls from..to only. */
-      const wrong = async (from: number, to: number): Promise<boolean> => {
-        await renderSeq(page, [o.good], false, -1, '');
-        keys = await renderPart(page, o.bad, from, to);
-        const w = (await renderSeq(page, [o.target], false, -1, '')).hash !== refHash;
-        o.log(`  calls ${from}..${to - 1} of ${keys.length}: target ${w ? 'wrong' : 'right'}`);
-        return w;
-      };
-      if (!(await wrong(0, Infinity))) return [`no fault: the target is right after ${o.bad}`];
-      const total = keys.length;
-      if (await wrong(0, 0)) return [`the target is wrong after ${o.bad} with none of its ${total} draw calls: the fault is not in a draw call (look at what the scene does before it draws)`];
-      // the shortest start of the frame that is enough, then the latest first call of it that is still enough
-      let lo = 0, hi = total;
-      while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (await wrong(0, mid)) hi = mid; else lo = mid; }
-      const to = hi;
-      lo = 0; hi = to - 1;
-      while (hi - lo > 0) { const mid = (lo + hi + 1) >> 1; if (await wrong(mid, to)) lo = mid; else hi = mid - 1; }
-      const from = lo;
-      const lines = [`calls ${from}..${to - 1} of the ${total} draw calls of ${o.bad} are enough to make ${o.target} wrong:`];
-      for (let k = from; k < to; k++) if (k < from + 6 || k >= to - 6) lines.push(`  ${k}: ${keys[k]}`);
-      return lines;
-    } finally {
-      await closeBrowser(browser);
-    }
-  } finally {
-    stop();
-  }
+  return withPage(o.project, { only: o.only, hdr: o.hdr }, async (page) => {
+    const refHash = (await renderSeq(page, [o.target], false, -1, '')).hash;
+    let keys: string[] = [];
+    /** True when the target is wrong after `bad` drawn with the calls from..to only. */
+    const wrong = async (from: number, to: number): Promise<boolean> => {
+      await renderSeq(page, [o.good], false, -1, '');
+      keys = await renderPart(page, o.bad, from, to);
+      const w = (await renderSeq(page, [o.target], false, -1, '')).hash !== refHash;
+      o.log(`  calls ${from}..${to - 1} of ${keys.length}: target ${w ? 'wrong' : 'right'}`);
+      return w;
+    };
+    if (!(await wrong(0, Infinity))) return [`no fault: the target is right after ${o.bad}`];
+    const total = keys.length;
+    if (await wrong(0, 0)) return [`the target is wrong after ${o.bad} with none of its ${total} draw calls: the fault is not in a draw call (look at what the scene does before it draws)`];
+    // the shortest start of the frame that is enough, then the latest first call of it that is still enough
+    let lo = 0, hi = total;
+    while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (await wrong(0, mid)) hi = mid; else lo = mid; }
+    const to = hi;
+    lo = 0; hi = to - 1;
+    while (hi - lo > 0) { const mid = (lo + hi + 1) >> 1; if (await wrong(mid, to)) lo = mid; else hi = mid - 1; }
+    const from = lo;
+    const lines = [`calls ${from}..${to - 1} of the ${total} draw calls of ${o.bad} are enough to make ${o.target} wrong:`];
+    for (let k = from; k < to; k++) if (k < from + 6 || k >= to - 6) lines.push(`  ${k}: ${keys[k]}`);
+    return lines;
+  });
 }

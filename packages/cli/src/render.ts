@@ -5,7 +5,8 @@ import path from 'node:path';
 import type { Page } from 'playwright-core';
 import type { AdaptiveSampling } from '@pve/engine/engine';
 import type { BenchRecord } from '@pve/engine/bench/types';
-import { assertNoBrowserErrors, chromeVersion, closeBrowser, deadline, ensureServer, FRAME_MS, gpuInfo, openPage, type OpenOptions, type OpenPage, type PveWindow, type StreamFrame } from './browser';
+import { chromeVersion, deadline, FRAME_MS, gpuInfo, withPages, type PveWindow, type StreamFrame } from './browser';
+import { segmentName } from '@pve/core';
 import { encodePngAsync } from './png';
 
 export type Samples = number | AdaptiveSampling;
@@ -224,7 +225,7 @@ function runs(segs: Segment[]): [number, number][] {
 }
 
 /** The segment file. It gets this name only when its ffmpeg exited without error (it writes `<file>.part` before). */
-export const segmentFile = (framesDir: string, s: Segment) => path.join(framesDir, `${String(s.f0).padStart(6, '0')}-${String(s.f1).padStart(6, '0')}.mkv`);
+export const segmentFile = (framesDir: string, s: Segment) => path.join(framesDir, segmentName(s.f0, s.f1));
 
 export function readManifest(dir: string): RenderManifest {
   const file = path.join(dir, 'render.json');
@@ -463,49 +464,39 @@ async function streamFrames(o: FramesOptions, segs: Segment[], stats: FrameLine[
     cursor = Math.min(rs[ri]![1], a + o.chunk);
     return [a, cursor];
   };
-  const { url, stop } = await ensureServer(o.url);
-  const pages: OpenPage[] = [];
-  const closePages = async () => {
-    for (const p of pages.splice(0)) {
-      if (p.logs.length) console.error('BROWSER LOG:\n' + p.logs.slice(0, 40).join('\n'));
-      await closeBrowser(p.browser);
-    }
-  };
   let ok = false;
   try {
-    const open: OpenOptions = { scale: o.scale, headed: o.headed };
-    const opened = await Promise.allSettled(Array.from({ length: workers }, () => openPage(url, o.project, open)));
-    for (const p of opened) if (p.status === 'fulfilled') pages.push(p.value);
-    for (const p of opened) if (p.status === 'rejected') throw p.reason;
-    const facts = { ...(await gpuInfo(pages[0]!.page)), chrome: chromeVersion(pages[0]!.browser) };
-    const rendering = Promise.all(pages.map(async ({ page }, k) => {
-      for (let r = take(); r && !failure; r = take()) {
-        for (let n = r[0]; n < r[1]; n++) queue[k]!.push(n);
-        const fr = await deadline(page.evaluate((a) => (window as unknown as PveWindow).__pve!.stream(a), {
-          from: r[0] / o.fps, to: r[1] / o.fps, fps: o.fps, ws: `ws://localhost:${server.port}/?w=${k}`, samples: o.samples, shutter: o.shutter, inflight: o.webcodecs ? 8 : 4, webcodecs: o.webcodecs,
-        }), FRAME_MS * (r[1] - r[0]), `frames ${r[0]}..${r[1] - 1}`);
-        for (const f of fr) stats.push({ ...f, t: f.n / o.fps, clip: segOf(f.n).clip });
-      }
-    }));
-    rendering.catch(() => {});
-    // (a page error stops the render; a failure on this side stops waiting for the pages)
-    await Promise.race([rendering, failedP.promise]).catch((e) => { fail(e); throw failure; });
-    await Promise.race([writtenP.promise, failedP.promise]);
-    const logs = pages.flatMap((p) => p.logs);
-    await closePages();
-    ending = true;
-    await Promise.all(closing);
-    // a broken shader or a scene that throws makes wrong frames: the render fails (fix it, then --clips)
-    assertNoBrowserErrors(logs);
-    ok = true;
-    process.stdout.write('\n');
-    return facts;
+    return await withPages(o.project, { url: o.url, scale: o.scale, headed: o.headed }, async (pages) => {
+      const opened = await Promise.allSettled(Array.from({ length: workers }, () => pages.open()));
+      for (const p of opened) if (p.status === 'rejected') throw p.reason;
+      const open = opened.flatMap((p) => (p.status === 'fulfilled' ? [p.value] : []));
+      const facts = { ...(await gpuInfo(open[0]!.page)), chrome: chromeVersion(open[0]!.browser) };
+      const rendering = Promise.all(open.map(async ({ page }, k) => {
+        for (let r = take(); r && !failure; r = take()) {
+          for (let n = r[0]; n < r[1]; n++) queue[k]!.push(n);
+          const fr = await deadline(page.evaluate((a) => (window as unknown as PveWindow).__pve!.stream(a), {
+            from: r[0] / o.fps, to: r[1] / o.fps, fps: o.fps, ws: `ws://localhost:${server.port}/?w=${k}`, samples: o.samples, shutter: o.shutter, inflight: o.webcodecs ? 8 : 4, webcodecs: o.webcodecs,
+          }), FRAME_MS * (r[1] - r[0]), `frames ${r[0]}..${r[1] - 1}`);
+          for (const f of fr) stats.push({ ...f, t: f.n / o.fps, clip: segOf(f.n).clip });
+        }
+      }));
+      rendering.catch(() => {});
+      // (a page error stops the render; a failure on this side stops waiting for the pages)
+      await Promise.race([rendering, failedP.promise]).catch((e) => { fail(e); throw failure; });
+      await Promise.race([writtenP.promise, failedP.promise]);
+      await pages.closeAll();
+      ending = true;
+      await Promise.all(closing);
+      // a broken shader or a scene that throws makes wrong frames: the render fails (fix it, then --clips)
+      await pages.check();
+      ok = true;
+      process.stdout.write('\n');
+      return facts;
+    });
   } finally {
     ending = true;
     process.off('SIGINT', onSignal);
     if (!ok) writer?.ff.kill(9);
-    await closePages();
-    stop();
     server.stop(true);
   }
 }

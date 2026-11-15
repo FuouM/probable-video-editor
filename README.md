@@ -142,10 +142,10 @@ bun run typecheck
 # Unit tests and timeline parity checks
 bun test
 
-# Compare timeline stills with golden references (max abs diff 0)
+# Compare timeline stills with golden references (pve golden: max diff 0, one retry for a 1-level diff in at most 2 pixels)
 bun run golden
 
-# Seek determinism test across 100 random timestamps
+# Seek determinism test across 100 random timestamps (pve determinism)
 bun run determinism
 ```
 

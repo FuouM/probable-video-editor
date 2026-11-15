@@ -6,10 +6,10 @@
   "scripts": {
     "typecheck": "tsc -p packages/engine && tsc -p packages/aviutl && tsc -p packages/core && tsc -p packages/cli && tsc -p app && tsc -p app/tsconfig.scripts.json && tsc -p .",
     "pve": "bun packages/cli/src/main.ts",
-    "golden": "bun scripts/golden.ts",
-    "determinism": "bun scripts/determinism.ts",
+    "golden": "bun packages/cli/src/main.ts golden",
+    "determinism": "bun packages/cli/src/main.ts determinism",
     "bench": "bun packages/cli/src/main.ts bench -p pdoom_original",
-    "verify-export": "bun scripts/verify-full-export.ts",
+    "verify-export": "bun packages/cli/src/main.ts verify-export",
     "test": "bun test",
     "site:data": "bun app/scripts/site-data.ts",
     "site:build": "bun run --cwd app site:build",

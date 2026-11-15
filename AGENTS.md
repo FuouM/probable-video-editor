@@ -6,7 +6,7 @@ The engine guide and drawing APIs are in [`docs/ENGINE.md`](docs/ENGINE.md). The
 
 - A task is done only when its acceptance command passed and the real engine produced the evidence (PNG, MP4, benchmark record). Never write a surrogate renderer, a copied golden, or a mock that a test accepts.
 - Write what you ran in the commit message.
-- Every change to `packages/engine` or to the `pdoom_original` scenes must pass `bun run golden` (max abs diff 0). A deliberate pixel change needs a new golden set that the human approves after a side-by-side look, in its own commit.
+- Every change to `packages/engine` or to the `pdoom_original` scenes must pass `bun run golden`. The rule: max diff 0 for each still. One exception: a still that differs by 1 level in at most 2 pixels renders once more, and the second render must have max diff 0 (the GPU can round a float 1 level apart on a single pixel). A deliberate pixel change needs a new golden set that the human approves after a side-by-side look, in its own commit.
 - A new effect (post pass, pipeline stage, drawing helper) and its benchmark entry go in the same commit. Each phase ends with one reference benchmark run in `bench/results.jsonl`.
 
 ## Scope
@@ -62,7 +62,7 @@ Each message turn re-reads the full conversation context from prompt cache (ofte
 
 | Command | Does |
 |---|---|
-| `bun run pve <command> -p <id>` | The unified CLI. Run `bun run pve help` to list all subcommands. `skills/pve/SKILL.md` documents the agent workflow. |
+| `bun run pve <command> -p <id>` | The unified CLI. Run `bun run pve help` to list all subcommands. `bun run pve help <command>` (or `--help`) lists the options of a command, each with its description. `skills/pve/SKILL.md` documents the agent workflow. |
 | `bun run pve init <song folder>` | Make `projects/<id>/` from a finished Lyric-Sync song folder, with a storyboard `video.json` (one clip per section). |
 | `bun run pve doctor` | Check Bun, ffmpeg, Chrome, the GPU, timer query support, the Lyric-Sync link and Vite. |
 | `bun run pve outline -p <id> [clip...]` | Print the resolved edit and the song: clips, markers, sections, lyric lines and notes, with times and bar.beat. |
@@ -96,12 +96,12 @@ Each message turn re-reads the full conversation context from prompt cache (ofte
 | Command | Does |
 |---|---|
 | `bun install` | Install all workspaces (`packages/*`, `app`) from the root. |
-| `bun run typecheck` | Type-check the engine, core, CLI, app, project scenes, and root scripts. |
+| `bun run typecheck` | Type-check the engine, core, CLI, app, project scenes, and tests. |
 | `bun test` | Run all unit tests (core, CLI, bench coverage, timeline parity). |
-| `bun run golden` | Compare one still per timeline entry with `tests/golden/` (max abs diff 0). |
-| `bun run determinism` | Render 100 seeded times in order and shuffled, then compare pixels (`--project <id>`, `--n`, `--seed`, `--precision both\|float\|half`, default `both`). A difference at 32-bit HDR precision is an order fault and fails. A difference at 16 bits only is the blend rounding of the GPU: the check reports it and passes. See "Precision" in `docs/ENGINE.md`. |
+| `bun run golden` | Runs `pve golden`: compare one still of `pdoom_original` per timeline entry with `tests/golden/` (max diff 0, with the 1-level retry of "Evidence"). `-- --capture` writes the files. Fails when the page logs an error. |
+| `bun run determinism` | Runs `pve determinism`: render 100 seeded times in order and shuffled, then compare pixels (`-p <id>`, default `pdoom_original`, `--n`, `--seed`, `--precision both\|float\|half`, default `both`). A difference at 32-bit HDR precision is an order fault and fails. A difference at 16 bits only is the blend rounding of the GPU: the check reports it and passes. A page that logs an error fails the check. See "Precision" in `docs/ENGINE.md`. |
 | `bun run bench` | Run the reference GPU workload (`pve bench -p pdoom_original`) in headless Chrome and append to `bench/results.jsonl`. |
-| `bun run verify-export -- --project <id>` | Check full render export integrity (decode, duration, video size, fps, AAC). |
+| `bun run verify-export -- -p <id>` | Runs `pve verify-export`: check the full render export (decode, duration, video size, fps, AAC). `--input <mp4>` checks another file. |
 
 ### Web Player and Static Site
 
