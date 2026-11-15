@@ -141,17 +141,27 @@
   }
   .pl-dialog {
     width: min(480px, 100%);
+    overflow-y: auto;
   }
+  /* In a short window the cover gives up height (cropped, object-fit) so the text, the cards and the
+     loading screen below it keep theirs. Only a window too short for those scrolls, as one dialog. */
   .pl-cover {
     display: block;
     width: 100%;
     aspect-ratio: 16 / 9;
+    min-height: 0;
     object-fit: cover;
     background: black;
     border-bottom: 1px solid var(--sys-border-dark);
-    flex: none;
+    flex: 0 1 auto;
   }
-  .pl-dialog.loading .pl-cover {
+  .pl-dialog-body {
+    flex: none;
+    overflow: visible;
+  }
+  /* while a video loads, the loading screen takes the room of the pictures: the cover goes and the cards
+     keep only their names, so the dialog fits a laptop window without a scroll bar coming and going */
+  .pl-dialog.loading :is(.pl-cover, .pl-card img, .pl-card-blank) {
     display: none;
   }
   .pl-dialog-body {

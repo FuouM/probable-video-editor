@@ -84,11 +84,11 @@ export class NleTransport {
           </div>
           <div class="daw-lcd-sub">
             <span class="daw-lcd-label">BAR</span>
-            <div class="nle-lcd-value" id="vfd-bar-container">${seg7Html('001.1')}</div>
+            <div id="vfd-bar-container">${seg7Html('001.1')}</div>
             <span class="daw-lcd-label">BPM</span>
-            <div class="nle-lcd-value" id="vfd-bpm-container">${seg7Html('200.0')}</div>
+            <div id="vfd-bpm-container">${seg7Html('200.0')}</div>
             <span class="daw-lcd-label">TIME</span>
-            <div class="nle-lcd-value" id="vfd-time-container">${seg7Html('00:00.00')}</div>
+            <div id="vfd-time-container">${seg7Html('00:00.00')}</div>
           </div>
         </div>
       </div>

@@ -24,9 +24,6 @@
   :is(.nle-fps, .nle-perf-status)[data-tone='ok'] { color: var(--sw-ok); }
   :is(.nle-fps, .nle-perf-status)[data-tone='warn'] { color: var(--sw-warn); }
   :is(.nle-fps, .nle-perf-status)[data-tone='err'] { color: var(--sw-err); }
-  /* The wrapper of each sub value must take the readout's size, not the reset's `* { font-size }`:
-   * at 12px the three rows outgrow the glass, which cuts the top and bottom segments off. */
-  .nle-lcd-value { font-size: inherit; line-height: 1; }
   .nle-chip-value { color: var(--sys-control-text); }
   .nle-render-btn { min-width: 95px; padding: 0 10px; font: 700 var(--font-sm) var(--sw-font-mono); letter-spacing: 0.04em; white-space: nowrap; }
   .nle-render-mark { margin-right: 4px; font-size: var(--font-xs); }
