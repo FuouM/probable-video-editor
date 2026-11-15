@@ -25,7 +25,7 @@
         "@pve/engine": "workspace:*",
         "codemirror": "^6.0.2",
         "opentype.js": "^2.0.0",
-        "soulwindow": "link:soulwindow",
+        "soulwindow": "github:FuouM/soulwindow#v0.5.0",
         "three": "^0.186.0",
       },
       "devDependencies": {
@@ -271,7 +271,7 @@
 
     "rolldown": ["rolldown@1.2.14", "", { "dependencies": { "@oxc-project/types": "=0.154.0", "@rolldown/pluginutils": "^1.0.0" }, "optionalDependencies": { "@rolldown/binding-android-arm-eabi": "1.2.14", "@rolldown/binding-android-arm64": "1.2.14", "@rolldown/binding-darwin-arm64": "1.2.14", "@rolldown/binding-darwin-x64": "1.2.14", "@rolldown/binding-freebsd-x64": "1.2.14", "@rolldown/binding-linux-arm-gnueabihf": "1.2.14", "@rolldown/binding-linux-arm64-gnu": "1.2.14", "@rolldown/binding-linux-arm64-musl": "1.2.14", "@rolldown/binding-linux-ppc64-gnu": "1.2.14", "@rolldown/binding-linux-s390x-gnu": "1.2.14", "@rolldown/binding-linux-x64-gnu": "1.2.14", "@rolldown/binding-linux-x64-musl": "1.2.14", "@rolldown/binding-openharmony-arm64": "1.2.14", "@rolldown/binding-win32-arm64-msvc": "1.2.14", "@rolldown/binding-win32-x64-msvc": "1.2.14" }, "bin": { "rolldown": "./bin/cli.mjs" } }, "sha512-eTBTTqMR6uHKLgcUqpJP8ntzDI6V4LYA8negAMBEI7gkgVvOdrx6VsvS2Ym+83KhOPdLCHWJu0w7UQFJZhHKNw=="],
 
-    "soulwindow": ["soulwindow@link:soulwindow", {}],
+    "soulwindow": ["soulwindow@github:FuouM/soulwindow#51d5457", { "peerDependencies": { "bootstrap-icons": "^1.11.0", "solid-js": "^1.9.0" }, "optionalPeers": ["bootstrap-icons", "solid-js"] }, "FuouM-soulwindow-51d5457", "sha512-MssJ5AP6H6SFLlwA8OKk3x/r/b14x079Mua4JVlXbRcF9hwjR78MGDTzrNfsAzeT/0CXv6bym/TMgGFK8zWcsw=="],
 
     "source-map-js": ["source-map-js@1.2.2", "", {}, "sha512-KGj/8Y43x35aZVDtt+J4mK1hoLGHULMYfSkODJNQjNDC3oW1PqPoxMwo0pLUsWM/UEGzON/NxeHywEfNXNP3Vw=="],
 
