@@ -1,8 +1,9 @@
 // pve notes (DESIGN 8.1 step 7): the director notes in video/notes.json. A project without the file has no
 // notes yet.
-import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { validateNotes, type Note, type NotesJson } from '@pve/core';
+import { readNoteFiles } from '@pve/core/notefiles';
 import { CliError, fmtBarBeat, fmtTime, table } from './out';
 import { clipAt, type Project, type ProjectRef } from './project';
 
@@ -44,23 +45,8 @@ function parseTimeStr(s: string): number {
 
 /** Reads markdown review notes from video/notes/*.md (pvemd code blocks and descriptions). */
 export function readMarkdownNotes(ref: ProjectRef): Note[] {
-  const notesDir = path.join(ref.dir, 'video/notes');
-  if (!existsSync(notesDir)) return [];
-  let files: string[] = [];
-  try {
-    files = readdirSync(notesDir).filter((f) => f.endsWith('.md'));
-  } catch {
-    return [];
-  }
   const out: Note[] = [];
-  for (const f of files) {
-    const fileId = path.basename(f, '.md');
-    let content = '';
-    try {
-      content = readFileSync(path.join(notesDir, f), 'utf8');
-    } catch {
-      continue;
-    }
+  for (const { id: fileId, content } of readNoteFiles(ref.dir)) {
     const regex = /```pvemd\s*([\s\S]*?)```([\s\S]*?)(?=(?:```pvemd|$))/g;
     let match: RegExpExecArray | null;
     let idx = 1;

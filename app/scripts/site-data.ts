@@ -12,7 +12,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { SubtitleStyle } from '@pve/engine/options';
 import { projectInputs } from './inputs';
-import { projectDir } from './project';
+import { projectDir } from '@pve/core/projects';
 import { siteDir, sourceHashes, type SiteManifest } from './site-sources';
 import { buildSubtitles } from './subtitles';
 

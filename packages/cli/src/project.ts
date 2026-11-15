@@ -1,15 +1,14 @@
 // The project of a command and its loaded inputs.
 // A command finds its project from `--project <id|path>`, else PVE_PROJECT, else the current folder or the
 // nearest folder above it that has video/video.json.
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { checkLyricMap, LyricMap, resolveAnchor, resolveVideo, ResolveError, TimingData, validateVideo, type ResolvedClip, type ResolvedVideo, type VideoJson } from '@pve/core';
 import { LYRIC_MAP_FILE, loadSong, type Song } from '@pve/core/load';
+import { listProjects, PROJECTS, VIDEO_FILE } from '@pve/core/projects';
 import { CliError, type Problem } from './out';
 
-/** projects/ of this repository. */
-export const PROJECTS = path.resolve(import.meta.dir, '../../../projects');
-export const VIDEO_FILE = 'video/video.json';
+export { PROJECTS, VIDEO_FILE };
 /** A song folder that Lyric-Sync finished has this file. The locator commands work on it without an edit. */
 export const SONG_FILE = 'user_input/lyrics.calibrated.json';
 export const SCENES_DIR = 'video/scenes';
@@ -20,18 +19,9 @@ export interface ProjectRef {
   dir: string;
 }
 
-/** Ids of the folders in projects/ that have the file `needs` (the edit by default). */
-export function listProjects(projectsDir = PROJECTS, needs = VIDEO_FILE): string[] {
-  if (!existsSync(projectsDir)) return [];
-  return readdirSync(projectsDir, { withFileTypes: true })
-    .filter((d) => d.isDirectory() && existsSync(path.join(projectsDir, d.name, needs)))
-    .map((d) => d.name)
-    .sort();
-}
-
 /** Finds the project folder: the one with the file `needs`. Throws a CliError that lists the projects when there is none. */
 export function findProject(arg: string | undefined, cwd = process.cwd(), env = process.env.PVE_PROJECT, needs = VIDEO_FILE): ProjectRef {
-  const fix = `pass --project <id> (projects: ${listProjects(PROJECTS, needs).join(', ') || 'none'}), or run pve init <song folder>`;
+  const fix = `pass --project <id> (projects: ${listProjects(needs).join(', ') || 'none'}), or run pve init <song folder>`;
   const given = arg ?? env;
   if (given) {
     for (const dir of [path.resolve(cwd, given), path.join(PROJECTS, given)]) {

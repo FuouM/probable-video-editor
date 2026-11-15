@@ -1,6 +1,7 @@
 export type { Features, MixEnvelopeKey, OnsetKey, SongLine, SongSection, SongSyllable, SongTiming, SongWord, StemEnvelopeKey } from './song.ts';
 // load.ts reads files (node:fs, lyricsync): import loadSong and its types (Song, SongPrompt, CalibrationDoc)
-// from '@pve/core/load'. This index stays free of them so the browser can import it.
+// from '@pve/core/load'. projects.ts and notefiles.ts read files too (node:fs only): import them from
+// '@pve/core/projects' and '@pve/core/notefiles'. This index stays free of them so the browser can import it.
 export type {
   Clip,
   ClipSamples,
@@ -51,3 +52,4 @@ export {
   type RawLyrics,
 } from './lyricmap.ts';
 export { validateNotes, type Note, type NotesJson, type NotesResult } from './notes.ts';
+export { renderMp4Name, renderName, segmentName } from './rendername.ts';

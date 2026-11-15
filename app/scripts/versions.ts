@@ -5,7 +5,7 @@
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
-import { REPO } from './project';
+import { REPO } from '@pve/core/projects';
 
 /** `from '...'`, `import '...'`, `import('...')`. */
 const IMPORT = /(?:\bfrom\s*|\bimport\s*\(?\s*)['"]([^'"]+)['"]/g;

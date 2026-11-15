@@ -15,7 +15,7 @@ import { defineConfig, type Plugin } from 'vite';
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import { REPO, projectDir } from './scripts/project';
+import { REPO, listProjects, projectDir } from '@pve/core/projects';
 import { siteDir, staleSources, type SiteManifest } from './scripts/site-sources';
 
 const FIRST = 'breaked_neuro';
@@ -24,10 +24,7 @@ const FIRST = 'breaked_neuro';
 function projectIds(): string[] {
   const env = process.env.PVE_SITE_PROJECTS;
   if (env) return env.split(',').map((s) => s.trim()).filter(Boolean);
-  const all = readdirSync(path.join(REPO, 'projects'), { withFileTypes: true })
-    .filter((e) => e.isDirectory() && existsSync(path.join(siteDir(projectDir(e.name)), 'manifest.json')))
-    .map((e) => e.name)
-    .sort();
+  const all = listProjects().filter((id) => existsSync(path.join(siteDir(projectDir(id)), 'manifest.json')));
   return all.includes(FIRST) ? [FIRST, ...all.filter((i) => i !== FIRST)] : all;
 }
 

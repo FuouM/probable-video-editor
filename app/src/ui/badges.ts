@@ -1,5 +1,6 @@
 // Agent Scene Change Detector for pve-next NLE
 // Listens to Vite HMR WebSocket and queries git status to track modified / reloaded clips.
+import { apiJson } from './api';
 
 export interface SceneStatusData {
   projectId: string;
@@ -40,11 +41,7 @@ export class AgentChangeDetector {
 
   private async pollInitial() {
     try {
-      const res = await fetch(`/api/project/${encodeURIComponent(this.projectId)}/status`);
-      if (res.ok) {
-        const data: SceneStatusData = await res.json();
-        this.updateStatus(data);
-      }
+      this.updateStatus(await apiJson<SceneStatusData>(this.projectId, 'status'));
     } catch {
       // Offline / export mode
     }

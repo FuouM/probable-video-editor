@@ -1,6 +1,9 @@
 // WinForms / DAW Render & Export Dialog for pve-next NLE
 // Triggers WebCodecs direct GPU video encoding or headless backend render with live progress.
+import { renderMp4Name, renderName } from '@pve/core';
 import type { Engine, TimelineEntry } from '@pve/engine/engine';
+import { apiJson, apiUrl, postJson } from './api';
+import { WebCodecsUpload } from './webcodecs-session';
 
 export interface ClipProgressItem {
   id: string;
@@ -58,6 +61,13 @@ export interface RenderDialogOptions {
 const STORAGE_KEY_PIPELINE = 'pve:render-pipeline';
 const STORAGE_KEY_QUALITY = 'pve:render-quality';
 const STORAGE_KEY_SCALE = 'pve:render-scale';
+
+/** The dialog texts at the start of each kind of run (RenderDialog.beginRun). */
+const RUN_START = {
+  webcodecs: { chip: 'nle-chip--cyan', status: '⚡ WEBCODECS STARTING...', badge: '● WEBCODECS 0%', pill: 'WebCodecs GPU: Starting...', stage: 'rendering', percent: 0 },
+  backend: { chip: 'nle-chip--warn', status: 'STARTING...', badge: '● RENDERING 0%', pill: 'Backend render: Starting...', stage: 'rendering', percent: 0 },
+  encode: { chip: 'nle-chip--warn', status: 'ENCODING FINAL MP4...', badge: '● ENCODING FINAL MP4', pill: 'Encoding Final MP4 with audio...', stage: 'encoding', percent: 100 },
+} as const;
 
 export class RenderDialog {
   private overlayEl: HTMLElement;
@@ -392,14 +402,8 @@ export class RenderDialog {
       if (!confirm('Delete all rendered scene segments from disk?')) return;
       try {
         const scale = parseFloat(this.scaleSelect.value) || 1;
-        const res = await fetch(`/api/project/${encodeURIComponent(this.opts.projectId)}/render/delete`, {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ all: true, scale }),
-        });
-        if (res.ok) {
-          void this.fetchStatus();
-        }
+        await apiJson(this.opts.projectId, 'render/delete', postJson({ all: true, scale }));
+        void this.fetchStatus();
       } catch {}
     });
 
@@ -422,15 +426,15 @@ export class RenderDialog {
     this.overlayEl.querySelector('#btn-play-result')?.addEventListener('click', (e) => {
       e.stopPropagation();
       const scale = parseFloat(this.scaleSelect.value) || 1;
-      const subDir = scale > 1 ? (scale === 2 ? '4k' : `${Math.round(scale * 1080)}p`) : 'full';
-      const name = scale > 1 ? (scale === 2 ? `${encodeURIComponent(this.opts.projectId)}-4k.mp4` : `${encodeURIComponent(this.opts.projectId)}-${Math.round(scale * 1080)}p.mp4`) : `${encodeURIComponent(this.opts.projectId)}-full.mp4`;
-      const url = `/projects/${encodeURIComponent(this.opts.projectId)}/out/render/${subDir}/${name}`;
+      const id = encodeURIComponent(this.opts.projectId);
+      const url = `/projects/${id}/out/render/${renderName(scale)}/${renderMp4Name(id, scale)}`;
       window.open(url, '_blank');
     });
 
     this.overlayEl.querySelector('#btn-open-final-mp4')?.addEventListener('click', (e) => {
       e.stopPropagation();
-      const url = `/projects/${encodeURIComponent(this.opts.projectId)}/out/render/full/${encodeURIComponent(this.opts.projectId)}-full.mp4`;
+      const id = encodeURIComponent(this.opts.projectId);
+      const url = `/projects/${id}/out/render/${renderName(1)}/${renderMp4Name(id, 1)}`;
       window.open(url, '_blank');
     });
 
@@ -568,15 +572,13 @@ export class RenderDialog {
   async fetchStatus() {
     try {
       const scale = parseFloat(this.scaleSelect?.value) || 1;
-      const res = await fetch(`/api/project/${encodeURIComponent(this.opts.projectId)}/render/status?scale=${scale}`);
-      if (!res.ok) return;
-      const data: {
+      const data = await apiJson<{
         active: boolean;
         status: RenderProgressPayload | null;
         clips?: ClipProgressItem[];
         allRendered?: boolean;
         finalMp4?: { path: string; size: number; mtime: number } | null;
-      } = await res.json();
+      }>(this.opts.projectId, `render/status?scale=${scale}`);
 
       if (data.clips && data.clips.length) {
         this.clipsData = data.clips;
@@ -641,14 +643,8 @@ export class RenderDialog {
         if (!cid) return;
         try {
           const scale = parseFloat(this.scaleSelect.value) || 1;
-          const res = await fetch(`/api/project/${encodeURIComponent(this.opts.projectId)}/render/delete`, {
-            method: 'POST',
-            headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({ clipId: cid, scale }),
-          });
-          if (res.ok) {
-            void this.fetchStatus();
-          }
+          await apiJson(this.opts.projectId, 'render/delete', postJson({ clipId: cid, scale }));
+          void this.fetchStatus();
         } catch {}
       };
     });
@@ -787,6 +783,59 @@ export class RenderDialog {
     }
   }
 
+  /** The clips and the time span (s) to render: the explicit clips, else those of the scope select. `loop` is the loop span when the scope is the loop range. */
+  private resolveTargets(explicit?: string[]): { clips: string[]; from: number; to: number; loop: [number, number] | null } {
+    const range = this.rangeSelect.value;
+    let clips: string[] = [];
+    let loop: [number, number] | null = null;
+    if (explicit?.length) clips = explicit;
+    else if (range === 'stale') clips = this.clipsData.filter((c) => c.isStale || !c.hasSegment).map((c) => c.id);
+    else if (range === 'selected') clips = [...this.selectedClipIds];
+    else if (range === 'clip') {
+      const cur = this.opts.getCurrentClip();
+      if (cur) clips = [cur];
+    } else if (range === 'loop') loop = this.opts.getLoopRange();
+
+    let from = 0, to = this.opts.duration ?? 10;
+    const matched = (this.opts.timelineEntries ?? []).filter((e) => clips.includes(e.id));
+    if (loop) [from, to] = loop;
+    else if (matched.length) {
+      from = Math.min(...matched.map((e) => e.start));
+      to = Math.max(...matched.map((e) => e.end));
+    }
+    return { clips, from, to, loop };
+  }
+
+  /** Puts the dialog, the floating pill and the timeline in the start state of a run. */
+  private beginRun(kind: keyof typeof RUN_START) {
+    const s = RUN_START[kind];
+    this.isRendering = true;
+    this.webCodecsActive = kind === 'webcodecs';
+    this.cancelRequested = false;
+    this.updateControls();
+
+    this.resultSection.classList.add('hidden');
+    this.statusText.className = `nle-chip ${s.chip}`;
+    this.statusText.textContent = s.status;
+    this.headerBadgeEl.textContent = s.badge;
+    this.overallBar.style.width = `${s.percent}%`;
+    this.pillTextEl.textContent = s.pill;
+    if (!this.isOpen) this.showFloatingPill();
+    this.opts.onRenderStateChange?.({ active: true, stage: s.stage, percent: s.percent });
+  }
+
+  /** Ends a run that failed: error chip and error state. Returns the message of `err`. */
+  private failRun(err: unknown): string {
+    const message = (err as Error).message;
+    this.isRendering = false;
+    this.webCodecsActive = false;
+    this.updateControls();
+    this.statusText.className = 'nle-chip nle-chip--err';
+    this.statusText.textContent = 'ERROR';
+    this.opts.onRenderStateChange?.({ active: false, stage: 'error', error: message });
+    return message;
+  }
+
   private async startRender(explicitClips?: string[]) {
     if (this.pipelineSelect.value === 'webcodecs' && typeof VideoEncoder !== 'undefined' && this.opts.engine && this.opts.canvas) {
       await this.startWebCodecsRender(explicitClips);
@@ -800,60 +849,9 @@ export class RenderDialog {
     const canvas = this.opts.canvas;
     if (!engine || !canvas) return;
 
-    this.isRendering = true;
-    this.webCodecsActive = true;
-    this.cancelRequested = false;
-    this.updateControls();
-
-    this.resultSection.classList.add('hidden');
-    this.statusText.className = 'nle-chip nle-chip--cyan';
-    this.statusText.textContent = '⚡ WEBCODECS STARTING...';
-    this.headerBadgeEl.textContent = '● WEBCODECS 0%';
-    this.overallBar.style.width = '0%';
-    this.pillTextEl.textContent = 'WebCodecs GPU: Starting...';
-    if (!this.isOpen) this.showFloatingPill();
-
-    this.opts.onRenderStateChange?.({
-      active: true,
-      stage: 'rendering',
-      percent: 0,
-    });
-
+    this.beginRun('webcodecs');
     const fps = this.opts.fps ?? 30;
-    const duration = this.opts.duration ?? 10;
-    const range = this.rangeSelect.value;
-    let from = 0, to = duration;
-
-    const targetClips: string[] = [];
-    if (explicitClips && explicitClips.length && this.opts.timelineEntries) {
-      targetClips.push(...explicitClips);
-      const matched = this.opts.timelineEntries.filter((e) => explicitClips.includes(e.id));
-      if (matched.length) {
-        from = Math.min(...matched.map((e) => e.start));
-        to = Math.max(...matched.map((e) => e.end));
-      }
-    } else if (range === 'loop') {
-      const loop = this.opts.getLoopRange();
-      if (loop) { from = loop[0]; to = loop[1]; }
-    } else if (range === 'clip') {
-      const cur = this.opts.getCurrentClip();
-      if (cur) targetClips.push(cur);
-      const matched = this.opts.timelineEntries?.find((e) => e.id === cur);
-      if (matched) { from = matched.start; to = matched.end; }
-    } else if ((range === 'stale' || range === 'selected') && this.opts.timelineEntries) {
-      if (range === 'stale') {
-        targetClips.push(...this.clipsData.filter((c) => c.isStale || !c.hasSegment).map((c) => c.id));
-      } else {
-        targetClips.push(...Array.from(this.selectedClipIds));
-      }
-      if (targetClips.length) {
-        const matched = this.opts.timelineEntries.filter((e) => targetClips.includes(e.id));
-        if (matched.length) {
-          from = Math.min(...matched.map((e) => e.start));
-          to = Math.max(...matched.map((e) => e.end));
-        }
-      }
-    }
+    const { from, to } = this.resolveTargets(explicitClips);
 
     const f0 = Math.round(from * fps);
     const f1 = Math.round(to * fps);
@@ -864,55 +862,18 @@ export class RenderDialog {
     const quality = this.qualitySelect.value;
     const samples = quality === 'auto' ? { min: 4, max: 324, tol: 3, refine: 'tiles' as const } : (Number(quality) || 1);
 
-    let sessionId = '';
+    let upload: WebCodecsUpload;
     try {
-      const startRes = await fetch(`/api/project/${encodeURIComponent(this.opts.projectId)}/render/webcodecs/start?fps=${fps}&from=${from.toFixed(3)}&to=${to.toFixed(3)}&scale=${scale}`, {
-        method: 'POST',
-      });
-      if (!startRes.ok) {
-        const err = (await startRes.json().catch(() => null)) as { error?: string } | null;
-        throw new Error(err?.error || 'Failed to start WebCodecs render session');
-      }
-      const startJson = (await startRes.json()) as { sessionId: string };
-      sessionId = startJson.sessionId;
+      upload = await WebCodecsUpload.start(this.opts.projectId, fps, from, to, scale);
     } catch (err) {
-      this.isRendering = false;
-      this.webCodecsActive = false;
-      this.updateControls();
-      this.statusText.className = 'nle-chip nle-chip--err';
-      this.statusText.textContent = 'ERROR';
-      this.overallText.textContent = (err as Error).message;
-      this.opts.onRenderStateChange?.({ active: false, stage: 'error', error: (err as Error).message });
+      this.overallText.textContent = this.failRun(err);
       return;
     }
-
-    let pendingChunks: BlobPart[] = [];
-    let pendingBytes = 0;
-
-    const flushChunks = async () => {
-      if (pendingChunks.length === 0) return;
-      const blob = new Blob(pendingChunks as BlobPart[]);
-      pendingChunks = [];
-      pendingBytes = 0;
-      const res = await fetch(`/api/project/${encodeURIComponent(this.opts.projectId)}/render/webcodecs/chunk?session=${encodeURIComponent(sessionId)}`, {
-        method: 'POST',
-        body: blob,
-      });
-      if (!res.ok) {
-        const err = (await res.json().catch(() => null)) as { error?: string } | null;
-        throw new Error(err?.error || 'Failed to send video chunk to backend');
-      }
-    };
 
     let encoder: VideoEncoder | null = null;
     try {
       encoder = new VideoEncoder({
-        output: (chunk) => {
-          const buf = new Uint8Array(chunk.byteLength);
-          chunk.copyTo(buf);
-          pendingChunks.push(buf);
-          pendingBytes += buf.byteLength;
-        },
+        output: (chunk) => upload.push(chunk),
         error: (err) => console.error('VideoEncoder error:', err),
       });
 
@@ -954,9 +915,7 @@ export class RenderDialog {
         if (this.cancelRequested) break;
 
         // Network chunk backpressure
-        if (pendingBytes >= 1024 * 1024) {
-          await flushChunks();
-        }
+        if (upload.pendingBytes >= 1024 * 1024) await upload.flush();
         if (this.cancelRequested) break;
 
         const t = n / fps;
@@ -1027,9 +986,7 @@ export class RenderDialog {
 
       if (this.cancelRequested) {
         encoder.close();
-        await fetch(`/api/project/${encodeURIComponent(this.opts.projectId)}/render/webcodecs/cancel?session=${encodeURIComponent(sessionId)}`, {
-          method: 'POST',
-        }).catch(() => {});
+        await upload.cancel();
         this.statusText.className = 'nle-chip nle-chip--warn';
         this.statusText.textContent = 'CANCELLED';
         this.pillTextEl.textContent = 'Export cancelled';
@@ -1043,7 +1000,7 @@ export class RenderDialog {
 
       await encoder.flush();
       encoder.close();
-      await flushChunks();
+      await upload.flush();
 
       this.statusText.className = 'nle-chip nle-chip--warn';
       this.statusText.textContent = 'FINALIZING MP4...';
@@ -1051,14 +1008,7 @@ export class RenderDialog {
       this.pillTextEl.textContent = 'Finalizing MP4...';
       this.opts.onRenderStateChange?.({ active: true, stage: 'encoding', percent: 100 });
 
-      const finishRes = await fetch(`/api/project/${encodeURIComponent(this.opts.projectId)}/render/webcodecs/finish?session=${encodeURIComponent(sessionId)}`, {
-        method: 'POST',
-      });
-      if (!finishRes.ok) {
-        const errJson = (await finishRes.json().catch(() => null)) as { error?: string } | null;
-        throw new Error(errJson?.error || 'Failed to finalize MP4 export');
-      }
-      const data: { ok: boolean; outputFile: string; size: number } = await finishRes.json();
+      const data = await upload.finish();
 
       this.isRendering = false;
       this.webCodecsActive = false;
@@ -1090,147 +1040,41 @@ export class RenderDialog {
       void this.fetchStatus();
     } catch (err) {
       if (encoder && encoder.state !== 'closed') encoder.close();
-      void fetch(`/api/project/${encodeURIComponent(this.opts.projectId)}/render/webcodecs/cancel?session=${encodeURIComponent(sessionId)}`, {
-        method: 'POST',
-      }).catch(() => {});
-      this.isRendering = false;
-      this.webCodecsActive = false;
-      this.updateControls();
-      this.statusText.className = 'nle-chip nle-chip--err';
-      this.statusText.textContent = 'ERROR';
-      this.overallText.textContent = (err as Error).message;
+      void upload.cancel();
+      const message = this.failRun(err);
+      this.overallText.textContent = message;
       this.floatingPillEl.className = 'nle-render-floating-pill nle-render-floating-pill--err';
-      this.pillTextEl.textContent = `⚠ Export failed: ${(err as Error).message}`;
+      this.pillTextEl.textContent = `⚠ Export failed: ${message}`;
       this.pillDismissTimer = window.setTimeout(() => this.hideFloatingPill(), 5000);
-      this.opts.onRenderStateChange?.({ active: false, stage: 'error', error: (err as Error).message });
     }
   }
 
   private async startBackendRender(explicitClips?: string[]) {
-    this.isRendering = true;
-    this.webCodecsActive = false;
-    this.cancelRequested = false;
-    this.updateControls();
-
-    this.resultSection.classList.add('hidden');
-    this.statusText.className = 'nle-chip nle-chip--warn';
-    this.statusText.textContent = 'STARTING...';
-    this.headerBadgeEl.textContent = '● RENDERING 0%';
-    this.overallBar.style.width = '0%';
-    this.pillTextEl.textContent = 'Backend render: Starting...';
-    if (!this.isOpen) this.showFloatingPill();
-
-    this.opts.onRenderStateChange?.({
-      active: true,
-      stage: 'rendering',
-      percent: 0,
-    });
-
-    const range = this.rangeSelect.value;
-    const scale = parseFloat(this.scaleSelect.value) || 1;
-    const body: {
-      range: string;
-      from?: number;
-      to?: number;
-      clips?: string[];
-      samples: string;
-      scale: number;
-      name?: string;
-    } = {
-      range,
+    this.beginRun('backend');
+    const { clips, loop } = this.resolveTargets(explicitClips);
+    const body: { from?: number; to?: number; clips?: string[]; samples: string; scale: number } = {
       samples: this.qualitySelect.value,
-      scale,
-      name: scale > 1 ? (scale === 2 ? '4k' : `${Math.round(scale * 1080)}p`) : 'full',
+      scale: parseFloat(this.scaleSelect.value) || 1,
     };
-
-    if (explicitClips && explicitClips.length) {
-      body.clips = explicitClips;
-    } else if (range === 'stale') {
-      const staleClips = this.clipsData.filter((c) => c.isStale || !c.hasSegment).map((c) => c.id);
-      body.clips = staleClips.length ? staleClips : this.clipsData.map((c) => c.id);
-    } else if (range === 'selected') {
-      body.clips = Array.from(this.selectedClipIds);
-    } else if (range === 'loop') {
-      const loop = this.opts.getLoopRange();
-      if (loop) {
-        body.from = loop[0];
-        body.to = loop[1];
-      }
-    } else if (range === 'clip') {
-      const clipId = this.opts.getCurrentClip();
-      if (clipId) body.clips = [clipId];
-    }
+    if (clips.length) body.clips = clips;
+    else if (this.rangeSelect.value === 'stale') body.clips = this.clipsData.map((c) => c.id);
+    if (loop) [body.from, body.to] = loop;
 
     try {
-      const res = await fetch(`/api/project/${encodeURIComponent(this.opts.projectId)}/render`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-
-      if (!res.ok) {
-        const errData: unknown = await res.json().catch(() => null);
-        const msg = errData && typeof errData === 'object' && 'error' in errData && typeof errData.error === 'string'
-          ? errData.error
-          : 'Render failed to start';
-        throw new Error(msg);
-      }
+      await apiJson(this.opts.projectId, 'render', postJson(body), 'Render failed to start');
     } catch (err) {
-      this.isRendering = false;
-      this.updateControls();
-      this.statusText.className = 'nle-chip nle-chip--err';
-      this.statusText.textContent = 'ERROR';
-      this.opts.onRenderStateChange?.({ active: false, stage: 'error', error: (err as Error).message });
-      alert((err as Error).message);
+      alert(this.failRun(err));
     }
   }
 
   private async startEncode() {
-    this.isRendering = true;
-    this.webCodecsActive = false;
-    this.cancelRequested = false;
-    this.updateControls();
-
-    this.resultSection.classList.add('hidden');
-    this.statusText.className = 'nle-chip nle-chip--warn';
-    this.statusText.textContent = 'ENCODING FINAL MP4...';
-    this.headerBadgeEl.textContent = '● ENCODING FINAL MP4';
-    this.overallBar.style.width = '100%';
+    this.beginRun('encode');
     this.overallText.textContent = 'Joining rendered segments and encoding final MP4 with audio...';
-    this.pillTextEl.textContent = 'Encoding Final MP4 with audio...';
-    if (!this.isOpen) this.showFloatingPill();
-
-    this.opts.onRenderStateChange?.({
-      active: true,
-      stage: 'encoding',
-      percent: 100,
-    });
-
     try {
       const scale = parseFloat(this.scaleSelect.value) || 1;
-      const res = await fetch(`/api/project/${encodeURIComponent(this.opts.projectId)}/render`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          encodeOnly: true,
-          scale,
-          name: scale > 1 ? (scale === 2 ? '4k' : `${Math.round(scale * 1080)}p`) : 'full',
-        }),
-      });
-      if (!res.ok) {
-        const errData: unknown = await res.json().catch(() => null);
-        const msg = errData && typeof errData === 'object' && 'error' in errData && typeof errData.error === 'string'
-          ? errData.error
-          : 'Final encode failed to start';
-        throw new Error(msg);
-      }
+      await apiJson(this.opts.projectId, 'render', postJson({ encodeOnly: true, scale }), 'Final encode failed to start');
     } catch (err) {
-      this.isRendering = false;
-      this.updateControls();
-      this.statusText.className = 'nle-chip nle-chip--err';
-      this.statusText.textContent = 'ERROR';
-      this.opts.onRenderStateChange?.({ active: false, stage: 'error', error: (err as Error).message });
-      alert((err as Error).message);
+      alert(this.failRun(err));
     }
   }
 
@@ -1241,9 +1085,7 @@ export class RenderDialog {
     this.pillTextEl.textContent = 'Cancelling render...';
 
     try {
-      await fetch(`/api/project/${encodeURIComponent(this.opts.projectId)}/render/cancel`, {
-        method: 'POST',
-      });
+      await fetch(apiUrl(this.opts.projectId, 'render/cancel'), { method: 'POST' });
     } catch {}
   }
 

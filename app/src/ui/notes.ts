@@ -6,6 +6,7 @@ import { EditorView, lineNumbers, highlightActiveLineGutter, highlightActiveLine
 import { EditorState } from '@codemirror/state';
 import { defaultKeymap, history, historyKeymap, indentWithTab, undo, redo, undoDepth, redoDepth } from '@codemirror/commands';
 import { markdown } from '@codemirror/lang-markdown';
+import { apiJson, apiUrl, postJson } from './api';
 
 export interface NoteItem {
   id: string; // Small random hash e.g. "a7f3"
@@ -175,9 +176,7 @@ export class NotesEditor {
   /** Fetch all markdown notes for the project. */
   async loadNotes() {
     try {
-      const res = await fetch(`/api/project/${encodeURIComponent(this.projectId)}/notes`);
-      if (!res.ok) return;
-      const data = (await res.json()) as { ok: boolean; notes: NoteItem[] };
+      const data = await apiJson<{ ok: boolean; notes: NoteItem[] }>(this.projectId, 'notes');
       this.notes = data.notes ?? [];
 
       if (this.notes.length === 0) {
@@ -262,9 +261,7 @@ export class NotesEditor {
 
     const idToDelete = this.activeNoteId;
     try {
-      await fetch(`/api/project/${encodeURIComponent(this.projectId)}/notes/${encodeURIComponent(idToDelete)}`, {
-        method: 'DELETE',
-      });
+      await fetch(apiUrl(this.projectId, `notes/${encodeURIComponent(idToDelete)}`), { method: 'DELETE' });
       this.notes = this.notes.filter((n) => n.id !== idToDelete);
       this.renderDropdown();
       if (this.notes.length > 0) {
@@ -306,12 +303,7 @@ export class NotesEditor {
   private async saveNote(note: NoteItem) {
     this.setSaveStatus('saving');
     try {
-      const res = await fetch(`/api/project/${encodeURIComponent(this.projectId)}/notes`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ id: note.id, content: note.content }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await apiJson(this.projectId, 'notes', postJson({ id: note.id, content: note.content }));
       this.setSaveStatus('saved');
     } catch {
       this.setSaveStatus('error');
