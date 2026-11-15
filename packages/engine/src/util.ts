@@ -11,11 +11,6 @@ export const clamp01 = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x);
  */
 export const clampMinMax = (u: number, a: number, b: number) => Math.max(a, Math.min(b, u));
 export const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-export const invLerp = (a: number, b: number, x: number) => (a === b ? 0 : (x - a) / (b - a));
-export const remap = (x: number, a: number, b: number, c: number, d: number, clampIt = true) => {
-  const t = invLerp(a, b, x);
-  return lerp(c, d, clampIt ? clamp(t) : t);
-};
 export const smooth = (x: number) => {
   const t = x < 0 ? 0 : x > 1 ? 1 : x;
   return t * t * (3 - 2 * t);
@@ -23,40 +18,6 @@ export const smooth = (x: number) => {
 export const smoothstep = (a: number, b: number, x: number) => {
   const t = clamp((x - a) / (b - a));
   return t * t * (3 - 2 * t);
-};
-
-/**
- * Gradually changes a value toward a desired target over time using a critically damped spring.
- */
-export function smoothDamp(
-  current: number,
-  target: number,
-  vel: { current: number },
-  smoothTime: number,
-  dt: number,
-  maxSpeed = Infinity,
-): number {
-  smoothTime = Math.max(0.0001, smoothTime);
-  const omega = 2 / smoothTime;
-  const x = omega * dt;
-  const exp = 1 / (1 + x + 0.48 * x * x + 0.235 * x * x * x);
-  let change = current - target;
-  const originalTo = target;
-  const maxChange = maxSpeed * smoothTime;
-  change = clamp(change, -maxChange, maxChange);
-  target = current - change;
-  const temp = (vel.current + omega * change) * dt;
-  vel.current = (vel.current - omega * temp) * exp;
-  let output = target + (change + temp) * exp;
-  if (originalTo - current > 0 === output > originalTo) {
-    output = originalTo;
-    vel.current = (output - originalTo) / (dt || 0.0001);
-  }
-  return output;
-}
-export const smootherstep = (a: number, b: number, x: number) => {
-  const t = clamp((x - a) / (b - a));
-  return t * t * t * (t * (t * 6 - 15) + 10);
 };
 export const fract = (x: number) => x - Math.floor(x);
 export const mod = (x: number, m: number) => ((x % m) + m) % m;
@@ -70,10 +31,6 @@ export const DEG = Math.PI / 180;
  */
 export const projectToRect = (q: { x: number; y: number }, rect: readonly [number, number, number, number]): [number, number] =>
   [Math.round(rect[0] + (q.x * 0.5 + 0.5) * rect[2]), Math.round(rect[1] + (0.5 - q.y * 0.5) * rect[3])];
-
-/** Window: 0 before a, ramps up over `fadeIn`, holds, ramps down over `fadeOut` ending at b. */
-export const window01 = (x: number, a: number, b: number, fadeIn = 0.2, fadeOut = 0.2) =>
-  Math.min(smoothstep(a, a + fadeIn, x), 1 - smoothstep(b - fadeOut, b, x));
 
 // ---- easing (t in 0..1) ----
 export const ease = {
@@ -229,16 +186,6 @@ export function noise3(x: number, y: number, z: number, seed = 0) {
   const fz = fade(z - iz);
   return lerp(noise2(x + iz * 17.13, y - iz * 31.7, seed), noise2(x + (iz + 1) * 17.13, y - (iz + 1) * 31.7, seed), fz);
 }
-export function fbm1(x: number, oct = 4, seed = 0) {
-  let s = 0, a = 0.5, f = 1;
-  for (let i = 0; i < oct; i++) { s += a * noise1(x * f, seed + i * 7); f *= 2; a *= 0.5; }
-  return s;
-}
-export function fbm2(x: number, y: number, oct = 4, seed = 0) {
-  let s = 0, a = 0.5, f = 1;
-  for (let i = 0; i < oct; i++) { s += a * noise2(x * f, y * f, seed + i * 7); f *= 2; a *= 0.5; }
-  return s;
-}
 
 // ---- keyframes ----
 export type Key = [time: number, value: number, easeFn?: (t: number) => number];
@@ -257,7 +204,6 @@ export function keys(t: number, ks: Key[]): number {
   return ks[ks.length - 1]![1];
 }
 
-export const vec2 = (x = 0, y = 0) => ({ x, y });
 export type V2 = { x: number; y: number };
 export const dist = (a: V2, b: V2) => Math.hypot(a.x - b.x, a.y - b.y);
 

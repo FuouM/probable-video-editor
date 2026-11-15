@@ -4,24 +4,13 @@
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
 import type { Page } from 'playwright-core';
+import { mulberry32 } from '@pve/engine/util';
 import { closeBrowser, deadline, ensureServer, FRAME_MS, openPage, type PveWindow } from './browser';
 import { decodePng, diffImages, encodePng, type Image } from './png';
 
-/** mulberry32: a small seeded PRNG in [0, 1). */
-function rng(seed: number) {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
 /** The times of the determinism check (scripts/determinism.ts): `n` seeded random times in time order, and the same times shuffled. */
 export function seededTimes(seed: number, n: number, duration: number): { times: number[]; shuffled: number[] } {
-  const rand = rng(seed);
+  const rand = mulberry32(seed);
   const times = Array.from({ length: n }, () => Math.round(rand() * duration * 1000) / 1000).sort((a, b) => a - b);
   const shuffled = [...times];
   for (let i = shuffled.length - 1; i > 0; i--) {

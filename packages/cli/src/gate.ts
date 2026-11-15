@@ -3,7 +3,7 @@
 // The first failure stops the other steps (a failed typecheck makes the long steps worthless).
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { ROOT } from './browser';
+import { killTree, ROOT } from './browser';
 import { checkProject } from './check';
 import { loadIgnore } from './ignore';
 import { fmtCounts, fmtProblem } from './out';
@@ -31,12 +31,6 @@ export interface GateResult {
 
 export const OUTPUT_LINES = 30;
 
-/** Stops a process and its children. A `bun` shim leaves the real process as a child on Windows. */
-function killTree(pid: number): void {
-  if (process.platform === 'win32') Bun.spawnSync(['taskkill', '/PID', String(pid), '/T', '/F'], { stdout: 'ignore', stderr: 'ignore' });
-  else try { process.kill(pid, 'SIGKILL'); } catch { /* it has exited */ }
-}
-
 const cut = (text: string, show: 'head' | 'tail') => {
   const lines = text.replace(/\r/g, '').trimEnd().split('\n');
   const more = lines.length - OUTPUT_LINES;
@@ -47,11 +41,11 @@ const cut = (text: string, show: 'head' | 'tail') => {
 /** Runs the steps at the same time. With `failFast` the first failure stops the steps that still run. */
 export async function runSteps(steps: GateStep[], o: { failFast: boolean }): Promise<GateResult[]> {
   const results: GateResult[] = steps.map((s) => ({ name: s.name, status: 'cancelled', ms: 0 }));
-  const pids = new Set<number>();
+  const procs = new Set<Bun.Subprocess>();
   let stopped = false;
   const stop = () => {
     stopped = true;
-    for (const pid of pids) killTree(pid);
+    for (const proc of procs) killTree(proc);
   };
   await Promise.all(steps.map(async (s, i) => {
     const t0 = performance.now();
@@ -66,9 +60,9 @@ export async function runSteps(steps: GateStep[], o: { failFast: boolean }): Pro
         done(r.ok ? 'ok' : 'FAIL', r.ok ? undefined : r.output);
       } else {
         const proc = Bun.spawn(s.cmd!, { cwd: ROOT, stdout: 'pipe', stderr: 'pipe', stdin: 'ignore' });
-        pids.add(proc.pid);
+        procs.add(proc);
         const [out, err, code] = await Promise.all([new Response(proc.stdout).text(), new Response(proc.stderr).text(), proc.exited]);
-        pids.delete(proc.pid);
+        procs.delete(proc);
         if (stopped && code !== 0) results[i] = { name: s.name, status: 'cancelled', ms: Math.round(performance.now() - t0) };
         else done(code === 0 ? 'ok' : 'FAIL', code === 0 ? undefined : (out + err));
       }

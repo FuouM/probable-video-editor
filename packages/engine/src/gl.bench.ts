@@ -1,6 +1,7 @@
 // Benchmark of Layer2D (gl.ts): Canvas2D drawing, upload(), and a draw that samples the texture so the
 // upload happens. Engine modules load with import() in setup (bun test imports this file).
-import { defineBench, longestLine, rng } from './bench/kit';
+import { defineBench, longestLine } from './bench/kit';
+import { mulberry32 } from './util';
 import type { EffectBench } from './bench/types';
 
 export const bench: EffectBench[] = [
@@ -9,7 +10,7 @@ export const bench: EffectBench[] = [
     kind: 'helper',
     async setup({ engine }) {
       const [{ Layer2D, makeRT, W, H }, { F, font }] = await Promise.all([import('./gl'), import('./type')]);
-      const r = rng(7);
+      const r = mulberry32(7);
       return {
         layer: new Layer2D(),
         rt: makeRT(),

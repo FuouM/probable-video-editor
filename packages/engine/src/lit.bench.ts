@@ -1,6 +1,7 @@
 // Benchmarks of the lit kit (lit.ts): an atlas repaint with its upload, and a grid of lit boxes under a sun with a
 // shadow map rendered into a 640x360 HDR target. Engine modules load with import() in setup (bun test imports this file).
-import { defineBench, rng } from './bench/kit';
+import { defineBench } from './bench/kit';
+import { mulberry32 } from './util';
 import type { EffectBench } from './bench/types';
 
 const atlas = defineBench({
@@ -9,7 +10,7 @@ const atlas = defineBench({
   async setup() {
     const { LitAtlas } = await import('./lit');
     const a = new LitAtlas(1024);
-    const r = rng(7);
+    const r = mulberry32(7);
     const cells = Array.from({ length: 64 }, () => a.paint(32, 32, (p) => p.fill(Math.floor(r() * 0xffffff))));
     return { a, cells, r };
   },
@@ -28,7 +29,7 @@ const scene = defineBench({
     const shadow = { enabled: renderer.shadowMap.enabled, type: renderer.shadowMap.type };
     lit.enableShadows(renderer);
     const a = new lit.LitAtlas(256);
-    const r = rng(11);
+    const r = mulberry32(11);
     const faces = Array.from({ length: 8 }, () => lit.allFaces({ cell: a.paint(8, 8, (p) => { p.fill(Math.floor(r() * 0xffffff)); p.rect(2, 2, 3, 3, '#ffd9a0', 3); }) }));
     const b = new lit.Builder();
     for (let i = 0; i < 20; i++) for (let j = 0; j < 20; j++) b.box(1.5, 1 + r() * 6, 1.5, faces[(i * 20 + j) % 8]!, lit.at(i * 3 - 30, 0, j * 3 - 30, r() * 3));

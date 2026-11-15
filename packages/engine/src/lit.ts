@@ -17,7 +17,7 @@ import type { Pixels } from './type';
 export const LW = W / 3;
 export const LH = H / 3;
 /** Default texels per metre of a "tile" face. */
-export const TEX = 16;
+const TEX = 16;
 
 const markBox = new THREE.Box3();
 const markP = new THREE.Vector3();
@@ -45,10 +45,10 @@ export function markObject(name: string, obj: THREE.Object3D, cam: THREE.Camera,
   mark(name, x0 * k, y0 * k, (x1 - x0) * k, (y1 - y0) * k);
 }
 /** The emissive strength of atlas alpha 127. */
-export const EMIT_MAX = 8;
+const EMIT_MAX = 8;
 
 /** The copies of a mipmapped cell at lower resolution (`LitAtlas.mipmap`): 1/2, 1/4 and 1/8. */
-export const MIP_LEVELS = 3;
+const MIP_LEVELS = 3;
 /** sRGB byte to linear light. */
 const SRGB_LIN = Float32Array.from({ length: 256 }, (_, i) => { const c = i / 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; });
 /** Linear light to an sRGB byte. */

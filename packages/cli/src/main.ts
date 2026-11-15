@@ -23,7 +23,7 @@ import { camStep, cropStrip, frameState, framesAt, judgeSyllable, jumps, JUMP_FL
 import type { CamRecord } from '@pve/engine/marks';
 import { newScene } from './scene';
 import { doctor } from './doctor';
-import { formatNotes, noteRows, readNotes, readProjectNotes, resolveNote } from './notes';
+import { formatNotes, noteRows, readProjectNotes, resolveNote } from './notes';
 import { formatGate, porcelain, runGate, type GateOptions, type GateResult, type GoldenMode } from './gate';
 import { commitMessage, commitPaths } from './commit';
 import { cues, languages, render, type Format } from './subs';
@@ -707,7 +707,7 @@ const COMMANDS: Record<string, Command> = {
       'segment-codec': { type: 'string' }, webcodecs: { type: 'boolean' },
       encoder: { type: 'string' }, quality: { type: 'string' }, preset: { type: 'string' }, x264: { type: 'string' }, workers: { type: 'string' }, chunk: { type: 'string' },
       'mem-gb': { type: 'string' }, noaudio: { type: 'boolean' }, out: { type: 'string' }, headed: { type: 'boolean' },
-      'progress-json': { type: 'boolean' }, 'first-frame': { type: 'string' }, thumbnail: { type: 'string' },
+      'progress-json': { type: 'boolean' }, 'first-frame': { type: 'string' },
     },
     async run(a) {
       const p = await openProject(projectOf(a));
@@ -762,7 +762,7 @@ const COMMANDS: Record<string, Command> = {
       if (a.values['progress-json']) {
         process.stdout.write(`\nPROGRESS: ${JSON.stringify({ status: 'complete', outputFile: path.relative(process.cwd(), e.out) })}\n`);
       }
-      const thumb = (a.values['first-frame'] ?? a.values.thumbnail) as string | undefined;
+      const thumb = a.values['first-frame'] as string | undefined;
       if (thumb) {
         console.log(`replacing frame 0 with ${thumb}...`);
         const tmpOut = path.join(path.dirname(e.out), `${path.basename(e.out, path.extname(e.out))}.thumb-tmp${path.extname(e.out)}`);

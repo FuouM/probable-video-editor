@@ -1,7 +1,8 @@
 // Benchmarks of LitView (litview.ts): the sky, a small lit scene, the bloom chain and the output pass into a
 // frame-sized HDR target, with an interface layer and a top layer (a cursor). Engine modules load with import() in setup
 // (bun test imports this file).
-import { defineBench, rng } from './bench/kit';
+import { defineBench } from './bench/kit';
+import { mulberry32 } from './util';
 import type { EffectBench } from './bench/types';
 
 const view = defineBench({
@@ -12,7 +13,7 @@ const view = defineBench({
       import('three'), import('./lit'), import('./litview'), import('./textlayer'), import('./gl'),
     ]);
     const a = new lit.LitAtlas(128);
-    const r = rng(5);
+    const r = mulberry32(5);
     const faces = Array.from({ length: 4 }, () => lit.allFaces({ cell: a.paint(8, 8, (p) => { p.fill(Math.floor(r() * 0xffffff)); p.rect(1, 4, 2, 2, '#ffe0a0', 4); }) }));
     const b = new lit.Builder();
     for (let i = 0; i < 12; i++) b.box(2, 2 + r() * 8, 2, faces[i % 4]!, lit.at(i * 4 - 24, 0, -20 - r() * 20));

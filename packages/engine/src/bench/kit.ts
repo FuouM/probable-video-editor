@@ -41,18 +41,6 @@ export function disposeFrames(f: BenchFrames) {
   f.input2.dispose();
 }
 
-/** Deterministic random numbers in 0..1 (mulberry32). */
-export function rng(seed: number) {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
 /** The longest lyric line of the song: a real, lyric-length string for the text benchmarks. */
 export function longestLine(engine: Engine) {
   return engine.lyrics.lines.reduce((a, b) => (b.text.length > a.length ? b.text : a), '');

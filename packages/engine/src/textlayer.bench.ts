@@ -1,6 +1,7 @@
 // Benchmarks of TextLayer (textlayer.ts): rectangle, pixel and shade fills over the 640x360 layer and the texture
 // upload of the commit. Engine modules load with import() in setup (bun test imports this file).
-import { defineBench, rng } from './bench/kit';
+import { defineBench } from './bench/kit';
+import { mulberry32 } from './util';
 import type { EffectBench } from './bench/types';
 
 const fill = defineBench({
@@ -9,7 +10,7 @@ const fill = defineBench({
   async setup() {
     const { TextLayer } = await import('./textlayer');
     const l = new TextLayer();
-    const r = rng(3);
+    const r = mulberry32(3);
     const rects = Array.from({ length: 200 }, () => [r() * 600, r() * 340, 4 + r() * 80, 2 + r() * 30] as const);
     return { l, rects };
   },

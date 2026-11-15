@@ -1,13 +1,14 @@
 // Benchmarks of baked physics (physics.ts): 1500 small boxes on a ground, hit by a kinematic box that sweeps
 // through them for 4 s at 120 Hz. `physics.bake` is the init() cost. `physics.sample` is the per-frame cost
 // of writing 1500 instance matrices. Both run on the CPU. Engine modules load with import() in setup.
-import { defineBench, rng } from './bench/kit';
+import { defineBench } from './bench/kit';
+import { mulberry32 } from './util';
 import type * as THREE from 'three';
 import type { EffectBench } from './bench/types';
 import type { BakeSpec, Baked } from './physics';
 
 function spec(): BakeSpec {
-  const r = rng(1500);
+  const r = mulberry32(1500);
   const bodies: BakeSpec['bodies'] = [
     { shape: { kind: 'box', half: [40, 0.5, 40] }, pose: { p: [0, -0.5, 0], q: [0, 0, 0, 1] }, type: 'fixed' },
     {

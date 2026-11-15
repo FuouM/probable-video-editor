@@ -1,6 +1,7 @@
 // Benchmarks of LineBatch (lines.ts): random short segments in a 1920x1080-layout HDR target, re-uploaded
 // and drawn each iteration as scenes do. Engine modules load with import() in setup (bun test imports this file).
-import { defineBench, rng } from './bench/kit';
+import { defineBench } from './bench/kit';
+import { mulberry32 } from './util';
 import type { EffectBench } from './bench/types';
 
 function lines(id: string, count: number) {
@@ -12,7 +13,7 @@ function lines(id: string, count: number) {
       const rt = makeRT();
       clearRT(renderer, rt);
       const batch = new LineBatch(count);
-      const r = rng(count);
+      const r = mulberry32(count);
       for (let i = 0; i < count; i++) {
         const x = r() * W, y = r() * H, a = r() * Math.PI * 2, l = 4 + r() * 40;
         batch.seg2(x, y, x + Math.cos(a) * l, y + Math.sin(a) * l, 0.6 + r() * 1.8, [0.05 + r() * 0.4, 0.05 + r() * 0.3, 0.05 + r() * 0.2], 0.6);
