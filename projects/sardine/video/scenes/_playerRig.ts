@@ -14,8 +14,9 @@ import { FPS } from './_time';
 import { C, chromeText, chromeWidth, drawCursor, isWide } from './_playerChrome';
 import { textLayout } from './_playerWindows';
 import type { PlayerTrack } from './_playerTrack';
+import { hash } from './_propKit';
 import {
-  BORDER, STATUS_H, TITLE_H, TOOLBAR, V6_TOOLS, camButtons, centreOf, hashInt, inside, toolButton, viewButton, winButtons,
+  BORDER, STATUS_H, TITLE_H, TOOLBAR, V6_TOOLS, camButtons, centreOf, inside, toolButton, viewButton, winButtons,
   type CamState, type PlayerState, type Rect, type Vec2, type WinBody, type WinState,
 } from './_playerTypes';
 
@@ -436,7 +437,7 @@ export class PlayerRig {
       ui.circle(c.x, c.y, r, ink);
       ui.circle(c.x, c.y, r - 1, ink);
       // the sparks: 5 ticks of 3 px that fly out along fixed angles
-      if (f < 5) this.sparks(ui, c.x, c.y, hashInt(Math.round(c.at * 1000), 9) * Math.PI * 2, [6, 10, 14, 18, 21][f]!, ink);
+      if (f < 5) this.sparks(ui, c.x, c.y, hash(Math.round(c.at * 1000), 9) * Math.PI * 2, [6, 10, 14, 18, 21][f]!, ink);
     }
   }
 

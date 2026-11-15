@@ -6,6 +6,7 @@
 // skeleton keeps a hair apart are pushed apart so they do not print as one. Each stroke starts on a disc (the
 // pen-down), ends on a small disc, and sharp hooks carry a ring: the skeleton that survived every copy.
 import { polylineArcLength as arcLen, resamplePolyline as resample } from '@pve/engine/stroke';
+import { mulberry32 } from '@pve/engine/util';
 import { body, rawOf, type P, type PStroke, type Skel } from './new-script';
 
 const BOX = 109;
@@ -190,17 +191,6 @@ function unstair(v: P[], step: number): P[] {
   return out.filter((p, k) => k === 0 || k === out.length - 1 || dirOf(out[k - 1]!, p) !== dirOf(p, out[k + 1]!));
 }
 
-function rng(seed: number): () => number {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
 /** The vertices of a chain code of steps of `q` from `s`: where the direction changes, and the end. */
 function chainVerts(chain: number[], s: P, q: number): P[] {
   const v: P[] = [s];
@@ -271,7 +261,7 @@ function anneal(orig: P[], v: P[], q: number, seed: number): P[] {
     }
     return e;
   };
-  const rand = rng(seed);
+  const rand = mulberry32(seed);
   let cur = chain, ce = cost(cur), best = cur, be = ce;
   for (let it = 0; it < ANNEAL; it++) {
     const T = 0.6 * Math.pow(0.02 / 0.6, it / ANNEAL);

@@ -1,8 +1,9 @@
-// Small helpers that the prop kits share (`_scissors.ts`, `_ticket.ts`, `_duckboard.ts`).
+// Small helpers that the prop kits (`_scissors.ts`, `_ticket.ts`, `_duckboard.ts`) and the player (`_playerTrack.ts`,
+// `_playerRig.ts`) share.
 import type { PixelFont } from '@pve/engine/type';
 import type { Painter } from '@pve/engine/lit';
 
-/** A deterministic hash of up to four integers, 0..1. */
+/** A deterministic integer hash (murmur style) of up to four integers, 0..1. It is a different hash from the sine hash `hashSin`. */
 export function hash(a: number, b: number, c = 0, d = 0): number {
   let h = Math.imul(a | 0, 374761393) + Math.imul(b | 0, 668265263) + Math.imul(c | 0, 1274126177) + Math.imul(d | 0, 2147483647);
   h = Math.imul(h ^ (h >>> 13), 1274126177);

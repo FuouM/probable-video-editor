@@ -21,10 +21,10 @@
 import type { Frame } from '@pve/engine/scene';
 import { H, W } from '@pve/engine/gl';
 import { hash, roundRectFill } from '@pve/engine/util';
-import { lineNo, syllables, units, type Line, type WrittenPhrase, type WrittenUnit } from '@pve/engine/lyrics';
+import { lineNo, units, type Line, type WrittenPhrase, type WrittenUnit } from '@pve/engine/lyrics';
 import { font } from '@pve/engine/type';
 import {
-  copyTimes, fnt, genAt, INK, MONO, PageScene, PAPER, RED, SANS, seal, tone, type SurfaceOpts,
+  copyTimes, fnt, genAt, INK, MONO, PageScene, PAPER, RED, SANS, seal, sungOnsets, tone, type SurfaceOpts,
 } from './_page';
 import { SCREEN } from './_era_screen';
 import { age, HATS, KAOS, PILLS, SPAM, SPRAY_LIFE, spray, squiggle, sticker, typo } from './bored-fx';
@@ -170,12 +170,6 @@ export default class Bored extends PageScene {
     say(42, [0, 11, 17], [0, 2, 0]);
     say(43, [0, 11, 14], [2, 3, 2]);
     say(44, [0, 6, 14], [3, 1, 3]);
-
-    const sung = (i: number) => {
-      const line = lineNo(L, i);
-      const ghosts = line.written!.ghosts;
-      return syllables(line).filter((_, k) => !ghosts.includes(k)).map((s) => s.start);
-    };
     const l44 = lineNo(L, 44);
     this.beam = units(l44).find((u) => u.glyph === 'ビ')!.start;
     this.mu = units(l44).find((u) => u.glyph === 'ム')!.start;
@@ -193,7 +187,7 @@ export default class Bored extends PageScene {
       m.pills = PILLS.map((_, i) => i).sort((a, b) => hash(k, a, 41) - hash(k, b, 41)).slice(0, 3);
     });
     this.copies = copyTimes(L);
-    this.saves = [sung(41)[0]!, ...sung(42), sung(43)[0]!, sung(44)[0]!].sort((a, b) => a - b);
+    this.saves = [sungOnsets(L, 41)[0]!, ...sungOnsets(L, 42), sungOnsets(L, 43)[0]!, sungOnsets(L, 44)[0]!].sort((a, b) => a - b);
 
     const au = this.ctx.audio;
     const ev = (k: string) => au.events(k, this.ctx.start - 1, this.ctx.end + 1).map(([t]) => t);

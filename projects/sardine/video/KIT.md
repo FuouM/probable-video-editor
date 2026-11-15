@@ -875,27 +875,27 @@ Imported by: _bsod, _buddy, _c2apps, _c3hud, _captionCarriers, _playerRig, _play
 - `drawGhostArc(l, a, b, t, bow)` (_playerChrome.ts:88) — A glowing ghost arc from `a` to `b`, bowed sideways by `bow` px (the preview of the bend tool).
 - `drawCursor(ui, x, y, tool, down)` (_playerChrome.ts:103) — The arrow cursor at `(x, y)`, and when a tool is selected its icon on a plate at the tip (RollerCoaster Tycoo…
 
-### _playerRig.ts (485 lines)
+### _playerRig.ts (486 lines)
 
 The window compositor of the sardine player (`PlayerRig`): RCT chrome (toolbar, ticker, counter, windows, modals, the console, the click effects, the arrow cursor) on the 640x360 `TextLayer`, and each window's 3D view as a sized `LitView` that is blitted in HDR into the main view, so the bloom, the tone map, the dithe…
 
 Imported by: _c3mosh, bridge, chorus2, chorus3, day, interlude, night, ride.
 
-- type `RigOptions` (_playerRig.ts:37)
-- class `PlayerRig` (_playerRig.ts:61) — The window compositor.
+- type `RigOptions` (_playerRig.ts:38)
+- class `PlayerRig` (_playerRig.ts:62) — The window compositor.
   - top, track(), state(t), view(win), aspect(win), compose(renderer, main, st, render), draw(l, st, over), buttonCentre(win, which), dispose()
 
-### _playerTrack.ts (608 lines)
+### _playerTrack.ts (609 lines)
 
 The input track of the sardine player (`PlayerTrack`): a list of timed player inputs, compiled once. It resolves the cursor (a curved path that eases out, a small overshoot, a 2-frame press, an idle twitch), the windows (open with a 2-frame box grow, drag, maximize, close, view cycle), the selected tool, the game spee…
 
 Imported by: _bridgeBench, _interludeMap, _playerCams, _playerRig, bridge, chorus2, chorus3, day, interlude, night, ride, scale-board.
 
-- `consoleTimes(at, cmd)` (_playerTrack.ts:50) — The key times of a console input at `at`: the first key 0.4 s after `~`, then about 11 keys a second with a l…
-- class `PlayerTrack` (_playerTrack.ts:322) — The player's inputs, compiled once.
+- `consoleTimes(at, cmd)` (_playerTrack.ts:51) — The key times of a console input at `at`: the first key 0.4 s after `~`, then about 11 keys a second with a l…
+- class `PlayerTrack` (_playerTrack.ts:323) — The player's inputs, compiled once.
   - inputs, map, cursorAt(t), restAt(t), toolAt(t), speedAt(t), clicksAt(t, within), handleAt(id, t), handlesAt(t), tipAt(t), commandTime(cmd), commandsAt(t), consoleAt(t), carryAt(t), stateAt(t)
 
-### _playerTypes.ts (301 lines)
+### _playerTypes.ts (295 lines)
 
 The input model and the state types of the sardine player (treatment "The player", "Windows inside windows"), and the rectangle helpers of the window chrome: the title bar buttons, the toolbars and the content rectangle. `PlayerTrack` (`_playerTrack.ts`) compiles the inputs, `PlayerRig` (`_playerRig.ts`) draws the sta…
 
@@ -904,41 +904,40 @@ Imported by: _buddy, _c2apps, _c2script, _c3hud, _c3map, _captionCarriers, _carr
 - type `Vec2` (_playerTypes.ts:9)
 - type `Vec3` (_playerTypes.ts:10)
 - type `Rect` (_playerTypes.ts:12) — x, y, w, h in logical pixels (x right, y down).
-- const `hashInt` (_playerTypes.ts:15) — The integer hash of the player (murmur style) to [0, 1).
-- const `inside` (_playerTypes.ts:20)
-- const `centreOf` (_playerTypes.ts:22) — Centre of a rectangle, for the cursor.
-- type `Tool` (_playerTypes.ts:26)
-- const `V6_TOOLS` (_playerTypes.ts:28) — The ten tools that v6 adds to the four of v5.
-- type `Speed` (_playerTypes.ts:29)
-- type `WinBody` (_playerTypes.ts:32) — What a window shows.
-- type `TextLine` (_playerTypes.ts:40)
-- type `CamSpec` (_playerTypes.ts:48) — A security-cam window (`WinSpec.cam`): a button for each feed in the title bar, a REC dot, a time stamp and c…
-- type `WinSpec` (_playerTypes.ts:55)
-- type `PlayerInput` (_playerTypes.ts:75)
-- `clickAt(at, to, o)` (_playerTypes.ts:138) — The inputs of a click on `to`: the cursor arrives, then the press.
-- type `MapInput` (_playerTypes.ts:142)
-- const `TITLE_H` (_playerTypes.ts:146)
-- const `STATUS_H` (_playerTypes.ts:147)
-- const `BORDER` (_playerTypes.ts:148)
-- const `FULL` (_playerTypes.ts:149)
-- `contentRect(rect, maximized)` (_playerTypes.ts:152) — The content rectangle of a window: the area between its title bar and its status bar.
-- `winButtons(rect, maximized)` (_playerTypes.ts:159) — The title bar buttons of a window: minimize, maximize and close.
-- `viewButton(rect, maximized)` (_playerTypes.ts:166) — The view button of a window with several cameras: left of the title bar buttons.
-- `titleGrab(rect)` (_playerTypes.ts:173) — A point on the title bar to press for a window drag.
-- `camButtons(rect, maximized, count)` (_playerTypes.ts:179) — The cam buttons of a security-cam window, left of the title bar buttons.
-- const `TOOLBAR` (_playerTypes.ts:185) — The buttons of the toolbars, for the cursor to aim at.
-- `toolButton(tool)` (_playerTypes.ts:203) — The button of any tool, for the cursor to aim at: the four of v5 in the bottom bar, the ten of v6 in the top …
-- type `CursorState` (_playerTypes.ts:210)
-- type `CamState` (_playerTypes.ts:213) — The state of a security-cam window at time t.
-- type `WinState` (_playerTypes.ts:224)
-- type `ClickState` (_playerTypes.ts:256) — A click that is recent at time t.
-- type `HandleState` (_playerTypes.ts:259) — A tool handle at time t.
-- type `TipState` (_playerTypes.ts:262) — A tooltip at time t: the part of the text that has shown, the full text (the box has its size), the anchor (t…
-- type `ConsoleState` (_playerTypes.ts:265) — The developer console at time t.
-- type `CommandState` (_playerTypes.ts:268) — A command that has been entered (Enter) by time t: the scene reads it to let the world react in the same fram…
-- type `CarryState` (_playerTypes.ts:275) — The pick-up hand with an object at time t.
-- type `ConsoleTimes` (_playerTypes.ts:278) — The times of one console input: the `~` press, each key, Enter and the start of the rise.
-- type `PlayerState` (_playerTypes.ts:280)
+- const `inside` (_playerTypes.ts:14)
+- const `centreOf` (_playerTypes.ts:16) — Centre of a rectangle, for the cursor.
+- type `Tool` (_playerTypes.ts:20)
+- const `V6_TOOLS` (_playerTypes.ts:22) — The ten tools that v6 adds to the four of v5.
+- type `Speed` (_playerTypes.ts:23)
+- type `WinBody` (_playerTypes.ts:26) — What a window shows.
+- type `TextLine` (_playerTypes.ts:34)
+- type `CamSpec` (_playerTypes.ts:42) — A security-cam window (`WinSpec.cam`): a button for each feed in the title bar, a REC dot, a time stamp and c…
+- type `WinSpec` (_playerTypes.ts:49)
+- type `PlayerInput` (_playerTypes.ts:69)
+- `clickAt(at, to, o)` (_playerTypes.ts:132) — The inputs of a click on `to`: the cursor arrives, then the press.
+- type `MapInput` (_playerTypes.ts:136)
+- const `TITLE_H` (_playerTypes.ts:140)
+- const `STATUS_H` (_playerTypes.ts:141)
+- const `BORDER` (_playerTypes.ts:142)
+- const `FULL` (_playerTypes.ts:143)
+- `contentRect(rect, maximized)` (_playerTypes.ts:146) — The content rectangle of a window: the area between its title bar and its status bar.
+- `winButtons(rect, maximized)` (_playerTypes.ts:153) — The title bar buttons of a window: minimize, maximize and close.
+- `viewButton(rect, maximized)` (_playerTypes.ts:160) — The view button of a window with several cameras: left of the title bar buttons.
+- `titleGrab(rect)` (_playerTypes.ts:167) — A point on the title bar to press for a window drag.
+- `camButtons(rect, maximized, count)` (_playerTypes.ts:173) — The cam buttons of a security-cam window, left of the title bar buttons.
+- const `TOOLBAR` (_playerTypes.ts:179) — The buttons of the toolbars, for the cursor to aim at.
+- `toolButton(tool)` (_playerTypes.ts:197) — The button of any tool, for the cursor to aim at: the four of v5 in the bottom bar, the ten of v6 in the top …
+- type `CursorState` (_playerTypes.ts:204)
+- type `CamState` (_playerTypes.ts:207) — The state of a security-cam window at time t.
+- type `WinState` (_playerTypes.ts:218)
+- type `ClickState` (_playerTypes.ts:250) — A click that is recent at time t.
+- type `HandleState` (_playerTypes.ts:253) — A tool handle at time t.
+- type `TipState` (_playerTypes.ts:256) — A tooltip at time t: the part of the text that has shown, the full text (the box has its size), the anchor (t…
+- type `ConsoleState` (_playerTypes.ts:259) — The developer console at time t.
+- type `CommandState` (_playerTypes.ts:262) — A command that has been entered (Enter) by time t: the scene reads it to let the world react in the same fram…
+- type `CarryState` (_playerTypes.ts:269) — The pick-up hand with an object at time t.
+- type `ConsoleTimes` (_playerTypes.ts:272) — The times of one console input: the `~` press, each key, Enter and the start of the rise.
+- type `PlayerState` (_playerTypes.ts:274)
 
 ### _playerWindows.ts (96 lines)
 
@@ -954,15 +953,15 @@ Imported by: _c2script, _playerRig, bridge, chorus3, interlude, night.
 - `alertWindow(fonts, o)` (_playerWindows.ts:80) — An ERR (`error`) or WARNING (`warn`) window with lines of text.
 - `fishCamWindow(o)` (_playerWindows.ts:90) — The `[FISH CAM]` window (treatment "Framing"): a security-cam style window (REC dot, corner brackets, time st…
 
-### _propKit.ts (31 lines)
+### _propKit.ts (32 lines)
 
-Small helpers that the prop kits share (`_scissors.ts`, `_ticket.ts`, `_duckboard.ts`).
+Small helpers that the prop kits (`_scissors.ts`, `_ticket.ts`, `_duckboard.ts`) and the player (`_playerTrack.ts`, `_playerRig.ts`) share.
 
-Imported by: _duckboard, _ticket.
+Imported by: _duckboard, _playerRig, _playerTrack, _ticket.
 
-- `hash(a, b, c, d)` (_propKit.ts:6) — A deterministic hash of up to four integers, 0..1.
-- `mixc(a, b, t)` (_propKit.ts:14) — Mixes two 0xRRGGBB colours, t = 0 gives a.
-- class `Top` (_propKit.ts:20) — A painter with y down from the top of the cell (the way pixel fonts and layouts think).
+- `hash(a, b, c, d)` (_propKit.ts:7) — A deterministic integer hash (murmur style) of up to four integers, 0..1.
+- `mixc(a, b, t)` (_propKit.ts:15) — Mixes two 0xRRGGBB colours, t = 0 gives a.
+- class `Top` (_propKit.ts:21) — A painter with y down from the top of the cell (the way pixel fonts and layouts think).
   - px(x, y, c), clear(x, y), rect(x, y, w, h, c), fill(c), text(f, s, x, base, c, n)
 
 ### _rideMusic.ts (18 lines)

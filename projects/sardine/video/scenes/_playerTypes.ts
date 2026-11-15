@@ -11,12 +11,6 @@ export type Vec3 = readonly [number, number, number];
 /** x, y, w, h in logical pixels (x right, y down). */
 export type Rect = readonly [number, number, number, number];
 
-/** The integer hash of the player (murmur style) to [0, 1). It is a different hash from the sine hash `hashSin`. */
-export const hashInt = (a: number, b = 0) => {
-  let h = (Math.imul(a | 0, 374761393) + Math.imul(b | 0, 668265263)) | 0;
-  h = Math.imul(h ^ (h >>> 13), 1274126177);
-  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
-};
 export const inside = (r: Rect, x: number, y: number) => x >= r[0] && y >= r[1] && x < r[0] + r[2] && y < r[1] + r[3];
 /** Centre of a rectangle, for the cursor. */
 export const centreOf = (r: Rect): Vec2 => [r[0] + Math.floor(r[2] / 2), r[1] + Math.floor(r[3] / 2)];

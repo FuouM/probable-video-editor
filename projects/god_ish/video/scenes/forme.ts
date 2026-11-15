@@ -12,7 +12,7 @@ import * as THREE from 'three';
 import { Scene, type Frame } from '@pve/engine/scene';
 import { clearRT, H, makeRT, W } from '@pve/engine/gl';
 import { lineNo, units } from '@pve/engine/lyrics';
-import { hash } from '@pve/engine/util';
+import { hash, lerp } from '@pve/engine/util';
 import { loadType } from './_page';
 import { G, Sheets, SH, STACK, SW } from './carbons-sheet';
 import { Tray, TRAY_BOX } from './carbons-tray';
@@ -24,7 +24,6 @@ import { Atlas, BED_Z, D, FOV, FormeGL, TYPE_HIGH, worldAt } from './forme-gl';
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 const easeOut = (x: number) => 1 - (1 - x) ** 3;
 const easeInOut = (x: number) => (x < 0.5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2);
-const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
 
 /** The bed quad reaches this far past the frame (px). */
 const BED_PAD = 80;

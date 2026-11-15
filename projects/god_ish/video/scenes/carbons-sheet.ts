@@ -1,7 +1,7 @@
 // The typed sheets of plate 1: the original and its carbons. Each strike is one written unit at its onset, set
 // in a vertical column (one column per line, read right to left). The same strike prints on every sheet of the
 // stack: each carbon fainter, softer and further off register, and each strike lands a little apart on each.
-import { SCALE, scaleContext2D } from '@pve/engine/gl';
+import { makeCanvas, SCALE } from '@pve/engine/gl';
 import { lineNo, unitAt, units, type Line, type Lyrics, type WrittenPhrase } from '@pve/engine/lyrics';
 import { font, vcells } from '@pve/engine/type';
 import { hash } from '@pve/engine/util';
@@ -58,16 +58,9 @@ interface Sheet {
   sc: CanvasRenderingContext2D | null;
 }
 
-function canvas2D(w: number, h: number): CanvasRenderingContext2D {
-  const cv = document.createElement('canvas');
-  cv.width = Math.round(w * SCALE);
-  cv.height = Math.round(h * SCALE);
-  return scaleContext2D(cv.getContext('2d', { willReadFrequently: true })!, SCALE);
-}
-
 function newSheet(k: number): Sheet {
-  const c = canvas2D(SW, SH);
-  return { cv: c.canvas, c, n: -1, turn: Number.NaN, sc: k === 0 ? null : canvas2D(SW + 2 * SPAD, SH + 2 * SPAD) };
+  const { cv, c } = makeCanvas(SW, SH);
+  return { cv, c, n: -1, turn: Number.NaN, sc: k === 0 ? null : makeCanvas(SW + 2 * SPAD, SH + 2 * SPAD).c };
 }
 
 export class Sheets {

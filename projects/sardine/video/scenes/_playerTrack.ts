@@ -6,8 +6,9 @@ import { clamp01, lerp, smooth } from '@pve/engine/util';
 import { LH, LW } from '@pve/engine/lit';
 import { FPS, FR } from './_time';
 import { dragEase, easeOut3 } from './_ease';
+import { hash } from './_propKit';
 import {
-  FULL, contentRect, centreOf, hashInt, inside,
+  FULL, contentRect, centreOf, inside,
   type CarryState, type ClickState, type CommandState, type ConsoleState, type ConsoleTimes, type CursorState,
   type HandleState, type MapInput, type PlayerInput, type PlayerState, type Rect, type Speed, type TipState, type Tool, type Vec2,
   type WinSpec, type WinState,
@@ -50,7 +51,7 @@ const CONSOLE_SLIDE = 2 * FR;
 export function consoleTimes(at: number, cmd: string): ConsoleTimes {
   const typed: number[] = [];
   let t = at + 0.4;
-  for (let k = 0; k < [...cmd].length; k++) { typed.push(t); t += 0.07 + 0.04 * hashInt(k, 91); }
+  for (let k = 0; k < [...cmd].length; k++) { typed.push(t); t += 0.07 + 0.04 * hash(k, 91); }
   const enter = typed.length ? typed[typed.length - 1]! + 0.25 : at + 0.5;
   return { open: at, typed, enter, close: enter + 0.9 };
 }
@@ -149,7 +150,7 @@ class TrackCompiler {
         throw new Error(`player: ${what} at ${(t1 + LEAD).toFixed(3)} s leaves no time to move ${Math.round(d)} px from the last input (free at ${free.toFixed(3)} s, a hand needs ${need.toFixed(3)} s)`);
       }
     }
-    const bend = (hashInt(this.segs.length, 3) < 0.5 ? -1 : 1) * (0.07 + 0.1 * hashInt(this.segs.length, 5));
+    const bend = (hash(this.segs.length, 3) < 0.5 ? -1 : 1) * (0.07 + 0.1 * hash(this.segs.length, 5));
     this.segs.push({ t0, t1, from: pos, to, drag, bend });
     this.pos = to;
     this.free = t1;
@@ -373,7 +374,7 @@ export class PlayerTrack {
         const next = this.segs[k + 1];
         if (t - s.t1 > IDLE_FROM && (!next || next.t0 - t > 0.25)) {
           const slot = Math.floor(t * 6);
-          if (hashInt(slot, 17) < 0.3) { x += hashInt(slot, 1) < 0.5 ? -1 : 1; y += hashInt(slot, 2) < 0.5 ? 0 : 1; }
+          if (hash(slot, 17) < 0.3) { x += hash(slot, 1) < 0.5 ? -1 : 1; y += hash(slot, 2) < 0.5 ? 0 : 1; }
         }
       }
     }

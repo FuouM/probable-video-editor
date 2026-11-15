@@ -19,10 +19,10 @@
 //   (pull to refresh, a spinner) and nothing new comes. After 143 s the drums stop and it stands still.
 import type { Frame } from '@pve/engine/scene';
 import { H, W } from '@pve/engine/gl';
-import { lineNo, syllables, units } from '@pve/engine/lyrics';
+import { lineNo, units } from '@pve/engine/lyrics';
 import { font } from '@pve/engine/type';
 import { hash, stepN } from '@pve/engine/util';
-import { copyTimes, genAt, INK, MONO, PageScene, PAPER, tone, type SurfaceOpts } from './_page';
+import { copyTimes, genAt, INK, MONO, PageScene, PAPER, sungOnsets, tone, type SurfaceOpts } from './_page';
 import { SCREEN } from './_era_screen';
 import { chrome, COL_X, FEED_TOP, type El } from './tiny-chrome';
 import { chatter, type Burst, type Rect } from './tiny-pops';
@@ -76,11 +76,6 @@ export default class Tiny extends PageScene {
     await super.init();
     this.warm([SCREEN], true);
     const L = this.ctx.lyrics;
-    const sung = (i: number) => {
-      const line = lineNo(L, i);
-      const ghosts = line.written!.ghosts;
-      return syllables(line).filter((_, k) => !ghosts.includes(k)).map((s) => s.start);
-    };
     const list: Post[] = [];
     for (let i = FIRST; i <= LAST; i++) {
       const line = lineNo(L, i);
@@ -95,7 +90,7 @@ export default class Tiny extends PageScene {
     this.ends = list.map((_, k) => list[k + 1]?.start ?? Infinity);
     const ki = list[48 - FIRST]!.ki!;
     this.kiStart = ki.start;
-    this.kiSteps = [...sung(48), ...sung(49)].filter((s) => s > ki.start);
+    this.kiSteps = [...sungOnsets(L, 48), ...sungOnsets(L, 49)].filter((s) => s > ki.start);
     this.copies = copyTimes(L);
 
     const au = this.ctx.audio;
@@ -124,7 +119,7 @@ export default class Tiny extends PageScene {
       const n = this.hats.filter((h) => h >= this.ctx.start - 0.1 && h <= t).length;
       return [9 + n, i >= 0 ? age(t, this.hats[i]!) : 99];
     });
-    const on = [...sung(45), ...sung(46), ...sung(47)].sort((a, b) => a - b);
+    const on = [...sungOnsets(L, 45), ...sungOnsets(L, 46), ...sungOnsets(L, 47)].sort((a, b) => a - b);
     const fx = MID, fy = 500;
     const order = this.els.map((_, j) => j)
       .sort((a, b) => Math.hypot(this.els[b]!.cx - fx, this.els[b]!.cy - fy) - Math.hypot(this.els[a]!.cx - fx, this.els[a]!.cy - fy));

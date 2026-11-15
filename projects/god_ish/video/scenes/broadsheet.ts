@@ -11,7 +11,7 @@ import { H, makeCanvas, SCALE, scaleContext2D, W } from '@pve/engine/gl';
 import { pad0 } from '@pve/engine/util';
 import { lineNo, rubyOf, syllables, units, type Line, type Lyrics, type Syl, type WrittenUnit } from '@pve/engine/lyrics';
 import { font } from '@pve/engine/type';
-import { changesOf, copyTimes, CUT1, CUT2, genAt, INK, MONO, PageScene, PAPER, rebate, RED, SANS, seal, SERIF, statusLine, type SurfaceOpts } from './_page';
+import { changesOf, copyTimes, CUT1, CUT2, genAt, INK, MONO, PageScene, PAPER, rebate, RED, SANS, seal, SERIF, statusLine, sungOnsets, type SurfaceOpts } from './_page';
 import { PRESS } from './_era_press';
 import { Body, BODY_X, TIER, TIERS, type Rect } from './broadsheet-body';
 import { box, column, gloss, latinWood, sort, wear, Wood } from './broadsheet-type';
@@ -41,9 +41,7 @@ export function pressOnsets(lyr: Lyrics): { onsets: number[]; fill: number } {
   const onsets: number[] = [];
   let fill = 0;
   for (let i = 12; i <= 17; i++) {
-    const line = lineNo(lyr, i);
-    const ghosts = new Set(line.written!.ghosts);
-    for (const [k, s] of syllables(line).entries()) if (!ghosts.has(k)) onsets.push(s.start);
+    onsets.push(...sungOnsets(lyr, i));
     if (i === 13) fill = onsets.length;
   }
   return { onsets: onsets.sort((a, b) => a - b), fill };

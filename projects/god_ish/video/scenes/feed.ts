@@ -17,16 +17,13 @@ import * as THREE from 'three';
 import { Scene, type Frame } from '@pve/engine/scene';
 import { FSPass, H, Layer2D, makeRT, SCALE, W } from '@pve/engine/gl';
 import { lineNo, units } from '@pve/engine/lyrics';
-import { hash, stepN } from '@pve/engine/util';
+import { ease, hash, lerp, stepN } from '@pve/engine/util';
 import { fnt, SERIF, tone } from './_page';
 import { manuscriptPage } from './original';
 import { popTimes, strikes, type Ink } from './feed-plan';
 import { Tray, TRAY_BOX, type TrayCell } from './carbons-tray';
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
-const easeIn = (x: number) => x * x;
-const easeOut = (x: number) => 1 - (1 - x) * (1 - x);
 const smooth = (x: number) => x * x * (3 - 2 * x);
-const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
 /** px: the height of the platen band at the top of the frame. */
 const PL = 118;
 /** s: the fall of a slug from its hold into its cell. */
@@ -256,7 +253,7 @@ export default class Feed extends Scene {
     }
     // the drop: straight down into the cell, faster and faster
     const u = clamp01((t - drop) / DROP);
-    return { x: lerp(fl.hx, fl.cell.x, smooth(u)), y: lerp(fl.hy, fl.cell.y, smooth(u)), z: fl.zh * (1 - easeIn(u)), size: s, flip: Math.PI, rot: fl.spin * 0.2 * (1 - u) };
+    return { x: lerp(fl.hx, fl.cell.x, smooth(u)), y: lerp(fl.hy, fl.cell.y, smooth(u)), z: fl.zh * (1 - ease.inQuad(u)), size: s, flip: Math.PI, rot: fl.spin * 0.2 * (1 - u) };
   }
 
   /** The empty slots of the tray: a cell is empty until its slug is in. */
@@ -375,8 +372,8 @@ export default class Feed extends Scene {
     // the platen comes in after 敬 and pulls the page up by the cut; it goes back up out of the frame after it
     const y0 = this.t2 + 0.06;
     u.uCut!.value = t >= this.cut ? 1 : 0;
-    u.uEdge!.value = t < this.cut ? easeIn(clamp01((t - y0) / (this.cut - y0))) * (H + 10) : 0;
-    u.uPlaten!.value = t < this.cut ? PL * easeOut(clamp01((t - this.t2) / 0.1)) : PL * (1 - easeIn(clamp01((t - this.cut) / 0.14)));
+    u.uEdge!.value = t < this.cut ? ease.inQuad(clamp01((t - y0) / (this.cut - y0))) * (H + 10) : 0;
+    u.uPlaten!.value = t < this.cut ? PL * ease.outQuad(clamp01((t - this.t2) / 0.1)) : PL * (1 - ease.inQuad(clamp01((t - this.cut) / 0.14)));
     this.pass.render(this.ctx.renderer, out);
   }
 

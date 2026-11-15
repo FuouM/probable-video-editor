@@ -8,10 +8,11 @@
 //   terminals, and punches a monumental 人生 cut-out onto the red substrate during the a cappella climax.
 // - Look 'assembly': era shards launch from the Specimen Box and margins at 12 fps to build each stroke.
 // - Look 'palimpsest': faint traces of earlier eras under the codex, scraped clean as strokes are written.
-import { H, makeCanvas, SCALE, scaleContext2D, W } from '@pve/engine/gl';
+import { H, makeCanvas, W } from '@pve/engine/gl';
 import { lineNo, units, type Lyrics } from '@pve/engine/lyrics';
 import { fnt, INK, MONO, PAPER, RED, SANS, SERIF, tone } from './_page';
 import { segment, strokeSpans, writeStrokes, type PStroke, type Skel } from './new-script';
+import { drawBird, drawKnot, polyline, strokePts, type Knot, type Sprig } from './_knot';
 
 type P = [number, number];
 
@@ -19,19 +20,6 @@ const hash = (n: number) => {
   const x = Math.sin(n * 127.1 + 311.7) * 43758.5453;
   return x - Math.floor(x);
 };
-
-function canvas2D() {
-  const { cv: el, c } = makeCanvas();
-  return { el, c };
-}
-
-/** A transparent canvas at the output scale; draw in logical px. */
-export function layer2D(w: number, h: number): CanvasRenderingContext2D {
-  const cv = document.createElement('canvas');
-  cv.width = Math.round(w * SCALE);
-  cv.height = Math.round(h * SCALE);
-  return scaleContext2D(cv.getContext('2d', { willReadFrequently: true })!, SCALE);
-}
 
 /** The sung glyphs of lines a..b, one string. */
 function glyphs(L: Lyrics, a: number, b: number): string[] {
@@ -61,100 +49,8 @@ export const VINE_BOX = [VINE_X - 120, CODEX_TOP - 80, 240, CODEX_BOTTOM + 36 - 
 export const SPEC_BOX = { x: 138, y: 132, w: 384, h: 384 };
 export const SPEC_FIELD = { x: 138, y: 132, s: 384 };
 
-interface Band {
-  pts: P[];
-  fill: string;
-}
-interface Crossing {
-  band: number;
-  at: number;
-}
-
-export function roundSquare(cx: number, cy: number, r: number, q: number, h: number): { p: P; n: P }[] {
-  const flat = 2 * (r - q), arc = (Math.PI / 2) * q, side = flat + arc, L = 4 * side;
-  const out: { p: P; n: P }[] = [];
-  const m = Math.round(L / h);
-  for (let i = 0; i < m; i++) {
-    const s = (i / m) * L, k = Math.floor(s / side), u = s - k * side;
-    let lx: number, ly: number, nx: number, ny: number;
-    if (u < flat) { lx = -r + q + u; ly = -r; nx = 0; ny = -1; }
-    else {
-      const a = -Math.PI / 2 + (u - flat) / q;
-      lx = r - q + Math.cos(a) * q; ly = -r + q + Math.sin(a) * q; nx = Math.cos(a); ny = Math.sin(a);
-    }
-    for (let j = 0; j < k; j++) { [lx, ly] = [-ly, lx]; [nx, ny] = [-ny, nx]; }
-    out.push({ p: [cx + lx, cy + ly], n: [nx, ny] });
-  }
-  return out;
-}
-
-function segX(a: P, b: P, c: P, d: P): boolean {
-  const d1 = (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
-  const d2 = (b[0] - a[0]) * (d[1] - a[1]) - (b[1] - a[1]) * (d[0] - a[0]);
-  const d3 = (d[0] - c[0]) * (a[1] - c[1]) - (d[1] - c[1]) * (a[0] - c[0]);
-  const d4 = (d[0] - c[0]) * (b[1] - c[1]) - (d[1] - c[1]) * (b[0] - c[0]);
-  return d1 * d2 < 0 && d3 * d4 < 0;
-}
-
-export function buildKnot(): { bands: Band[]; over: Crossing[] } {
-  const ring = roundSquare(INI.x, INI.y, INI.r - 22, 30, 2);
-  const N = 16, A = 11;
-  const strand = (sg: number): P[] =>
-    ring.map(({ p, n }, i) => {
-      const o = sg * A * Math.sin((2 * Math.PI * N * i) / ring.length);
-      return [p[0] + n[0] * o, p[1] + n[1] * o];
-    });
-  const bands: Band[] = [{ pts: strand(1), fill: RED }, { pts: strand(-1), fill: INK }];
-  for (let k = 0; k < 4; k++) {
-    const ang = Math.PI / 4 + (k * Math.PI) / 2;
-    const cx = INI.x + Math.cos(ang) * (INI.r - 22) * 1.2, cy = INI.y + Math.sin(ang) * (INI.r - 22) * 1.2;
-    const rot = ang + Math.PI / 2, pts: P[] = [];
-    for (let i = 0; i < 110; i++) {
-      const t = (2 * Math.PI * i) / 110;
-      const x = (Math.sin(t) + 2 * Math.sin(2 * t)) * 12, y = (Math.cos(t) - 2 * Math.cos(2 * t)) * 12;
-      pts.push([cx + x * Math.cos(rot) - y * Math.sin(rot), cy + x * Math.sin(rot) + y * Math.cos(rot)]);
-    }
-    bands.push({ pts, fill: RED });
-  }
-  const hits: { a: number; i: number; b: number; j: number }[] = [];
-  for (let a = 0; a < bands.length; a++) {
-    for (let b = a; b < bands.length; b++) {
-      const pa = bands[a]!.pts, pb = bands[b]!.pts;
-      for (let i = 0; i < pa.length; i++) {
-        for (let j = a === b ? i + 4 : 0; j < pb.length; j++) {
-          if (a === b && j - i > pa.length - 4) continue;
-          if (segX(pa[i]!, pa[(i + 1) % pa.length]!, pb[j]!, pb[(j + 1) % pb.length]!)) hits.push({ a, i, b, j });
-        }
-      }
-    }
-  }
-  const visits = hits.flatMap((h, k) => [{ k, v: 0, band: h.a, at: h.i }, { k, v: 1, band: h.b, at: h.j }]);
-  const top = hits.map(() => -1);
-  for (let band = 0; band < bands.length; band++) {
-    let up = true;
-    for (const x of visits.filter((x) => x.band === band).sort((p, q) => p.at - q.at)) {
-      if (top[x.k]! < 0) top[x.k] = up ? x.v : 1 - x.v;
-      up = top[x.k] !== x.v;
-    }
-  }
-  const over = hits.map((h, k) => (top[k] === 0 ? { band: h.a, at: h.i } : { band: h.b, at: h.j }));
-  return { bands, over };
-}
-
-function polyline(c: CanvasRenderingContext2D, pts: P[], from: number, to: number, closed: boolean) {
-  const n = pts.length;
-  c.beginPath();
-  for (let i = from; i <= to; i++) {
-    const p = pts[closed ? ((i % n) + n) % n : Math.max(0, Math.min(n - 1, i))]!;
-    if (i === from) c.moveTo(p[0], p[1]);
-    else c.lineTo(p[0], p[1]);
-  }
-  if (closed && from === 0 && to === n - 1) c.closePath();
-}
-
-const BW = 7;
-export function drawKnot(c: CanvasRenderingContext2D, k: { bands: Band[]; over: Crossing[] }) {
-  // Inner 12x12 modernist snap grid inside the initial box
+/** The initial: an inner 12x12 modernist snap grid under the knot. */
+export function drawInitial(c: CanvasRenderingContext2D, k: Knot) {
   const ir = INI.r - 34;
   c.strokeStyle = tone(0.86);
   c.lineWidth = 0.8;
@@ -167,80 +63,10 @@ export function drawKnot(c: CanvasRenderingContext2D, k: { bands: Band[]; over: 
     c.lineTo(INI.x + ir, INI.y + o);
     c.stroke();
   }
-  c.lineJoin = 'round';
-  for (const b of k.bands) {
-    polyline(c, b.pts, 0, b.pts.length - 1, true);
-    c.strokeStyle = INK;
-    c.lineWidth = BW + 3;
-    c.stroke();
-    c.strokeStyle = b.fill;
-    c.lineWidth = BW;
-    c.stroke();
-  }
-  c.lineCap = 'butt';
-  for (const o of k.over) {
-    const b = k.bands[o.band]!;
-    polyline(c, b.pts, o.at - 7, o.at + 8, true);
-    c.strokeStyle = PAPER;
-    c.lineWidth = BW + 9;
-    c.stroke();
-    c.strokeStyle = INK;
-    c.lineWidth = BW + 3;
-    c.stroke();
-    c.strokeStyle = b.fill;
-    c.lineWidth = BW;
-    c.stroke();
-  }
+  drawKnot(c, k);
 }
 
 // ---------- Marginalia Vine, Snail & Bird ----------
-
-export interface Sprig {
-  at: number;
-  pts: P[];
-  leaf: P[] | null;
-  berries: P[];
-}
-
-export function buildVine(): { stem: P[]; sprigs: Sprig[] } {
-  const stem: P[] = [];
-  for (let y = CODEX_BOTTOM + 20; y >= CODEX_TOP - 20; y -= 3) {
-    stem.push([VINE_X + 12 * Math.sin((CODEX_BOTTOM - y) / 50), y]);
-  }
-  const sprigs: Sprig[] = [];
-  for (let k = 0, at = 38; at < (stem.length - 6) * 3; k++, at += 62) {
-    const i = Math.round(at / 3), [sx, sy] = stem[i]!;
-    const side = k % 2 ? 1 : -1;
-    const pts: P[] = [[sx, sy]];
-    let a = -Math.PI / 2 + side * 1.08, x = sx, y = sy;
-    const L = 46 + 14 * Math.sin(k * 2.3);
-    for (let s = 0; s < L; s += 2) {
-      a -= side * (0.02 + 0.2 * (s / L) ** 2.2);
-      x += Math.cos(a) * 2;
-      y += Math.sin(a) * 2;
-      pts.push([x, y]);
-    }
-    const mid = pts[Math.floor(pts.length * 0.45)]!;
-    let leaf: P[] | null = null;
-    const berries: P[] = [];
-    if (k % 3 === 2) {
-      for (let b = 0; b < 3; b++) berries.push([mid[0] + side * (8 + 6 * b), mid[1] - 6 + (b % 2) * 9]);
-    } else {
-      const la = -Math.PI / 2 + side * 1.6, lx = Math.cos(la), ly = Math.sin(la);
-      leaf = [];
-      for (let s = 0; s <= 1.0001; s += 0.1) leaf.push([mid[0] + lx * s * 24 - ly * 7 * Math.sin(Math.PI * s), mid[1] + ly * s * 24 + lx * 7 * Math.sin(Math.PI * s)]);
-      for (let s = 1; s >= -0.0001; s -= 0.1) leaf.push([mid[0] + lx * s * 24 + ly * 7 * Math.sin(Math.PI * s), mid[1] + ly * s * 24 - lx * 7 * Math.sin(Math.PI * s)]);
-    }
-    sprigs.push({ at, pts, leaf, berries });
-  }
-  return { stem, sprigs };
-}
-
-function strokePts(c: CanvasRenderingContext2D, pts: P[], w: number) {
-  c.lineWidth = w;
-  polyline(c, pts, 0, pts.length - 1, false);
-  c.stroke();
-}
 
 export function drawSnail(c: CanvasRenderingContext2D, x: number, y: number) {
   c.strokeStyle = INK;
@@ -280,46 +106,6 @@ export function drawSnail(c: CanvasRenderingContext2D, x: number, y: number) {
     coil.push([sx + 2 + Math.cos(a + 1.2) * r * 0.98, sy - 1 + Math.sin(a + 1.2) * r * 0.98]);
   }
   strokePts(c, coil, 1.4);
-}
-
-function drawBird(c: CanvasRenderingContext2D, x: number, y: number) {
-  c.save();
-  c.translate(x - 10, y - 6);
-  c.scale(1.38, 1.38);
-  c.translate(-(x - 10), -(y - 6));
-  const body: P[] = [];
-  for (let a = Math.PI * 0.95; a < Math.PI * 2.15; a += 0.08) {
-    body.push([x + Math.cos(a) * 18, y + Math.sin(a) * 10 * (a < Math.PI * 1.5 ? 1.2 : 0.9)]);
-  }
-  c.fillStyle = tone(0.92);
-  c.beginPath();
-  body.forEach(([px, py], i) => (i === 0 ? c.moveTo(px, py) : c.lineTo(px, py)));
-  c.lineTo(x + 17, y + 1);
-  c.quadraticCurveTo(x + 4, y + 10, x - 17, y + 2);
-  c.closePath();
-  c.fill();
-  c.strokeStyle = INK;
-  strokePts(c, body, 2.0);
-  strokePts(c, [[x - 17, y + 2], [x + 4, y + 9], [x + 17, y + 1]], 2.0);
-  strokePts(c, [[x + 16, y - 4], [x + 26, y - 16], [x + 31, y - 25]], 1.8);
-  c.fillStyle = RED;
-  c.beginPath();
-  c.moveTo(x - 18, y - 3);
-  c.lineTo(x - 28, y - 1);
-  c.lineTo(x - 18, y + 2);
-  c.closePath();
-  c.fill();
-  strokePts(c, [[x - 18, y - 3], [x - 28, y - 1], [x - 18, y + 2]], 1.5);
-  c.strokeStyle = RED;
-  strokePts(c, [[x - 6, y - 4], [x + 8, y - 6], [x + 14, y - 2]], 1.6);
-  c.strokeStyle = INK;
-  strokePts(c, [[x - 3, y + 8], [x - 5, y + 18]], 1.5);
-  strokePts(c, [[x + 4, y + 8], [x + 3, y + 18]], 1.5);
-  c.fillStyle = RED;
-  c.beginPath();
-  c.arc(x - 11, y - 3, 2.2, 0, Math.PI * 2);
-  c.fill();
-  c.restore();
 }
 
 export function drawMarginalia(c: CanvasRenderingContext2D, vine: { stem: P[]; sprigs: Sprig[] }, sung: number, total: number) {
@@ -665,8 +451,8 @@ function ghosts(c: CanvasRenderingContext2D, L: Lyrics) {
 }
 
 export class Palimpsest {
-  private traces = canvas2D();
-  private scratch = canvas2D();
+  private traces = makeCanvas();
+  private scratch = makeCanvas();
 
   constructor(L: Lyrics) {
     ghosts(this.traces.c, L);
@@ -676,7 +462,7 @@ export class Palimpsest {
     if (share >= 1) return;
     const k = this.scratch.c;
     k.clearRect(0, 0, W, H);
-    k.drawImage(this.traces.el, 0, 0, W, H);
+    k.drawImage(this.traces.cv, 0, 0, W, H);
     k.save();
     k.globalCompositeOperation = 'destination-out';
     k.strokeStyle = '#000';
@@ -706,7 +492,7 @@ export class Palimpsest {
     k.restore();
     c.save();
     c.globalAlpha = 1 - share ** 3;
-    c.drawImage(this.scratch.el, 0, 0, W, H);
+    c.drawImage(this.scratch.cv, 0, 0, W, H);
     c.restore();
   }
 }

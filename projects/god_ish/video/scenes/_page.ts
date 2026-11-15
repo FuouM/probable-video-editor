@@ -89,6 +89,13 @@ export function changesOf(lyrics: Lyrics, ids: number[], extra: number[] = []): 
   return [...new Set(ts)].sort((a, b) => a - b);
 }
 
+/** The onsets of the sung syllables of line `i` (not its ghost syllables), in order. */
+export function sungOnsets(lyrics: Lyrics, i: number): number[] {
+  const line = lineNo(lyrics, i);
+  const ghosts = line.written!.ghosts;
+  return syllables(line).filter((_, k) => !ghosts.includes(k)).map((s) => s.start);
+}
+
 // ---------- generations ----------
 /**
  * The machine voice: the 8 calls of the yukkuri stem, which are not in the calibrated lyrics. Times are the

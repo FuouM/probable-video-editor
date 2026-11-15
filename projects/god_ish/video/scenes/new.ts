@@ -13,17 +13,18 @@
 // - Loop seam exit (`201.78–202.10 s`): a fresh blank vellum sheet sweeps right-to-left over the completed
 //   codex, and the `神` seal punches through at `(330, 800)` onto red, settling into exact Frame 0 by `bar:114`.
 import type { Frame } from '@pve/engine/scene';
-import { H, W } from '@pve/engine/gl';
+import { H, makeCanvas, W } from '@pve/engine/gl';
 import { lineNo, units, type Line, type WrittenUnit } from '@pve/engine/lyrics';
 import { clamp, lastTime } from '@pve/engine/util';
 import { copyTimes, GLOSS, fnt, genAt, INK, MONO, PageScene, PAPER, rebate, RED, seal, statusLine, tone, type SurfaceOpts } from './_page';
 import { SCRIPT } from './_era_script';
 import { advance, loadScript, strokeSpans, writeStrokes, type PStroke } from './new-script';
 import { constructed, placeHand } from './new-hand';
+import { buildKnot, buildVine, roundSquare } from './_knot';
 import {
-  assemble, Assembly, buildKnot, buildVine, CODEX_BLOCK, CODEX_BOTTOM, CODEX_TOP, CODEX_XS,
-  drawKnot, drawMarginalia, drawSnail, drawSpecimenBase, drawSpecimenLive, INI, layer2D,
-  Palimpsest, roundSquare, SPEC_FIELD, VINE_BOX, VINE_X,
+  assemble, Assembly, CODEX_BLOCK, CODEX_BOTTOM, CODEX_TOP, CODEX_XS,
+  drawInitial, drawMarginalia, drawSnail, drawSpecimenBase, drawSpecimenLive, INI,
+  Palimpsest, SPEC_FIELD, VINE_BOX, VINE_X,
   type Built, type SpecimenGlyph, type Written,
 } from './new-looks';
 
@@ -66,8 +67,8 @@ const writeDur = (s: number, e: number) => Math.min(0.38, Math.max(0.11, e - s))
 const hand = (ch: string, ox: number, oy: number, em: number, weight: number): PStroke[] => placeHand(constructed(ch), ox, oy, em, weight, em >= 60);
 
 export default class New extends PageScene {
-  private knot = buildKnot();
-  private vine = buildVine();
+  private knot = buildKnot(INI, 30);
+  private vine = buildVine({ x: VINE_X, top: CODEX_TOP, bottom: CODEX_BOTTOM, amp: 12, wave: 50, first: 38, step: 62, splay: 1.08 });
   private titleStrokes: PStroke[] = [];
   private writings: Writing[] = [];
   private entries: CodexEntry[] = [];
@@ -238,7 +239,7 @@ export default class New extends PageScene {
 
   /** Build the static base canvas with the codex frame, title, knotwork initial, snail, and Specimen Box frame. */
   private freshBase() {
-    const c = layer2D(W, H);
+    const c = makeCanvas(W, H).c;
     this.drawStaticFolio(c);
     return { c, done: this.writings.map(() => false) };
   }
@@ -293,7 +294,7 @@ export default class New extends PageScene {
       c.arc(p[0], p[1], 1.8, 0, Math.PI * 2);
       c.fill();
     }
-    drawKnot(c, this.knot);
+    drawInitial(c, this.knot);
 
     // 4. Snail at the root of the marginalia vine
     drawSnail(c, VINE_X - 68, CODEX_BOTTOM + 34);
@@ -387,7 +388,7 @@ export default class New extends PageScene {
     // Marginalia vine (cached per sung syllable count)
     const sung = this.onsets.filter((s) => s <= t).length;
     if (this.vineL?.sung !== sung) {
-      const v = (this.vineL ??= { c: layer2D(VINE_BOX[2], VINE_BOX[3]), sung: -1 });
+      const v = (this.vineL ??= { c: makeCanvas(VINE_BOX[2], VINE_BOX[3]).c, sung: -1 });
       v.sung = sung;
       v.c.clearRect(0, 0, VINE_BOX[2], VINE_BOX[3]);
       v.c.save();
