@@ -1,98 +1,227 @@
-/* Player-only rules. The look (tokens, menu bar, group box, transport buttons, select, chip) is the NLE's: ../src/ui/daw.css. */
-:root { --sys-field: #1a1a1a; }
-[hidden] { display: none !important; }
-a.nle-menu-item { text-decoration: none; }
+/* The site player's stylesheet: SoulWindow, the transport shared with the studio, the loading screen, then the player's own rules. */
+@import 'soulwindow/css';
+@import 'soulwindow/css/pro/daw.css';
+@import '../src/ui/styles/controls.css';
+@import '../src/ui/styles/loader.css';
 
-.pl-muted { color: var(--sys-text-muted); }
-.pl-monitor { flex: 1 1 auto; min-height: 160px; display: flex; margin-bottom: 6px; }
+@layer app {
+  /* the page toggles many controls with the `hidden` attribute; their own display rules must not undo it (as .sw-hidden) */
+  [hidden] {
+    display: none !important;
+  }
 
-/* ---- the frame: picture on top, transport underneath. Fullscreen takes the frame. */
-.pl-frame { flex: 1 1 auto; min-width: 0; min-height: 0; display: flex; flex-direction: column; background: var(--sys-panel); }
-.pl-view { position: relative; flex: 1 1 auto; min-height: 0; background: #000; container-type: size; }
-.pl-view canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; }
+  /* ---- menu bar: links that look like the menu buttons; the Theme menu at the right edge opens leftwards */
+  a.daw-brand,
+  a.daw-menu-btn {
+    display: inline-flex;
+    align-items: center;
+    color: var(--sys-control-text);
+    text-decoration: none;
+  }
 
-.pl-controls { flex: none; background: var(--sys-panel); border-top: 1px solid var(--sys-border); }
-.pl-bar { border-top: 0; border-bottom: 0; flex-wrap: wrap; row-gap: 4px; height: auto; min-height: 38px; padding-top: 5px; padding-bottom: 5px; }
-.pl-time { font: 12px var(--sys-mono); color: var(--sys-text); white-space: nowrap; font-variant-numeric: tabular-nums; }
-.pl-field { display: inline-flex; align-items: center; gap: 6px; font: 11px var(--sys-mono); }
-.pl-select { width: auto; height: 26px; }
+  /* ---- monitor: the group box title carries output size, fps and frame time */
+  .pl-monitor {
+    flex: 1 1 auto;
+    min-height: 160px;
+    display: flex;
+    margin: 12px 6px 6px;
+  }
+  .pl-res {
+    color: var(--sys-border-focus);
+  }
+  .pl-fps {
+    color: var(--sw-ok);
+  }
 
-/* fullscreen: the picture fills the screen. The transport floats over it, hidden at all times; it shows only while the pointer is over it */
-.pl-frame:fullscreen { background: #000; }
-.pl-frame:fullscreen .pl-view { flex: 1 1 100%; }
-.pl-frame:fullscreen .pl-controls { position: absolute; left: 0; right: 0; bottom: 0; opacity: 0; transition: opacity 0.08s; }
-.pl-frame:fullscreen .pl-controls:hover { opacity: 0.96; }
-.pl-stat { display: none; font: 11px var(--sys-mono); color: var(--sys-text-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
-.pl-frame:fullscreen .pl-stat { display: block; }
-.pl-cc { font: 700 11px var(--sys-mono); width: auto; min-width: 28px; padding: 0 6px; }
+  /* ---- the frame: picture on top, transport underneath. Fullscreen takes the frame (styles/controls.css) */
+  .pl-frame {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--sys-control-bg);
+  }
+  .pl-view {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    background: black;
+    container-type: size;
+  }
+  .pl-view canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+  .pl-cc {
+    font: 700 var(--font-sm) var(--sw-font-mono);
+    padding: 0 6px;
+  }
 
-/* ---- subtitles: a line over the foot of the picture, the word that is sung now lit */
-.pl-subs { position: absolute; left: 50%; bottom: 5cqh; transform: translateX(-50%); max-width: 90%; text-align: center; pointer-events: none; z-index: 2;
-  padding: 0.25em 0.7em; background: rgba(0, 0, 0, 0.62); font: 600 clamp(13px, 3.6cqh, 52px) / 1.35 'Yu Gothic', 'Hiragino Sans', 'Noto Sans JP', 'Segoe UI', system-ui, sans-serif; color: #fff; }
-.pl-subs .tk { color: rgba(255, 255, 255, 0.5); }
-.pl-subs .tk.s2 { color: #fff; }
-.pl-subs .tk.s1 { color: #ffd84a; }
-/* a project's own look (`subtitles` in projects/<id>/video/player.ts): its face and size, an outline, a solid strip behind each
-   token that has started; a token to come keeps its place but does not show, so the line builds up as it is sung. The strip is
-   a pseudo-element under the line (z-index -1 in the stacking context of .pl-subs): the strip of one token never covers the
-   glyphs of the token before it */
-.pl-subs.styled { bottom: var(--sub-bottom); padding: 0; background: none; max-width: 94%;
-  font: var(--sub-size) / var(--sub-row) var(--sub-family); text-transform: var(--sub-case); color: var(--sub-ink);
-  -webkit-font-smoothing: none; font-smooth: never; }
-.pl-subs.styled .tk { position: relative; color: var(--sub-ink); white-space: pre-wrap;
-  text-shadow: var(--sub-edge-w) 0 var(--sub-edge), calc(-1 * var(--sub-edge-w)) 0 var(--sub-edge), 0 var(--sub-edge-w) var(--sub-edge),
-    0 calc(-1 * var(--sub-edge-w)) var(--sub-edge), var(--sub-edge-w) var(--sub-edge-w) var(--sub-edge),
-    calc(-1 * var(--sub-edge-w)) calc(-1 * var(--sub-edge-w)) var(--sub-edge), var(--sub-edge-w) calc(-1 * var(--sub-edge-w)) var(--sub-edge),
-    calc(-1 * var(--sub-edge-w)) var(--sub-edge-w) var(--sub-edge); }
-.pl-subs.styled .tk::before { content: ''; position: absolute; inset: 0 calc(-1 * var(--sub-pad)); background: var(--sub-back); z-index: -1; }
-.pl-subs.styled .tk.s0 { visibility: hidden; }
-.pl-subs.styled .tk.s1, .pl-subs.styled .tk.s2 { color: var(--sub-ink); }
+  /* ---- subtitles: picture content, not chrome, so a literal look of their own: a line over the foot of the picture,
+     the word that is sung now lit */
+  .pl-subs {
+    position: absolute;
+    left: 50%;
+    bottom: 5cqh;
+    transform: translateX(-50%);
+    max-width: 90%;
+    text-align: center;
+    pointer-events: none;
+    isolation: isolate;
+    padding: 0.25em 0.7em;
+    background: rgba(0, 0, 0, 0.62);
+    font: 600 clamp(13px, 3.6cqh, 52px) / 1.35 'Yu Gothic', 'Hiragino Sans', 'Noto Sans JP', 'Segoe UI', system-ui, sans-serif;
+    color: #fff;
+  }
+  .pl-subs .tk {
+    color: rgba(255, 255, 255, 0.5);
+  }
+  .pl-subs .tk.s2 {
+    color: #fff;
+  }
+  .pl-subs .tk.s1 {
+    color: #ffd84a;
+  }
+  /* a project's own look (`subtitles` in projects/<id>/video/player.ts): its face and size, an outline, a solid strip behind each
+     token that has started; a token to come keeps its place but does not show, so the line builds up as it is sung. The strip is
+     a pseudo-element under the line (z-index -1 inside the isolated .pl-subs, a local order, not a page layer): the strip of one
+     token never covers the glyphs of the token before it */
+  .pl-subs.styled {
+    bottom: var(--sub-bottom);
+    padding: 0;
+    background: none;
+    max-width: 94%;
+    font: var(--sub-size) / var(--sub-row) var(--sub-family);
+    text-transform: var(--sub-case);
+    color: var(--sub-ink);
+    -webkit-font-smoothing: none;
+  }
+  .pl-subs.styled .tk {
+    position: relative;
+    color: var(--sub-ink);
+    white-space: pre-wrap;
+    text-shadow:
+      var(--sub-edge-w) 0 var(--sub-edge),
+      calc(-1 * var(--sub-edge-w)) 0 var(--sub-edge),
+      0 var(--sub-edge-w) var(--sub-edge),
+      0 calc(-1 * var(--sub-edge-w)) var(--sub-edge),
+      var(--sub-edge-w) var(--sub-edge-w) var(--sub-edge),
+      calc(-1 * var(--sub-edge-w)) calc(-1 * var(--sub-edge-w)) var(--sub-edge),
+      var(--sub-edge-w) calc(-1 * var(--sub-edge-w)) var(--sub-edge),
+      calc(-1 * var(--sub-edge-w)) var(--sub-edge-w) var(--sub-edge);
+  }
+  .pl-subs.styled .tk::before {
+    content: '';
+    position: absolute;
+    inset: 0 calc(-1 * var(--sub-pad));
+    background: var(--sub-back);
+    z-index: -1;
+  }
+  .pl-subs.styled .tk.s0 {
+    visibility: hidden;
+  }
+  .pl-subs.styled .tk.s1,
+  .pl-subs.styled .tk.s2 {
+    color: var(--sub-ink);
+  }
 
-/* ---- seek bar: a flat WinForms track with a blue fill and a tick at each section start */
-.pl-seek { position: relative; height: 14px; margin: 6px 8px 0; background: #111; border: 1px solid var(--sys-border); cursor: pointer; touch-action: none; }
-.pl-seek:hover { border-color: var(--sys-border-light); }
-.pl-seek-fill { height: 100%; width: 0; background: var(--sys-accent); }
-.pl-seek-ticks i { position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(0, 0, 0, 0.8); }
-.pl-seek-tip { position: absolute; bottom: 18px; transform: translateX(-50%); padding: 2px 6px; background: var(--sys-raised); border: 1px solid var(--sys-border-light); font: 11px var(--sys-mono); white-space: nowrap; pointer-events: none; opacity: 0; }
-.pl-seek:hover .pl-seek-tip { opacity: 1; }
+  /* ---- start dialog: a SoulWindow dialog (.ds-modal-window) over the picture */
+  .pl-dialog-wrap {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: var(--sw-backdrop);
+    padding: 12px;
+  }
+  .pl-dialog {
+    width: min(480px, 100%);
+  }
+  .pl-cover {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    background: black;
+    border-bottom: 1px solid var(--sys-border-dark);
+    flex: none;
+  }
+  .pl-dialog.loading .pl-cover {
+    display: none;
+  }
+  .pl-dialog-body {
+    padding: 12px 14px 4px;
+  }
+  .pl-dialog-body p {
+    margin: 0 0 10px;
+  }
+  .pl-videos {
+    display: flex;
+    gap: 8px;
+    margin: 0 0 10px;
+  }
+  .pl-card {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 4px;
+    color: var(--sys-text-muted);
+    text-decoration: none;
+    border: 1px solid var(--sys-border-dark);
+    background: var(--sys-button-bg);
+    font: var(--font-sm) var(--sw-font-mono);
+  }
+  .pl-card:hover {
+    border-color: var(--sys-border-focus);
+    color: var(--sys-control-text);
+  }
+  .pl-card.current {
+    border-color: var(--sys-highlight-bg);
+    color: var(--sys-control-text);
+  }
+  .pl-card img,
+  .pl-card-blank {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    background: black;
+  }
+  .pl-status {
+    min-height: 1.3em;
+    color: var(--sys-text-muted);
+    font: var(--font-sm) var(--sw-font-mono);
+  }
+  .pl-status.error {
+    color: var(--sw-err);
+  }
 
-/* ---- volume: flat track, square thumb */
-.pl-vol { -webkit-appearance: none; appearance: none; width: 80px; height: 26px; margin: 0 4px; background: transparent; cursor: pointer; }
-.pl-vol::-webkit-slider-runnable-track { height: 6px; background: #111; border: 1px solid var(--sys-border); }
-.pl-vol::-moz-range-track { height: 4px; background: #111; border: 1px solid var(--sys-border); }
-.pl-vol::-webkit-slider-thumb { -webkit-appearance: none; width: 8px; height: 16px; margin-top: -6px; background: var(--sys-raised-hover); border: 1px solid var(--sys-border-light); border-radius: 0; }
-.pl-vol::-moz-range-thumb { width: 6px; height: 14px; background: var(--sys-raised-hover); border: 1px solid var(--sys-border-light); border-radius: 0; }
+  /* no video chosen yet: only the cards, no transport */
+  .pl-frame.choose .pl-controls,
+  .pl-frame.choose .pl-status {
+    display: none;
+  }
+  .pl-frame.choose .pl-dialog {
+    width: min(760px, 100%);
+  }
+  .pl-frame.choose .pl-dialog-body {
+    padding-bottom: 12px;
+  }
 
-/* ---- start dialog: a WinForms message box over the picture */
-.pl-dialog-wrap { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0, 0, 0, 0.6); padding: 12px; }
-.pl-dialog { width: min(480px, 100%); max-height: 100%; overflow: auto; background: var(--sys-panel); border: 1px solid var(--sys-border-light); }
-.pl-cover { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: #000; border-bottom: 1px solid var(--sys-border); }
-.pl-dialog.loading .pl-cover { display: none; }
-.pl-videos { display: flex; gap: 8px; margin: 0 0 10px; }
-.pl-card { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 4px; padding: 4px; color: var(--sys-text-muted); text-decoration: none; border: 1px solid var(--sys-border); background: var(--sys-raised); font: 11px var(--sys-mono); }
-.pl-card:hover { border-color: var(--sys-border-light); color: var(--sys-text); }
-.pl-card.current { border-color: var(--sys-accent); color: var(--sys-text); }
-.pl-card img, .pl-card-blank { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: #000; }
-/* no video chosen yet: only the cards, no transport */
-.pl-frame.choose .pl-controls { display: none; }
-.pl-frame.choose .pl-dialog { width: min(760px, 100%); }
-.pl-frame.choose .pl-dialog-body { padding-bottom: 12px; }
-.pl-frame.choose .pl-status { display: none; }
-.pl-dialog-title { height: 24px; line-height: 22px; padding: 0 8px; background: var(--sys-panel-alt); border-bottom: 1px solid var(--sys-border); font-weight: 600; }
-.pl-dialog-body { padding: 12px 14px 4px; }
-.pl-dialog-body p { margin: 0 0 10px; }
-.pl-status { min-height: 1.3em; color: var(--sys-text-muted); font-family: var(--sys-mono); font-size: 11px; }
-.pl-status.error { color: #f87171; }
-.pl-dialog-foot { display: flex; justify-content: flex-end; padding: 8px 14px 12px; background: var(--sys-panel); }
-.pl-btn { min-width: 84px; height: 26px; padding: 0 14px; border: 1px solid var(--sys-border); border-radius: 0; background: var(--sys-raised); color: var(--sys-text); font: 12px var(--sys-font); cursor: pointer; }
-.pl-btn:hover:not(:disabled) { background: var(--sys-raised-hover); border-color: var(--sys-border-light); }
-.pl-btn:active:not(:disabled) { background: var(--sys-raised-active); border-color: #005a9e; color: #fff; }
-.pl-btn:disabled { color: var(--sys-text-dim); cursor: default; }
-.pl-btn-default { border-color: var(--sys-accent); }
-
-button:focus-visible, select:focus-visible, .pl-vol:focus-visible { outline: 1px solid #00e5ff; outline-offset: 1px; }
-
-@media (max-width: 720px) {
-  #chip-section, .pl-field span { display: none; }
-  .pl-vol { width: 56px; }
+  @media (max-width: 720px) {
+    #chip-section,
+    .pl-field span {
+      display: none;
+    }
+    .pl-vol {
+      width: 56px;
+    }
+  }
 }

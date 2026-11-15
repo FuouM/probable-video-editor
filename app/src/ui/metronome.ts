@@ -70,9 +70,9 @@ export class Metronome {
     // Visual beat flash on dot
     if (this.dotEl) {
       clearTimeout(this.flashTimeout ?? undefined);
-      this.dotEl.className = isDownbeat ? 'nle-metro-dot nle-metro-dot--downbeat' : 'nle-metro-dot nle-metro-dot--beat';
+      this.dotEl.className = isDownbeat ? 'daw-beat-dot daw-beat-dot--on daw-beat-dot--down' : 'daw-beat-dot daw-beat-dot--on';
       this.flashTimeout = window.setTimeout(() => {
-        if (this.dotEl) this.dotEl.className = 'nle-metro-dot';
+        if (this.dotEl) this.dotEl.className = 'daw-beat-dot';
       }, 75);
     }
 

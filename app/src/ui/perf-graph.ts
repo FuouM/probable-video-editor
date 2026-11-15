@@ -3,7 +3,28 @@
 // Deterministic ring buffer, sub-millisecond precision, 16.7ms (60fps) and 33.3ms (30fps) budget thresholds.
 // Positioned outside preview as a dedicated dock pane, matching Notes pane lifecycle.
 
+import { readTokens } from 'soulwindow/runtime';
+import { onTheme } from './soulwindow';
+
 export type PerfGraphMode = 'frametime' | 'fps';
+
+/** The `--perf-*` tokens the graph paints with (styles/tokens.css). */
+const PERF_KEYS = [
+  'bg', 'ok', 'warn', 'err', 'ref60', 'ref60Text', 'ref30', 'ref30Text', 'refOk', 'refOkText', 'scaleText', 'stalk',
+] as const;
+type PerfPalette = Record<(typeof PERF_KEYS)[number], string>;
+
+/** Walks every stylesheet: call it only at start and on a theme / accent change. */
+function readPalette(): PerfPalette {
+  const t = readTokens('--perf-');
+  for (const k of PERF_KEYS) if (!t[k]) throw new Error(`perf graph token --perf-${k} is missing`);
+  return t as PerfPalette;
+}
+
+/** Chip classes by tone (SoulWindow `.daw-chip`). */
+const CHIP = { ok: 'daw-chip daw-chip--ok', warn: 'daw-chip daw-chip--warn', err: 'daw-chip daw-chip--err' } as const;
+/** Text colours by tone, for stat values. */
+const TEXT = { ok: 'var(--sw-ok)', warn: 'var(--sw-warn)', err: 'var(--sw-err)', plain: 'var(--sys-control-text)' } as const;
 
 export class PerfGraph {
   private static STORAGE_KEY = 'pve.studio.graph';
@@ -40,6 +61,7 @@ export class PerfGraph {
 
   // Throttled DOM stats update
   private lastDomUpdateT = 0;
+  private C: PerfPalette = readPalette();
 
   constructor() {
     this.containerEl = document.getElementById('perf-pane');
@@ -83,6 +105,11 @@ export class PerfGraph {
     }
 
     this.bindEvents();
+    onTheme(() => {
+      this.C = readPalette();
+      if (this.enabled) this.redrawLast();
+    });
+
     this.updateModeButton();
   }
 
@@ -111,7 +138,7 @@ export class PerfGraph {
 
   setEnabled(val: boolean) {
     this.enabled = val;
-    this.containerEl?.classList.toggle('hidden', !this.enabled);
+    this.containerEl?.classList.toggle('sw-hidden', !this.enabled);
     this.menuBtn?.classList.toggle('active', this.enabled);
     this.menuBtn?.setAttribute('aria-pressed', String(this.enabled));
 
@@ -134,10 +161,12 @@ export class PerfGraph {
       localStorage.setItem(PerfGraph.STORAGE_MODE_KEY, this.mode);
     } catch {}
     this.updateModeButton();
-    if (this.enabled) {
-      const lastIdx = (this.head - 1 + PerfGraph.BUFFER_SIZE) % PerfGraph.BUFFER_SIZE;
-      this.draw(this.renderTimes[lastIdx] ?? 0, this.frameTimes[lastIdx] ?? 16.67);
-    }
+    if (this.enabled) this.redrawLast();
+  }
+
+  private redrawLast() {
+    const lastIdx = (this.head - 1 + PerfGraph.BUFFER_SIZE) % PerfGraph.BUFFER_SIZE;
+    this.draw(this.renderTimes[lastIdx] ?? 0, this.frameTimes[lastIdx] ?? 16.67);
   }
 
   private updateModeButton() {
@@ -179,7 +208,8 @@ export class PerfGraph {
     }
 
     // Clear background
-    ctx.fillStyle = '#0b0d11';
+    const C = this.C;
+    ctx.fillStyle = C.bg;
     ctx.fillRect(0, 0, w, h);
 
     const now = performance.now();
@@ -204,7 +234,7 @@ export class PerfGraph {
 
       // Reference line: 16.7 ms (60 FPS target)
       const y60 = h - (16.67 / maxScale) * h;
-      ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+      ctx.strokeStyle = C.ref60;
       ctx.lineWidth = 1 * dpr;
       ctx.setLineDash([2 * dpr, 2 * dpr]);
       ctx.beginPath();
@@ -212,24 +242,24 @@ export class PerfGraph {
       ctx.lineTo(w, y60);
       ctx.stroke();
 
-      ctx.fillStyle = 'rgba(56, 189, 248, 0.7)';
+      ctx.fillStyle = C.ref60Text;
       ctx.font = font;
       ctx.fillText('16.7ms (60fps)', 4 * dpr, y60 - 2 * dpr);
 
       // Reference line: 33.3 ms (30 FPS budget)
       const y30 = h - (33.33 / maxScale) * h;
-      ctx.strokeStyle = 'rgba(251, 191, 36, 0.4)';
+      ctx.strokeStyle = C.ref30;
       ctx.beginPath();
       ctx.moveTo(0, y30);
       ctx.lineTo(w, y30);
       ctx.stroke();
 
-      ctx.fillStyle = 'rgba(251, 191, 36, 0.75)';
+      ctx.fillStyle = C.ref30Text;
       ctx.fillText('33.3ms (30fps)', 4 * dpr, y30 - 2 * dpr);
       ctx.setLineDash([]);
 
       // Top scale indicator
-      ctx.fillStyle = 'rgba(148, 163, 184, 0.5)';
+      ctx.fillStyle = C.scaleText;
       ctx.fillText(`${maxScale.toFixed(0)}ms`, w - 24 * dpr, 9 * dpr);
 
       // Draw bars
@@ -244,21 +274,14 @@ export class PerfGraph {
         const barH = Math.min(h, (rMs / maxScale) * h);
         const y = h - barH;
 
-        // Color coding
-        if (rMs <= 16.67) {
-          ctx.fillStyle = '#4ade80'; // Green
-        } else if (rMs <= 33.33) {
-          ctx.fillStyle = '#fbbf24'; // Amber
-        } else {
-          ctx.fillStyle = '#f87171'; // Red
-        }
+        ctx.fillStyle = rMs <= 16.67 ? C.ok : rMs <= 33.33 ? C.warn : C.err;
 
         ctx.fillRect(x, y, Math.max(1, Math.ceil(barW)), barH);
 
         // Frame interval stalk if significantly delayed
         if (iMs > rMs + 4) {
           const iH = Math.min(h, (iMs / maxScale) * h);
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+          ctx.fillStyle = C.stalk;
           ctx.fillRect(x, h - iH, Math.max(1, Math.ceil(barW)), 1 * dpr);
         }
       }
@@ -267,35 +290,36 @@ export class PerfGraph {
       if (now - this.lastDomUpdateT > 100) {
         this.lastDomUpdateT = now;
         const fpsVal = currentFps ?? (intervalMs > 0 ? 1000 / intervalMs : 60);
-
+        const fpsTone = fpsVal >= 55 ? 'ok' : fpsVal >= 30 ? 'warn' : 'err';
+        const cpuTone = renderMs <= 16.67 ? 'ok' : renderMs <= 33.33 ? 'warn' : 'err';
         if (this.chipFps) {
           this.chipFps.textContent = `${fpsVal.toFixed(1)} FPS`;
-          this.chipFps.className = `nle-perf-chip ${fpsVal >= 55 ? 'nle-perf-chip--ok' : fpsVal >= 30 ? 'nle-perf-chip--warn' : 'nle-perf-chip--bad'}`;
+          this.chipFps.className = CHIP[fpsTone];
         }
         if (this.chipCpu) {
           this.chipCpu.textContent = `${renderMs.toFixed(1)} ms`;
-          this.chipCpu.className = `nle-perf-chip ${renderMs <= 16.67 ? 'nle-perf-chip--ok' : renderMs <= 33.33 ? 'nle-perf-chip--warn' : 'nle-perf-chip--bad'}`;
+          this.chipCpu.className = CHIP[cpuTone];
         }
 
         // Stats grid rows
         if (this.valCpu) {
           this.valCpu.textContent = `${renderMs.toFixed(1)} ms`;
-          this.valCpu.style.color = renderMs <= 16.67 ? '#4ade80' : renderMs <= 33.33 ? '#fbbf24' : '#f87171';
+          this.valCpu.style.color = TEXT[cpuTone];
         }
         if (this.valAvg) this.valAvg.textContent = `${avgMs.toFixed(1)} ms`;
         if (this.valPeak) {
           this.valPeak.textContent = `${peakMs.toFixed(1)} ms`;
-          this.valPeak.style.color = peakMs <= 33.33 ? 'var(--sys-text)' : '#f87171';
+          this.valPeak.style.color = peakMs <= 33.33 ? TEXT.plain : TEXT.err;
         }
         if (this.valSlow) {
           this.valSlow.textContent = String(missed33);
-          this.valSlow.style.color = missed33 > 0 ? '#f87171' : 'var(--sys-text)';
+          this.valSlow.style.color = missed33 > 0 ? TEXT.err : TEXT.plain;
         }
 
         if (this.footerEl) {
           const tag = missed33 === 0 ? '● REAL-TIME' : '▲ SPOTS DETECTED';
-          const color = missed33 === 0 ? 'var(--sys-ok)' : 'var(--sys-warn)';
-          this.footerEl.innerHTML = `<span>180 frames · ~3.0s</span><span style="color:${color}">${tag}</span>`;
+          const tone = missed33 === 0 ? 'ok' : 'warn';
+          this.footerEl.innerHTML = `<span>180 frames · ~3.0s</span><span class="nle-perf-status" id="perf-status-tag" data-tone="${tone}">${tag}</span>`;
         }
       }
     } else {
@@ -305,7 +329,7 @@ export class PerfGraph {
       const y30 = h - (30 / maxFps) * h;
 
       // 60 FPS reference line
-      ctx.strokeStyle = 'rgba(74, 222, 128, 0.4)';
+      ctx.strokeStyle = C.refOk;
       ctx.lineWidth = 1 * dpr;
       ctx.setLineDash([2 * dpr, 2 * dpr]);
       ctx.beginPath();
@@ -313,18 +337,18 @@ export class PerfGraph {
       ctx.lineTo(w, y60);
       ctx.stroke();
 
-      ctx.fillStyle = 'rgba(74, 222, 128, 0.75)';
+      ctx.fillStyle = C.refOkText;
       ctx.font = font;
       ctx.fillText('60 FPS', 4 * dpr, y60 - 2 * dpr);
 
       // 30 FPS reference line
-      ctx.strokeStyle = 'rgba(251, 191, 36, 0.4)';
+      ctx.strokeStyle = C.ref30;
       ctx.beginPath();
       ctx.moveTo(0, y30);
       ctx.lineTo(w, y30);
       ctx.stroke();
 
-      ctx.fillStyle = 'rgba(251, 191, 36, 0.75)';
+      ctx.fillStyle = C.ref30Text;
       ctx.fillText('30 FPS', 4 * dpr, y30 - 2 * dpr);
       ctx.setLineDash([]);
 
@@ -345,9 +369,7 @@ export class PerfGraph {
         const barH = (fps / maxFps) * h;
         const y = h - barH;
 
-        if (fps >= 55) ctx.fillStyle = '#4ade80';
-        else if (fps >= 30) ctx.fillStyle = '#fbbf24';
-        else ctx.fillStyle = '#f87171';
+        ctx.fillStyle = fps >= 55 ? C.ok : fps >= 30 ? C.warn : C.err;
 
         ctx.fillRect(x, y, Math.max(1, Math.ceil(barW)), barH);
       }
@@ -357,18 +379,20 @@ export class PerfGraph {
       if (now - this.lastDomUpdateT > 100) {
         this.lastDomUpdateT = now;
         const fpsVal = currentFps ?? (intervalMs > 0 ? 1000 / intervalMs : 60);
+        const fpsTone = fpsVal >= 55 ? 'ok' : fpsVal >= 30 ? 'warn' : 'err';
+        const cpuTone = renderMs <= 16.67 ? 'ok' : renderMs <= 33.33 ? 'warn' : 'err';
         if (this.chipFps) {
           this.chipFps.textContent = `${fpsVal.toFixed(1)} FPS`;
-          this.chipFps.className = `nle-perf-chip ${fpsVal >= 55 ? 'nle-perf-chip--ok' : fpsVal >= 30 ? 'nle-perf-chip--warn' : 'nle-perf-chip--bad'}`;
+          this.chipFps.className = CHIP[fpsTone];
         }
         if (this.chipCpu) {
           this.chipCpu.textContent = `${renderMs.toFixed(1)} ms`;
-          this.chipCpu.className = `nle-perf-chip ${renderMs <= 16.67 ? 'nle-perf-chip--ok' : renderMs <= 33.33 ? 'nle-perf-chip--warn' : 'nle-perf-chip--bad'}`;
+          this.chipCpu.className = CHIP[cpuTone];
         }
 
         if (this.valCpu) {
           this.valCpu.textContent = `${fpsVal.toFixed(1)} FPS`;
-          this.valCpu.style.color = fpsVal >= 55 ? '#4ade80' : fpsVal >= 30 ? '#fbbf24' : '#f87171';
+          this.valCpu.style.color = TEXT[fpsTone];
         }
         if (this.valAvg) this.valAvg.textContent = `${avgFps.toFixed(1)} FPS`;
         if (this.valPeak) this.valPeak.textContent = `${minFps.toFixed(1)} FPS`;

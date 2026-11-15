@@ -1,9 +1,10 @@
-// Fullscreen Bottom Hover Player Controls for PVE NLE
-// Exact live-site aesthetic and behavior: seek bar with section ticks, WinForms transport buttons,
-// time display, section/clip chip, live stats (title, resolution, fps, ms, speed), volume slider/mute,
-// playback speed selector, resolution selector, and fullscreen toggle.
+// The player transport, shared by the site player (app/site) and the studio's fullscreen overlay: the seek bar
+// (SoulWindow seekBar over the song in deciseconds, section starts as marks), transport buttons, time, section/clip chip,
+// live stats (title, resolution, fps, ms, speed), volume (.daw-range) and mute, playback speed, resolution, fullscreen.
+// The look is styles/controls.css on SoulWindow primitives.
 //
-// In fullscreen mode, the controls float at the foot of the screen, hidden until hovered.
+// In fullscreen the controls float at the foot of the screen, hidden until hovered.
+import { seekBar } from 'soulwindow/vanilla';
 
 const svg = (path: string, size = 12, extra = '') =>
   `<svg width="${size}" height="${size}" viewBox="0 0 16 16" fill="currentColor" ${extra}>${path}</svg>`;
@@ -23,6 +24,68 @@ export const ICON = {
 
 const clamp = (x: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, x));
 export const fmtTime = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+
+/** Seek bar positions per second: the bar works on integer positions, a tenth of a second is fine enough for a song. */
+export const SEEK_RES = 10;
+
+/** The section that holds time `t` (the last that starts at or before it). */
+export function sectionAt<S extends { start: number }>(sections: readonly S[], t: number): S | undefined {
+  let found: S | undefined;
+  for (const s of sections) if (s.start <= t) found = s;
+  return found;
+}
+
+export interface TimeSeek {
+  readonly el: ReturnType<typeof seekBar>;
+  /** The song: its length in seconds and its sections (each start after the first is a mark; the tip names the section). */
+  setSong(duration: number, sections: readonly { name: string; start: number }[]): void;
+  /** Moves the fill to time `t` (seconds). */
+  setTime(t: number): void;
+}
+
+/** A seek bar over a song in seconds (positions: deciseconds, SEEK_RES). After a drag the bar gives the keyboard focus back,
+ *  so the arrows keep the page's own steps. */
+export function timeSeek(o: { id: string; onSeek: (t: number) => void; onScrubStart: () => void; onScrubEnd: () => void }): TimeSeek {
+  let sections: readonly { name: string; start: number }[] = [];
+  let shown = -1;
+  const tip = (v: number) => {
+    const t = v / SEEK_RES;
+    const s = sectionAt(sections, t);
+    return s ? `${fmtTime(t)}  ${s.name}` : fmtTime(t);
+  };
+  const el = seekBar({
+    max: 0,
+    class: 'pl-seek',
+    ariaLabel: 'Seek',
+    format: tip,
+    onInput: (v) => {
+      shown = v; // the bar has moved itself
+      o.onSeek(v / SEEK_RES);
+    },
+    onScrubStart: o.onScrubStart,
+    onScrubEnd: () => {
+      el.blur();
+      o.onScrubEnd();
+    },
+  });
+  el.id = o.id;
+  return {
+    el,
+    setSong(duration, list) {
+      sections = list;
+      shown = -1;
+      el.setMax(Math.max(0, Math.floor(duration * SEEK_RES)));
+      el.setMarks(list.slice(1).map((s) => ({ value: Math.round(s.start * SEEK_RES), title: s.name })));
+    },
+    setTime(t) {
+      // the epsilon keeps v/SEEK_RES (a seek from the bar) on its own position
+      const v = Math.floor(t * SEEK_RES + 1e-6);
+      if (v === shown) return;
+      shown = v;
+      el.set(v);
+    },
+  };
+}
 
 export interface SongSectionItem {
   name: string;
@@ -57,10 +120,7 @@ export interface FsControlsUpdateState {
 
 export class NleFullscreenControls {
   readonly el: HTMLElement;
-  private seek: HTMLElement;
-  private seekFill: HTMLElement;
-  private seekTicks: HTMLElement;
-  private seekTip: HTMLElement;
+  private seek: TimeSeek;
   private btnStart: HTMLButtonElement;
   private btnPrev: HTMLButtonElement;
   private btnPlay: HTMLButtonElement;
@@ -80,7 +140,6 @@ export class NleFullscreenControls {
   private duration = 0;
   private isPlaying = false;
   private shownPlaying: boolean | null = null;
-  private dragging = false;
   private volume = 1;
   private muted = false;
 
@@ -88,62 +147,49 @@ export class NleFullscreenControls {
     parent: HTMLElement,
     private cb: FsControlsCallbacks,
   ) {
-    let existing = parent.querySelector('#fs-controls') as HTMLElement | null;
-    if (!existing) {
-      existing = document.createElement('div');
-      existing.className = 'pl-controls nle-fs-controls';
-      existing.id = 'fs-controls';
-      existing.innerHTML = `
-        <div class="pl-seek" id="fs-seek" role="slider" aria-label="Seek" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0">
-          <div class="pl-seek-fill" id="fs-seek-fill"></div>
-          <div class="pl-seek-ticks" id="fs-seek-ticks"></div>
-          <div class="pl-seek-tip" id="fs-seek-tip"></div>
+    this.el = document.createElement('div');
+    this.el.className = 'pl-controls';
+    this.el.id = 'fs-controls';
+    this.el.innerHTML = `
+      <div class="daw-transport pl-bar">
+        <div class="daw-transport-group">
+          <button class="daw-tbtn" id="fs-btn-start" title="Go to start (Home)" aria-label="Go to start"></button>
+          <button class="daw-tbtn" id="fs-btn-prev" title="Previous section (PageUp)" aria-label="Previous section"></button>
+          <button class="daw-tbtn daw-tbtn-play" id="fs-btn-play" title="Play / pause (Space)" aria-label="Play"></button>
+          <button class="daw-tbtn" id="fs-btn-next" title="Next section (PageDown)" aria-label="Next section"></button>
+          <button class="daw-tbtn" id="fs-btn-loop" title="Loop active clip (L)" aria-label="Loop" aria-pressed="false"></button>
         </div>
-        <div class="daw-transport pl-bar">
-          <div class="daw-transport-group">
-            <button class="daw-tbtn" id="fs-btn-start" title="Go to start (Home)" aria-label="Go to start"></button>
-            <button class="daw-tbtn" id="fs-btn-prev" title="Previous section (PageUp)" aria-label="Previous section"></button>
-            <button class="daw-tbtn daw-tbtn-play" id="fs-btn-play" title="Play / pause (Space)" aria-label="Play"></button>
-            <button class="daw-tbtn" id="fs-btn-next" title="Next section (PageDown)" aria-label="Next section"></button>
-            <button class="daw-tbtn" id="fs-btn-loop" title="Loop active clip (L)" aria-label="Loop" aria-pressed="false"></button>
-          </div>
-          <div class="pl-time"><span id="fs-time-now">0:00</span> <span class="pl-muted">/</span> <span id="fs-time-total">0:00</span></div>
-          <div class="nle-chip" id="fs-chip-section" title="Current section / clip"><span class="pl-muted">SECTION:</span> <strong id="fs-section">—</strong></div>
-          <div class="pl-stat" id="fs-stat" title="Video, output size, frames per second, CPU time of one frame"></div>
-          <div class="daw-transport-spacer"></div>
-          <div class="daw-transport-group">
-            <button class="daw-tbtn" id="fs-btn-mute" title="Mute (M)" aria-label="Mute"></button>
-            <input class="pl-vol" id="fs-vol" type="range" min="0" max="1" step="0.05" value="1" aria-label="Volume" title="Volume (Up / Down)" />
-          </div>
-          <label class="pl-field" title="Playback speed ( < and > )">
-            <span class="pl-muted">SPEED:</span>
-            <select class="nle-select pl-select" id="fs-speed" aria-label="Playback speed">
-              <option value="0.25">0.25×</option>
-              <option value="0.5">0.5×</option>
-              <option value="1" selected>1.0×</option>
-              <option value="2">2.0×</option>
-            </select>
-          </label>
-          <label class="pl-field" title="Preview resolution">
-            <span class="pl-muted">RES:</span>
-            <select class="nle-select pl-select" id="fs-res" aria-label="Preview resolution">
-              <option value="0.5">0.5×</option>
-              <option value="1" selected>1.0×</option>
-            </select>
-          </label>
-          <div class="daw-transport-group">
-            <button class="daw-tbtn" id="fs-btn-full" title="Exit fullscreen (Escape / F11)" aria-label="Exit fullscreen"></button>
-          </div>
+        <div class="pl-time"><span id="fs-time-now">0:00</span> <span class="pl-muted">/</span> <span id="fs-time-total">0:00</span></div>
+        <div class="daw-chip" id="fs-chip-section" title="Current section / clip"><span class="pl-muted">SECTION:</span> <strong id="fs-section">—</strong></div>
+        <div class="pl-stat" id="fs-stat" title="Video, output size, frames per second, CPU time of one frame"></div>
+        <div class="daw-transport-spacer"></div>
+        <div class="daw-transport-group">
+          <button class="daw-tbtn" id="fs-btn-mute" title="Mute (M)" aria-label="Mute"></button>
+          <input class="daw-range pl-vol" id="fs-vol" type="range" min="0" max="1" step="0.05" value="1" aria-label="Volume" title="Volume (Up / Down)" />
         </div>
-      `;
-      parent.appendChild(existing);
-    }
-    this.el = existing;
+        <label class="pl-field" title="Playback speed ( < and > )">
+          <span class="pl-muted">SPEED:</span>
+          <select class="input-field ds-select pl-select" id="fs-speed" aria-label="Playback speed">
+            <option value="0.25">0.25×</option>
+            <option value="0.5">0.5×</option>
+            <option value="1" selected>1.0×</option>
+            <option value="2">2.0×</option>
+          </select>
+        </label>
+        <label class="pl-field" title="Preview resolution">
+          <span class="pl-muted">RES:</span>
+          <select class="input-field ds-select pl-select" id="fs-res" aria-label="Preview resolution">
+            <option value="0.5">0.5×</option>
+            <option value="1" selected>1.0×</option>
+          </select>
+        </label>
+        <div class="daw-transport-group">
+          <button class="daw-tbtn" id="fs-btn-full" title="Exit fullscreen (Escape / F11)" aria-label="Exit fullscreen"></button>
+        </div>
+      </div>
+    `;
+    parent.appendChild(this.el);
 
-    this.seek = this.el.querySelector('#fs-seek')!;
-    this.seekFill = this.el.querySelector('#fs-seek-fill')!;
-    this.seekTicks = this.el.querySelector('#fs-seek-ticks')!;
-    this.seekTip = this.el.querySelector('#fs-seek-tip')!;
     this.btnStart = this.el.querySelector('#fs-btn-start')!;
     this.btnPrev = this.el.querySelector('#fs-btn-prev')!;
     this.btnPlay = this.el.querySelector('#fs-btn-play')!;
@@ -159,8 +205,24 @@ export class NleFullscreenControls {
     this.resSelect = this.el.querySelector('#fs-res')!;
     this.btnFull = this.el.querySelector('#fs-btn-full')!;
 
+    // scrubbing pauses playback and resumes it after; the bar stays shown while the pointer drags
+    let resume = false;
+    this.seek = timeSeek({
+      id: 'fs-seek',
+      onSeek: (t) => this.cb.onSeek(t),
+      onScrubStart: () => {
+        resume = this.isPlaying;
+        if (resume) this.cb.onTogglePlay();
+        this.el.classList.add('is-active');
+      },
+      onScrubEnd: () => {
+        this.el.classList.remove('is-active');
+        if (resume) this.cb.onTogglePlay();
+      },
+    });
+    this.el.prepend(this.seek.el);
+
     this.initButtons();
-    this.initSeekBar();
     this.initVolume();
     this.initSelectors();
   }
@@ -184,46 +246,6 @@ export class NleFullscreenControls {
     this.btnNext.addEventListener('click', () => this.cb.onNextSection());
     this.btnLoop.addEventListener('click', () => this.cb.onToggleLoop());
     this.btnFull.addEventListener('click', () => this.cb.onToggleFullscreen());
-  }
-
-  private initSeekBar() {
-    let resume = false;
-    const fracAt = (e: PointerEvent) => {
-      const r = this.seek.getBoundingClientRect();
-      if (r.width <= 0) return 0;
-      return clamp((e.clientX - r.left) / r.width, 0, 1);
-    };
-
-    this.seek.addEventListener('pointerdown', (e) => {
-      this.dragging = true;
-      resume = this.isPlaying;
-      if (resume) this.cb.onTogglePlay();
-      this.seek.setPointerCapture(e.pointerId);
-      this.el.classList.add('is-active');
-      const targetT = fracAt(e) * this.duration;
-      this.cb.onSeek(targetT);
-    });
-
-    this.seek.addEventListener('pointermove', (e) => {
-      const f = fracAt(e);
-      const x = f * this.duration;
-      const s = this.sectionAt(x);
-      this.seekTip.textContent = s ? `${fmtTime(x)}  ${s.name}` : fmtTime(x);
-      this.seekTip.style.left = `${clamp(f * 100, 6, 94)}%`;
-      if (this.dragging) {
-        this.cb.onSeek(x);
-      }
-    });
-
-    const endDrag = () => {
-      if (!this.dragging) return;
-      this.dragging = false;
-      this.el.classList.remove('is-active');
-      if (resume) this.cb.onTogglePlay();
-    };
-
-    this.seek.addEventListener('pointerup', endDrag);
-    this.seek.addEventListener('pointercancel', endDrag);
   }
 
   private initVolume() {
@@ -259,7 +281,7 @@ export class NleFullscreenControls {
     this.cb.onVolumeChange(this.volume, this.muted);
     this.vol.value = String(this.volume);
     this.btnMute.innerHTML = off ? ICON.mute : ICON.vol;
-    this.btnMute.classList.toggle('active', off);
+    this.btnMute.classList.toggle('daw-on', off);
     this.btnMute.setAttribute('aria-label', off ? 'Unmute' : 'Mute');
     this.btnMute.title = off ? 'Unmute (M)' : 'Mute (M)';
   }
@@ -292,36 +314,14 @@ export class NleFullscreenControls {
   setSections(sections: SongSectionItem[], duration: number) {
     this.sections = sections;
     this.duration = duration;
-    this.seek.setAttribute('aria-valuemax', String(Math.round(duration)));
+    this.seek.setSong(duration, sections);
     this.timeTotal.textContent = fmtTime(duration);
-
-    if (duration > 0 && sections.length > 0) {
-      this.seekTicks.innerHTML = sections
-        .slice(1)
-        .map((s) => `<i style="left:${clamp((s.start / duration) * 100, 0, 100)}%"></i>`)
-        .join('');
-    } else {
-      this.seekTicks.innerHTML = '';
-    }
-  }
-
-  private sectionAt(t: number): SongSectionItem | undefined {
-    let found: SongSectionItem | undefined;
-    for (const s of this.sections) {
-      if (s.start <= t) found = s;
-    }
-    return found;
   }
 
   update(s: FsControlsUpdateState) {
     this.isPlaying = s.playing;
-    this.duration = s.duration;
-
-    if (!this.dragging) {
-      const pct = s.duration > 0 ? clamp((s.time / s.duration) * 100, 0, 100) : 0;
-      this.seekFill.style.width = `${pct}%`;
-      this.seek.setAttribute('aria-valuenow', String(Math.round(s.time)));
-    }
+    if (s.duration !== this.duration) this.setSections(this.sections, s.duration);
+    this.seek.setTime(s.time);
 
     this.timeNow.textContent = fmtTime(s.time);
     this.timeTotal.textContent = fmtTime(s.duration);
@@ -339,7 +339,7 @@ export class NleFullscreenControls {
     }
 
     if (s.loop !== undefined) {
-      this.btnLoop.classList.toggle('active', s.loop);
+      this.btnLoop.classList.toggle('daw-on', s.loop);
       this.btnLoop.setAttribute('aria-pressed', String(s.loop));
     }
 
@@ -366,7 +366,7 @@ export class NleFullscreenControls {
   }
 
   setLoop(isLoop: boolean) {
-    this.btnLoop.classList.toggle('active', isLoop);
+    this.btnLoop.classList.toggle('daw-on', isLoop);
     this.btnLoop.setAttribute('aria-pressed', String(isLoop));
   }
 

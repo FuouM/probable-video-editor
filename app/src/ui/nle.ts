@@ -140,27 +140,12 @@ export class NleStudio {
     );
     this.timeline.setFollow(this.follow);
     this.transport.update({ follow: this.follow });
-    const menuFollow = document.getElementById('menu-follow');
-    if (menuFollow) menuFollow.classList.toggle('active', this.follow);
+    document.getElementById('menu-follow')?.setAttribute('aria-pressed', String(this.follow));
 
     // Connect agent change badge updates
     this.badges.onChange((dirty, reloaded, files) => {
       this.timeline.updateData({ dirtyClips: dirty, reloadedClips: reloaded });
       this.transport.update({ dirtyCount: dirty.size, dirtyFiles: files });
-
-      // Update top menubar chip
-      const menuChip = document.getElementById('menu-status-chip');
-      if (menuChip) {
-        if (dirty.size > 0) {
-          menuChip.className = 'nle-chip nle-chip--warn';
-          menuChip.textContent = `⚡ ${dirty.size} MODIFIED`;
-          menuChip.title = files.join('\n');
-        } else {
-          menuChip.className = 'nle-chip nle-chip--ok';
-          menuChip.textContent = '● ALL COMMITTED';
-          menuChip.title = 'Clean working tree';
-        }
-      }
     });
 
     this.notesEditor = new NotesEditor(project.id, {
@@ -249,8 +234,7 @@ export class NleStudio {
     } catch {}
     this.timeline.setFollow(this.follow);
     this.transport.update({ follow: this.follow });
-    const menuFollow = document.getElementById('menu-follow');
-    if (menuFollow) menuFollow.classList.toggle('active', this.follow);
+    document.getElementById('menu-follow')?.setAttribute('aria-pressed', String(this.follow));
   }
   private setSpeed(speed: number) {
     this.speed = speed;
@@ -338,7 +322,7 @@ export class NleStudio {
 
   private bindGlobalKeys() {
     window.addEventListener('keydown', (ev) => {
-      if (ev.target instanceof HTMLElement && ev.target.closest('.cm-editor, .cm-tooltip, input, textarea, select, [contenteditable="true"], #notes-pane, #render-dialog, .nle-modal-overlay')) return;
+      if (ev.target instanceof HTMLElement && ev.target.closest('.cm-editor, .cm-tooltip, input, textarea, select, [contenteditable="true"], #notes-pane, #render-dialog, .ds-modal-backdrop')) return;
       if ((ev.ctrlKey || ev.metaKey) && ev.shiftKey && ev.key.toLowerCase() === 'r') {
         ev.preventDefault();
         this.renderDialog.toggle();
@@ -480,7 +464,7 @@ export class NleStudio {
     this.fsControls.setFullscreen(isFs);
     const menuFs = document.getElementById('menu-fullscreen');
     if (menuFs) {
-      menuFs.classList.toggle('active', isFs);
+      menuFs.setAttribute('aria-pressed', String(isFs));
       menuFs.textContent = isFs ? 'Exit Fullscreen (Escape)' : 'Fullscreen (F11)';
     }
   }
@@ -550,7 +534,7 @@ export class NleStudio {
     if (!fpsEl || !msEl) return;
     fpsEl.textContent = `${this.fps.toFixed(1)} FPS`;
     msEl.textContent = `${this.renderMsAvg.toFixed(1)} ms`;
-    fpsEl.style.color = this.fps >= 55 ? '#4ade80' : this.fps >= 30 ? '#fbbf24' : '#f87171';
+    fpsEl.dataset.tone = this.fps >= 55 ? 'ok' : this.fps >= 30 ? 'warn' : 'err';
   }
 
 

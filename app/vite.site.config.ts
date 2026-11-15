@@ -12,11 +12,13 @@
 // subtitles.json, audio.mp3, thumbnail.jpg, assets/ = the project's video/assets/).
 // PVE_SITE_BASE sets the URL path of the site (default ./: works under any path, e.g. /<repo>/).
 import { defineConfig, type Plugin } from 'vite';
+import { soulwindow } from 'soulwindow/vite';
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { REPO, listProjects, projectDir } from '@pve/core/projects';
 import { siteDir, staleSources, type SiteManifest } from './scripts/site-sources';
+import { SW_OPTIONS } from './src/ui/soulwindow-options';
 
 const FIRST = 'breaked_neuro';
 
@@ -86,7 +88,7 @@ export default defineConfig({
   root: path.join(import.meta.dirname, 'site'),
   base: process.env.PVE_SITE_BASE ?? './',
   publicDir: path.join(import.meta.dirname, 'public'),
-  plugins: [siteData(projectIds())],
+  plugins: [siteData(projectIds()), soulwindow(SW_OPTIONS)],
   define: { 'import.meta.env.VITE_PVE_DATA': JSON.stringify('data/') },
   server: { fs: { allow: [REPO] } },
   build: { target: 'esnext', assetsInlineLimit: 0, outDir: path.join(REPO, 'out/site'), emptyOutDir: true },

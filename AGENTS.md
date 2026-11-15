@@ -44,6 +44,14 @@ Each message turn re-reads the full conversation context from prompt cache (ofte
 - Chrome uses D3D11 ANGLE. Persistent profiles (a pool of 8 in `out/cache/chrome-profile`, `-1` to `-7`) keep compiled shaders between runs. A command takes the first free profile and fails at once when all are busy: it never waits. A stuck page fails the command after `PVE_READY_TIMEOUT` (boot, default 60 s) or `PVE_FRAME_TIMEOUT` (one frame, default 30 s).
 - Run a command that can take longer than about a minute (`look`, `render`, `bench`, `perf`, `gate`) as a job: `bun run pve job <command> [args] [--wait]` runs in the background with a hidden console (no windows pop up or steal focus). With `--wait` it blocks until the job ends, prints the log and exits with the job's code in one command. Without `--wait` it returns at once with the job id: block later with `bun run pve wait [id]`. Exit 3 means still running after timeout (default 175 s): call wait again. Do not sleep for a fixed time.
 
+## UI (studio and player)
+
+- The studio and the player use SoulWindow (`soulwindow` in `app/package.json`). Import it. Never copy its CSS or components into `app/`.
+- Put pve CSS in `app/src/ui/styles/` or `app/site/player.css`, in `@layer app`. Do not write unlayered rules or `!important` to win a specificity fight.
+- Take colours from tokens (`--sys-*`, `--sw-*`, `--tl-*`, `--perf-*`). Literal colours live only in `app/src/ui/styles/tokens.css` and in the player's subtitle overlay (it is part of the picture). Canvas code reads tokens with `readTokens()`, at start and in `onTheme()`, never per frame.
+- Take sizes from density tokens and z-index from `--z-*`.
+- Use the SoulWindow primitive first (`.win-button`, `.group-box`, `.ds-modal-*`, `.daw-chip`, `.daw-tbtn`, `seekBar()`). When Lyric-Sync and pve need the same new part, add it to SoulWindow first, tag a release, then update both apps.
+
 ## Docs
 
 - Write docs in STE-flavored English (ASD-STE100 structure rules): short sentences, active voice, no semicolons, one name for one thing.

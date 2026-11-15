@@ -1,6 +1,12 @@
 # The web player (GitHub Pages)
 
-The site plays the videos of this repository in real time: `breaked_neuro`, `god_ish` and `sardine`. The visitor's browser runs the engine and draws every frame to the song. The site holds no video file. The page looks like the studio (`app/src/ui/daw.css`) and has no timeline or editor.
+The site plays the videos of this repository in real time: `breaked_neuro`, `god_ish` and `sardine`. The visitor's browser runs the engine and draws every frame to the song. The site holds no video file. The page looks like the studio: both use the SoulWindow design system (see "Look" below). The page has no timeline or editor.
+
+## Look
+
+The studio and the player use [SoulWindow](https://github.com/FuouM/soulwindow) (`soulwindow` in `app/package.json`). SoulWindow gives the tokens, the light, dark and high-contrast themes, the primitives (`.win-button`, `.group-box`, `.ds-modal-*`) and the editor chrome (`soulwindow/css/pro/daw.css`: menu bar, transport, VFD readout, seek bar, chips). The Theme menu sets the theme. The studio and the player keep the same choice (`pve-theme` in local storage). The Vite plugin (`soulwindow/vite`, options in `app/src/ui/soulwindow-options.ts`) paints the saved theme before the first paint.
+
+The pve rules are in `app/src/ui/styles/` (studio entry `nle.css`) and `app/site/player.css`. All of them are in `@layer app` and take their colours from tokens. The canvases (timeline, performance graph) read their colours with `readTokens()` from the `--tl-*` and `--perf-*` tokens of `styles/tokens.css`, and read them again after a change of theme. A missing part goes into SoulWindow first, then pve takes the new version.
 
 ## Controls
 
@@ -25,7 +31,7 @@ In fullscreen the bar is always hidden. It shows only while the pointer is over 
 
 ## Loading screen
 
-One box (`app/src/ui/loader.ts`, `.ld-*` in `daw.css`) in the start dialog of the player and in the monitor of the studio. It shows four steps: project data, fonts, scenes and audio. Each scene has a chip that turns green when the scene is ready. One bar covers all steps and never moves back. The studio waits for the decoded audio too. A failed step turns red and shows its message.
+One box (`app/src/ui/loader.ts`, `.ld-*` in `app/src/ui/styles/loader.css`) in the start dialog of the player and in the monitor of the studio. It shows four steps: project data, fonts, scenes and audio. Each scene has a chip that turns green when the scene is ready. One bar covers all steps and never moves back. The studio waits for the decoded audio too. A failed step turns red and shows its message.
 
 ## Videos
 

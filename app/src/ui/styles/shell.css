@@ -1,0 +1,253 @@
+/* The studio's own layout: monitor dock, side panes (performance, notes), timeline dock, error strip,
+ * export mode. Colours come from SoulWindow tokens (and the --tl-* tokens of tokens.css). */
+@layer app {
+  /* ── Menu bar ─────────────────────────────────────────────── */
+  .nle-brand-badge {
+    padding: 1px 5px;
+    background: var(--sys-highlight-bg);
+    color: var(--sys-highlight-text);
+    font: 700 var(--font-xs) / 1.2 var(--sw-font-mono);
+  }
+  /* TODO(soulwindow): a pressed state for top-level toggle buttons of the menu bar. */
+  .daw-menu-btn[aria-pressed='true'] {
+    background: var(--sys-highlight-bg);
+    border-color: var(--sys-primary-border);
+    color: var(--sys-highlight-text);
+  }
+
+  /* ── Text helpers ─────────────────────────────────────────── */
+  .nle-accent { color: var(--sys-primary); }
+  .nle-warn { color: var(--sw-warn); }
+  .nle-title-sep { color: var(--sys-text-muted); font-weight: 400; }
+  .nle-fps, .nle-fps-ms { cursor: pointer; font-family: var(--sw-font-mono); }
+  .nle-fps-ms { color: var(--sys-text-muted); }
+  :is(.nle-fps, .nle-perf-status)[data-tone='ok'] { color: var(--sw-ok); }
+  :is(.nle-fps, .nle-perf-status)[data-tone='warn'] { color: var(--sw-warn); }
+  :is(.nle-fps, .nle-perf-status)[data-tone='err'] { color: var(--sw-err); }
+  /* The wrapper of each sub value must take the readout's size, not the reset's `* { font-size }`:
+   * at 12px the three rows outgrow the glass, which cuts the top and bottom segments off. */
+  .nle-lcd-value { font-size: inherit; line-height: 1; }
+  .nle-chip-value { color: var(--sys-control-text); }
+  .nle-render-btn { min-width: 95px; padding: 0 10px; font: 700 var(--font-sm) var(--sw-font-mono); letter-spacing: 0.04em; white-space: nowrap; }
+  .nle-render-mark { margin-right: 4px; font-size: var(--font-xs); }
+
+  /* ── Docks: group boxes with a tight frame ────────────────── */
+  .nle-stage-dock,
+  .nle-timeline-dock {
+    display: flex;
+    flex-direction: column;
+    margin: 12px 6px 4px;
+    padding: 10px 0 0;
+  }
+  .nle-stage-dock { flex: 1 1 auto; min-height: 160px; }
+  .nle-timeline-dock { flex: none; }
+  .nle-metro-btn { height: 16px; gap: 3px; font-family: var(--sw-font-mono); }
+  .nle-metro-btn .daw-beat-dot { width: 8px; height: 8px; }
+
+  /* ── Program monitor ──────────────────────────────────────── */
+  .nle-stage-row { position: relative; display: flex; flex: 1 1 auto; min-height: 0; overflow: hidden; }
+  /* the picture's surround is black in every theme: it is part of the video, not chrome */
+  .nle-stage {
+    position: relative;
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    padding: 6px;
+    overflow: hidden;
+    background: black;
+  }
+  .nle-canvas-frame {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 100%;
+    max-height: 100%;
+    aspect-ratio: 16 / 9;
+    border: 1px solid var(--sys-border-medium);
+    background: black;
+  }
+  .nle-canvas-frame canvas { display: block; width: 100%; height: 100%; }
+
+  .nle-monitor-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: color-mix(in srgb, var(--sys-control-bg) 94%, transparent);
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .nle-monitor-loading.fading { opacity: 0; }
+
+  .nle-snippet-overlay { position: absolute; inset: 0; background: var(--sw-backdrop); cursor: crosshair; user-select: none; }
+  .nle-snippet-marquee {
+    position: absolute;
+    border: 1px dashed var(--sw-warn);
+    background: color-mix(in srgb, var(--sys-highlight-bg) 25%, transparent);
+    pointer-events: none;
+  }
+  .nle-snippet-hint {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 4px 12px;
+    background: var(--sys-menu-bg);
+    border: 1px solid var(--sys-border-focus);
+    color: var(--sys-control-text);
+    font: var(--font-xs) var(--sw-font-mono);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  /* ── Side panes (performance, notes) ──────────────────────── */
+  .nle-side-pane {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+    background: var(--sys-control-bg);
+    border-left: 1px solid var(--sys-border-dark);
+  }
+  .nle-pane-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: var(--sw-header-h);
+    padding: 0 8px;
+    flex: none;
+    background: var(--sys-menu-bg);
+    border-bottom: 1px solid var(--sys-border-dark);
+  }
+  .nle-pane-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font: 700 var(--font-sm) var(--sw-font-mono);
+    letter-spacing: 0.04em;
+  }
+  .nle-pane-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    height: var(--sw-statusbar-h);
+    margin-top: auto;
+    padding: 0 8px;
+    flex: none;
+    background: var(--sys-status-bg);
+    border-top: 1px solid var(--sys-border-dark);
+    color: var(--sys-status-text);
+    font: var(--font-xs) var(--sw-font-mono);
+  }
+
+  .nle-perf-pane { flex: 0 0 280px; font-family: var(--sw-font-mono); }
+  .nle-perf-canvas-wrap { height: 110px; flex: none; background: var(--perf-bg); border-bottom: 1px solid var(--sys-border-dark); }
+  .nle-perf-canvas-wrap canvas { display: block; width: 100%; height: 100%; }
+  .nle-perf-stats-grid { display: flex; flex-direction: column; gap: 4px; padding: 8px; }
+  .nle-perf-stat-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2px 4px;
+    background: var(--sys-window-bg);
+    border: 1px solid var(--sys-border-medium);
+    font-size: var(--font-xs);
+  }
+  .nle-perf-stat-label { color: var(--sys-text-muted); font-family: inherit; font-size: inherit; }
+  .nle-perf-stat-val { font-weight: 600; font-family: inherit; font-size: inherit; }
+
+  .nle-notes-pane { flex: 0 0 380px; }
+  .nle-notes-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    flex: none;
+    border-bottom: 1px solid var(--sys-border-dark);
+  }
+  .nle-notes-tools { padding-top: 4px; padding-bottom: 4px; background: var(--sys-menu-bg); }
+  .nle-notes-select { flex: 1 1 auto; min-width: 0; font-family: var(--sw-font-mono); }
+  .nle-notes-body { position: relative; display: flex; flex-direction: column; }
+  .nle-notes-path { max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* ── Timeline dock ────────────────────────────────────────── */
+  .nle-timeline-dock { background: var(--tl-bg); }
+  .nle-timeline-body { position: relative; display: flex; height: 236px; overflow: hidden; }
+  .nle-track-headers {
+    display: flex;
+    flex-direction: column;
+    flex: none;
+    width: 120px;
+    background: var(--sys-control-bg);
+    border-right: 1px solid var(--sys-border-dark);
+  }
+  .nle-track-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8px;
+    border-bottom: 1px solid var(--sys-border-medium);
+    color: var(--sys-text-muted);
+    font: 600 var(--font-xs) var(--sw-font-mono);
+  }
+  .nle-track-tag { font-size: 8px; }
+  .nle-track-header--ruler { height: 26px; background: var(--sys-status-bg); }
+  .nle-track-header--clips { height: 52px; }
+  .nle-track-header--over { height: 18px; }
+  .nle-track-header--sections { height: 24px; }
+  .nle-track-header--lyrics { height: 44px; }
+  .nle-track-header--wave { height: 54px; }
+  .nle-track-header--overview { height: 18px; border-bottom: none; }
+  .nle-track-header--ruler .nle-track-tag,
+  .nle-track-header--lyrics .nle-track-tag { color: var(--sw-warn); }
+  .nle-track-header--clips .nle-track-tag { color: var(--tl-clip-selected); }
+  .nle-track-header--wave .nle-track-tag { color: var(--tl-wave-vocal); }
+  .nle-timeline-viewport { position: relative; flex: 1 1 auto; overflow: hidden; cursor: crosshair; }
+  .nle-timeline-viewport canvas { display: block; width: 100%; height: 236px; }
+
+  /* ── Errors ───────────────────────────────────────────────── */
+  .nle-err-strip {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: var(--z-banner);
+    padding: 6px 12px;
+    background: var(--ds-danger-bg);
+    border-bottom: 1px solid var(--ds-danger-border);
+    color: var(--ds-danger-text);
+    font: var(--font-sm) var(--sw-font-mono);
+    white-space: pre-wrap;
+    user-select: text;
+  }
+  .nle-err-strip.visible { display: block; }
+  .nle-boot-error {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: var(--z-banner);
+    color: var(--ds-danger-text);
+    font-family: var(--sw-font-mono);
+    white-space: pre-wrap;
+  }
+
+  /* ── Export mode (?export=1): only the canvas, 1920×1080 at 0,0 ── */
+  body.export :is(.daw-menubar, .daw-transport, .group-box-title, .nle-timeline-dock, .nle-err-strip, .nle-side-pane, .nle-snippet-overlay, .nle-monitor-loading, .pl-controls) {
+    display: none;
+  }
+  body.export,
+  body.export :is(.nle-app, .nle-stage-dock, .nle-stage) {
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: black;
+  }
+  body.export .nle-canvas-frame { width: 1920px; height: 1080px; max-width: none; max-height: none; border: none; }
+}

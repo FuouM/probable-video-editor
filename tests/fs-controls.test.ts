@@ -54,8 +54,31 @@ class MockElement {
     }
   }
 
+  parentNode: MockElement | null = null;
+  tabIndex = 0;
+
   appendChild(child: MockElement) {
+    child.parentNode = this;
     this.children.push(child);
+    return child;
+  }
+
+  prepend(child: MockElement) {
+    child.parentNode = this;
+    this.children.unshift(child);
+  }
+
+  insertBefore(child: MockElement, ref: MockElement | null) {
+    const i = ref ? this.children.indexOf(ref) : -1;
+    child.parentNode = this;
+    if (i < 0) this.children.push(child);
+    else this.children.splice(i, 0, child);
+    return child;
+  }
+
+  removeChild(child: MockElement) {
+    this.children = this.children.filter((c) => c !== child);
+    child.parentNode = null;
     return child;
   }
 
@@ -83,6 +106,7 @@ class MockElement {
 
   setAttribute(k: string, v: string) { this.attrs[k] = v; }
   getAttribute(k: string) { return this.attrs[k]; }
+  removeAttribute(k: string) { delete this.attrs[k]; }
 
   addEventListener(type: string, fn: (ev: unknown) => void) {
     this.listeners[type] ??= [];
@@ -98,7 +122,13 @@ class MockElement {
     this.dispatchEvent({ type: 'click' });
   }
 
-  setPointerCapture() {}
+  private captured = new Set<number>();
+  setPointerCapture(id: number) { this.captured.add(id); }
+  hasPointerCapture(id: number) { return this.captured.has(id); }
+  releasePointerCapture(id: number) { this.captured.delete(id); }
+  focused = false;
+  focus() { this.focused = true; }
+  blur() { this.focused = false; }
   getBoundingClientRect() {
     return { left: 0, top: 0, width: 1000, height: 20, right: 1000, bottom: 20 };
   }
@@ -167,12 +197,14 @@ describe('NleFullscreenControls', () => {
     expect(fsControls.el).toBeDefined();
     const rootEl = fsControls.el as unknown as MockElement;
 
-    // Verify sections and seek bar ticks
+    // Sections: each start after the first is a mark on the seek bar
     fsControls.setSections([
       { name: 'Intro', start: 0, end: 10 },
       { name: 'Verse', start: 10, end: 30 },
       { name: 'Chorus', start: 30, end: 60 },
     ], 60);
+    const marks = rootEl.querySelector('#fs-seek')!.children.filter((c) => c.className === 'daw-seek-mark');
+    expect(marks.map((m) => m.attrs.title)).toEqual(['Verse', 'Chorus']);
 
     // Verify button clicks
     const btnPlay = rootEl.querySelector('#fs-btn-play')!;
@@ -249,10 +281,23 @@ describe('NleFullscreenControls', () => {
     fsControls.setFullscreen(false);
     expect(btnFull.title).toContain('Fullscreen');
 
-    // Verify seek bar pointer interaction
+    // Seek through the SoulWindow bar (positions are deciseconds: 60 s → max 600).
+    // A drag pauses playback (update() said playing), seeks, and on release resumes and gives the focus back.
     const seek = rootEl.querySelector('#fs-seek')!;
-    seek.dispatchEvent({ type: 'pointerdown', clientX: 300, pointerId: 1 });
-    expect(seekT).not.toBeNull();
-    expect(seekT ?? 0).toBeGreaterThan(0);
+    expect(seek.className).toContain('daw-seek');
+    seek.dispatchEvent({ type: 'pointerdown', button: 0, clientX: 300, pointerId: 1, preventDefault() {}, stopPropagation() {} });
+    expect(seekT ?? 0).toBeCloseTo(18, 5);
+    expect(played).toBe(false);
+    expect(rootEl.classList.contains('is-active')).toBe(true);
+    seek.dispatchEvent({ type: 'pointermove', clientX: 500, pointerId: 1 });
+    expect(seekT ?? 0).toBeCloseTo(30, 5);
+    seek.dispatchEvent({ type: 'pointerup', pointerId: 1 });
+    expect(played).toBe(true);
+    expect(rootEl.classList.contains('is-active')).toBe(false);
+    expect(seek.focused).toBe(false);
+
+    // keyboard path: End jumps to the last position
+    seek.dispatchEvent({ type: 'keydown', key: 'End', preventDefault() {}, stopPropagation() {} });
+    expect(seekT ?? 0).toBeCloseTo(60, 5);
   });
 });

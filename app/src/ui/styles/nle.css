@@ -1,0 +1,9 @@
+/* The studio (app/index.html). SoulWindow gives tokens, themes, primitives and the DAW chrome (pro);
+ * the files below hold only what pve adds, all in @layer app. */
+@import 'soulwindow/css';
+@import 'soulwindow/css/pro/daw.css';
+@import './tokens.css';
+@import './shell.css';
+@import './controls.css';
+@import './loader.css';
+@import './render.css';

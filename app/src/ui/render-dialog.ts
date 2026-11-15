@@ -64,9 +64,9 @@ const STORAGE_KEY_SCALE = 'pve:render-scale';
 
 /** The dialog texts at the start of each kind of run (RenderDialog.beginRun). */
 const RUN_START = {
-  webcodecs: { chip: 'nle-chip--cyan', status: '⚡ WEBCODECS STARTING...', badge: '● WEBCODECS 0%', pill: 'WebCodecs GPU: Starting...', stage: 'rendering', percent: 0 },
-  backend: { chip: 'nle-chip--warn', status: 'STARTING...', badge: '● RENDERING 0%', pill: 'Backend render: Starting...', stage: 'rendering', percent: 0 },
-  encode: { chip: 'nle-chip--warn', status: 'ENCODING FINAL MP4...', badge: '● ENCODING FINAL MP4', pill: 'Encoding Final MP4 with audio...', stage: 'encoding', percent: 100 },
+  webcodecs: { chip: 'daw-chip--accent', status: '⚡ WEBCODECS STARTING...', badge: '● WEBCODECS 0%', pill: 'WebCodecs GPU: Starting...', stage: 'rendering', percent: 0 },
+  backend: { chip: 'daw-chip--warn', status: 'STARTING...', badge: '● RENDERING 0%', pill: 'Backend render: Starting...', stage: 'rendering', percent: 0 },
+  encode: { chip: 'daw-chip--warn', status: 'ENCODING FINAL MP4...', badge: '● ENCODING FINAL MP4', pill: 'Encoding Final MP4 with audio...', stage: 'encoding', percent: 100 },
 } as const;
 
 export class RenderDialog {
@@ -106,42 +106,40 @@ export class RenderDialog {
 
   constructor(private opts: RenderDialogOptions) {
     this.overlayEl = document.createElement('div');
-    this.overlayEl.className = 'nle-modal-overlay hidden';
+    this.overlayEl.className = 'ds-modal-backdrop sw-hidden';
     this.overlayEl.id = 'render-modal-overlay';
 
     this.overlayEl.innerHTML = `
-      <div class="nle-modal-dialog" id="render-dialog" role="dialog" aria-labelledby="render-title" tabindex="-1">
-        <div class="nle-modal-header">
-          <div class="nle-modal-title" id="render-title">
-            <span style="color:#ef4444;font-size:12px;margin-right:2px">●</span>
+      <div class="ds-modal-window nle-render-window" id="render-dialog" role="dialog" aria-labelledby="render-title" tabindex="-1">
+        <div class="ds-modal-header">
+          <div class="ds-modal-title nle-render-title" id="render-title">
+            <span class="nle-rec-dot">●</span>
             <span>RENDER & EXPORT — ${opts.projectId}</span>
-            <span id="render-header-badge" class="nle-badge-status nle-badge-status--active hidden" style="margin-left:8px">● RENDERING</span>
+            <span id="render-header-badge" class="daw-chip daw-chip--accent sw-hidden">● RENDERING</span>
           </div>
           <div class="nle-header-controls">
-            <button class="nle-modal-btn" id="btn-render-minimize" title="Minimize dialog (render continues in background)">─</button>
-            <button class="nle-modal-btn nle-modal-btn--close" id="btn-render-close" title="Close (Escape)">✕</button>
+            <button class="win-button ds-btn-icon-sm" id="btn-render-minimize" title="Minimize dialog (render continues in background)" aria-label="Minimize">─</button>
+            <button class="win-button ds-btn-icon-sm" id="btn-render-close" title="Close (Escape)" aria-label="Close">✕</button>
           </div>
         </div>
 
-        <div class="nle-modal-body">
+        <div class="ds-modal-body nle-render-body">
           <!-- Final MP4 Banner -->
-          <div class="nle-mp4-banner hidden" id="render-mp4-banner">
-            <div>
-              <span class="nle-chip nle-chip--ok" style="margin-right:8px">✓ FINAL MP4 READY</span>
-              <span id="render-mp4-text" style="color:var(--sys-text);font-size:11px"></span>
-            </div>
-            <div style="display:flex;gap:4px">
-              <button class="nle-scene-btn-single" id="btn-open-final-mp4" title="Open MP4 in new browser tab">Play ↗</button>
+          <div class="ds-banner ds-banner--ok nle-mp4-banner sw-hidden" id="render-mp4-banner">
+            <span class="daw-chip daw-chip--ok">✓ FINAL MP4 READY</span>
+            <span id="render-mp4-text" class="nle-mp4-text"></span>
+            <div class="ds-banner-actions">
+              <button class="win-button ds-btn-sm" id="btn-open-final-mp4" title="Open MP4 in new browser tab">Play ↗</button>
             </div>
           </div>
 
           <!-- Setup Options -->
-          <div class="group-box nle-render-group" id="render-setup-box">
+          <div class="group-box" id="render-setup-box">
             <div class="group-box-title">EXPORT CONFIGURATION</div>
             <div class="nle-render-form">
               <div class="nle-form-row">
                 <label for="render-pipeline-select">Export Engine:</label>
-                <select id="render-pipeline-select" class="nle-select">
+                <select id="render-pipeline-select" class="input-field ds-select">
                   <option value="webcodecs">⚡ WebCodecs Hardware (Direct GPU Encode · Fast MP4)</option>
                   <option value="ffmpeg">Master Pipeline (Lossless FFV1 Segments + FFmpeg)</option>
                 </select>
@@ -149,7 +147,7 @@ export class RenderDialog {
 
               <div class="nle-form-row">
                 <label for="render-range-select">Timeline Scope:</label>
-                <select id="render-range-select" class="nle-select">
+                <select id="render-range-select" class="input-field ds-select">
                   <option value="full">Full Video (All Scenes)</option>
                   <option value="stale">Only Modified / Stale Scenes</option>
                   <option value="selected">Selected Scenes (via checkboxes)</option>
@@ -160,7 +158,7 @@ export class RenderDialog {
 
               <div class="nle-form-row">
                 <label for="render-quality-select">Quality / Samples:</label>
-                <select id="render-quality-select" class="nle-select">
+                <select id="render-quality-select" class="input-field ds-select">
                   <option value="12">Production Fast (12 fixed samples · 15+ FPS with motion blur)</option>
                   <option value="auto">Production Master (Auto adaptive 4–324 samples · Motion blur)</option>
                   <option value="1">Draft (1 sample/frame · 30+ FPS Real-time)</option>
@@ -169,7 +167,7 @@ export class RenderDialog {
 
               <div class="nle-form-row">
                 <label for="render-scale-select">Resolution Scale:</label>
-                <select id="render-scale-select" class="nle-select">
+                <select id="render-scale-select" class="input-field ds-select">
                   <option value="2">2.0× 4K Ultra HD (3840 × 2160)</option>
                   <option value="1">1.0× Full HD (1920 × 1080)</option>
                   <option value="0.5">0.5× Half HD (960 × 540)</option>
@@ -177,16 +175,16 @@ export class RenderDialog {
               </div>
 
               <div class="nle-form-actions">
-                <button class="daw-tbtn daw-tbtn--render" id="btn-render-start">
-                  <span style="color:#ef4444;margin-right:4px">●</span>Render Video
+                <button class="win-button daw-btn-err" id="btn-render-start">
+                  <span class="nle-rec-dot">●</span> Render Video
                 </button>
-                <button class="daw-tbtn daw-tbtn--encode" id="btn-render-encode" disabled title="Encodes all rendered scene segments into the final MP4 with audio">
+                <button class="win-button daw-btn-ok" id="btn-render-encode" disabled title="Encodes all rendered scene segments into the final MP4 with audio">
                   ★ Render Final MP4
                 </button>
-                <button class="daw-tbtn daw-tbtn--secondary hidden" id="btn-render-hide" title="Keep rendering in background and close dialog">
+                <button class="win-button sw-hidden" id="btn-render-hide" title="Keep rendering in background and close dialog">
                   Run in Background
                 </button>
-                <button class="daw-tbtn daw-tbtn--danger" id="btn-render-cancel" disabled>
+                <button class="win-button daw-btn-err" id="btn-render-cancel" disabled>
                   ✕ Cancel
                 </button>
               </div>
@@ -194,14 +192,14 @@ export class RenderDialog {
           </div>
 
           <!-- Scenes Status Table (Always visible) -->
-          <div class="group-box nle-render-group" id="render-scenes-box">
+          <div class="group-box" id="render-scenes-box">
             <div class="group-box-title">PROJECT SCENES & SEGMENTS</div>
             <div class="nle-scenes-toolbar">
-              <span id="render-scenes-summary" style="font-size:10px;color:var(--sys-text-muted);font-weight:normal">Loading status...</span>
+              <span id="render-scenes-summary" class="nle-scenes-summary">Loading status...</span>
               <div class="nle-scenes-actions">
-                <button class="nle-scene-btn-single" id="btn-render-select-stale" title="Select only modified / unrendered scenes">Select Modified</button>
-                <button class="nle-scene-btn-single" id="btn-render-refresh" title="Re-check disk for deleted/new render files">⟳ Refresh</button>
-                <button class="nle-scene-btn-single" id="btn-render-clear-all" title="Delete all rendered segments from disk" style="color:#ef4444">Clear Segments</button>
+                <button class="win-button ds-btn-xs" id="btn-render-select-stale" title="Select only modified / unrendered scenes">Select Modified</button>
+                <button class="win-button ds-btn-xs" id="btn-render-refresh" title="Re-check disk for deleted/new render files">⟳ Refresh</button>
+                <button class="win-button ds-btn-xs daw-btn-err daw-btn-ghost" id="btn-render-clear-all" title="Delete all rendered segments from disk">Clear Segments</button>
               </div>
             </div>
             <div class="nle-scene-table-container">
@@ -225,28 +223,24 @@ export class RenderDialog {
           </div>
 
           <!-- Progress Section -->
-          <div class="group-box nle-render-group hidden" id="render-progress-box">
+          <div class="group-box sw-hidden" id="render-progress-box">
             <div class="group-box-title">PROGRESS & METRICS</div>
-            <div class="nle-render-progress-body">
-              <div class="nle-progress-overall">
-                <div class="nle-progress-info">
-                  <span id="render-status-label" class="nle-chip nle-chip--ok">READY</span>
-                  <span id="render-progress-stats" style="font-family:var(--sys-mono);font-size:11px">0 / 0 frames (0%)</span>
-                </div>
-                <div class="nle-progress-track">
-                  <div class="nle-progress-fill" id="render-overall-fill" style="width:0%"></div>
-                </div>
-              </div>
+            <div class="nle-progress-info">
+              <span id="render-status-label" class="daw-chip daw-chip--ok">READY</span>
+              <span id="render-progress-stats" class="nle-progress-stats">0 / 0 frames (0%)</span>
+            </div>
+            <div class="ds-progress-track">
+              <div class="ds-progress-fill" id="render-overall-fill" style="width:0%"></div>
             </div>
           </div>
 
           <!-- Output Result Section -->
-          <div class="nle-render-result hidden" id="render-result-box">
+          <div class="nle-render-result sw-hidden" id="render-result-box">
             <div class="nle-render-result-row">
-              <div class="nle-chip nle-chip--ok" id="render-result-chip">✓ RENDER COMPLETE</div>
-              <div style="display:flex;gap:4px">
-                <button class="nle-scene-btn-single" id="btn-copy-result-path" title="Copy output path to clipboard">Copy Path</button>
-                <button class="nle-scene-btn-single" id="btn-play-result" title="Open in browser">Play ↗</button>
+              <div class="daw-chip daw-chip--ok" id="render-result-chip">✓ RENDER COMPLETE</div>
+              <div class="nle-btn-row">
+                <button class="win-button ds-btn-sm" id="btn-copy-result-path" title="Copy output path to clipboard">Copy Path</button>
+                <button class="win-button ds-btn-sm" id="btn-play-result" title="Open in browser">Play ↗</button>
               </div>
             </div>
             <div class="nle-render-result-path" id="render-result-path"></div>
@@ -259,14 +253,14 @@ export class RenderDialog {
 
     // Floating background render pill
     this.floatingPillEl = document.createElement('div');
-    this.floatingPillEl.className = 'nle-render-floating-pill hidden';
+    this.floatingPillEl.className = 'nle-render-floating-pill sw-hidden';
     this.floatingPillEl.id = 'render-floating-pill';
     this.floatingPillEl.innerHTML = `
-      <span class="nle-pill-dot" style="color:#00e5ff">⚡</span>
+      <span class="nle-pill-dot">⚡</span>
       <span class="nle-pill-text" id="render-pill-text">Exporting: 0%</span>
       <div class="nle-pill-actions">
-        <button class="nle-scene-btn-single" id="btn-pill-open" title="Open Render Dialog">View ↗</button>
-        <button class="nle-scene-btn-single" id="btn-pill-cancel" title="Cancel Export" style="color:#ef4444">✕</button>
+        <button class="win-button ds-btn-xs" id="btn-pill-open" title="Open Render Dialog">View ↗</button>
+        <button class="win-button ds-btn-xs daw-btn-err daw-btn-ghost" id="btn-pill-cancel" title="Cancel Export">✕</button>
       </div>
     `;
     document.body.appendChild(this.floatingPillEl);
@@ -486,7 +480,7 @@ export class RenderDialog {
 
   open() {
     this.isOpen = true;
-    this.overlayEl.classList.remove('hidden');
+    this.overlayEl.classList.remove('sw-hidden');
     this.hideFloatingPill();
 
     const loop = this.opts.getLoopRange();
@@ -516,7 +510,7 @@ export class RenderDialog {
 
   close() {
     this.isOpen = false;
-    this.overlayEl.classList.add('hidden');
+    this.overlayEl.classList.add('sw-hidden');
 
     if (this.isRendering) {
       this.showFloatingPill();
@@ -537,7 +531,7 @@ export class RenderDialog {
       clearTimeout(this.pillDismissTimer);
       this.pillDismissTimer = null;
     }
-    this.floatingPillEl.classList.remove('hidden');
+    this.floatingPillEl.classList.remove('sw-hidden');
   }
 
   private hideFloatingPill() {
@@ -545,7 +539,7 @@ export class RenderDialog {
       clearTimeout(this.pillDismissTimer);
       this.pillDismissTimer = null;
     }
-    this.floatingPillEl.classList.add('hidden');
+    this.floatingPillEl.classList.add('sw-hidden');
   }
 
   private updateControls() {
@@ -553,17 +547,17 @@ export class RenderDialog {
       this.btnStart.disabled = true;
       this.btnEncode.disabled = true;
       this.btnCancel.disabled = false;
-      this.btnHide.classList.remove('hidden');
-      this.progressSection.classList.remove('hidden');
-      this.headerBadgeEl.classList.remove('hidden');
+      this.btnHide.classList.remove('sw-hidden');
+      this.progressSection.classList.remove('sw-hidden');
+      this.headerBadgeEl.classList.remove('sw-hidden');
       this.btnClose.title = 'Hide dialog (render continues in background)';
       this.btnMinimize.title = 'Hide dialog (render continues in background)';
     } else {
       this.btnStart.disabled = false;
       this.btnEncode.disabled = !this.clipsData.every((c) => c.hasSegment);
       this.btnCancel.disabled = true;
-      this.btnHide.classList.add('hidden');
-      this.headerBadgeEl.classList.add('hidden');
+      this.btnHide.classList.add('sw-hidden');
+      this.headerBadgeEl.classList.add('sw-hidden');
       this.btnClose.title = 'Close (Escape)';
       this.btnMinimize.title = 'Minimize dialog';
     }
@@ -586,11 +580,11 @@ export class RenderDialog {
       }
 
       if (data.finalMp4) {
-        this.mp4Banner.classList.remove('hidden');
+        this.mp4Banner.classList.remove('sw-hidden');
         const sizeMb = (data.finalMp4.size / (1024 * 1024)).toFixed(1);
         this.mp4Text.textContent = `${data.finalMp4.path} (${sizeMb} MB)`;
       } else {
-        this.mp4Banner.classList.add('hidden');
+        this.mp4Banner.classList.add('sw-hidden');
       }
 
       const allReady = !!data.allRendered;
@@ -678,32 +672,32 @@ export class RenderDialog {
           const diskEl = row.querySelector('.nle-col-disk');
           if (diskEl) {
             diskEl.innerHTML = hasOnDisk
-              ? `<span style="color:#10b981;font-weight:600" title="${c.segFile ?? 'Segment on disk'}">${((c.sizeBytes ?? 0) / (1024 * 1024)).toFixed(1)} MB</span>`
-              : '<span style="color:var(--sys-text-muted)">—</span>';
+              ? `<span class="nle-disk-size" title="${c.segFile ?? 'Segment on disk'}">${((c.sizeBytes ?? 0) / (1024 * 1024)).toFixed(1)} MB</span>`
+              : '<span class="nle-disk-none">—</span>';
           }
           const fill = row.querySelector<HTMLElement>(`#fill-clip-${c.id}`);
           if (fill) {
             fill.style.width = `${pct}%`;
-            fill.classList.toggle('nle-mini-fill--done', isDone);
+            fill.classList.toggle('nle-fill-done', isDone);
           }
           const badge = row.querySelector(`#badge-clip-${c.id}`);
           if (badge) {
             badge.innerHTML =
               c.status === 'rendering'
-                ? `<span class="nle-badge-status nle-badge-status--active">⚡ ${pct}%</span>`
+                ? `<span class="daw-chip daw-chip--accent">⚡ ${pct}%</span>`
                 : !hasOnDisk
-                ? '<span class="nle-badge-status nle-badge-status--pending">○ Not Rendered</span>'
+                ? '<span class="daw-chip">○ Not Rendered</span>'
                 : isStale
-                ? '<span class="nle-badge-status nle-badge-status--stale" title="Scene code edited since segment was rendered">⚠ Modified</span>'
-                : '<span class="nle-badge-status nle-badge-status--ok" title="Up to date on disk">✓ Rendered</span>';
+                ? '<span class="daw-chip daw-chip--warn" title="Scene code edited since segment was rendered">⚠ Modified</span>'
+                : '<span class="daw-chip daw-chip--ok" title="Up to date on disk">✓ Rendered</span>';
           }
           const actionsEl = row.querySelector('.nle-col-actions');
           if (actionsEl) {
             const deleteBtn = hasOnDisk
-              ? `<button class="nle-scene-btn-single" data-delete-clip="${c.id}" title="Delete ${c.id} segment from disk" style="color:#ef4444;margin-left:4px">✕</button>`
+              ? `<button class="win-button ds-btn-xs daw-btn-err daw-btn-ghost" data-delete-clip="${c.id}" title="Delete ${c.id} segment from disk">✕</button>`
               : '';
             actionsEl.innerHTML = `
-              <button class="nle-scene-btn-single" data-render-clip="${c.id}" title="Render only ${c.id}">Render</button>
+              <button class="win-button ds-btn-xs" data-render-clip="${c.id}" title="Render only ${c.id}">Render</button>
               ${deleteBtn}
             `;
           }
@@ -723,19 +717,19 @@ export class RenderDialog {
 
         const statusBadge =
           c.status === 'rendering'
-            ? `<span class="nle-badge-status nle-badge-status--active">⚡ ${pct}%</span>`
+            ? `<span class="daw-chip daw-chip--accent">⚡ ${pct}%</span>`
             : !hasOnDisk
-            ? '<span class="nle-badge-status nle-badge-status--pending">○ Not Rendered</span>'
+            ? '<span class="daw-chip">○ Not Rendered</span>'
             : isStale
-            ? '<span class="nle-badge-status nle-badge-status--stale" title="Scene code edited since segment was rendered">⚠ Modified</span>'
-            : '<span class="nle-badge-status nle-badge-status--ok" title="Up to date on disk">✓ Rendered</span>';
+            ? '<span class="daw-chip daw-chip--warn" title="Scene code edited since segment was rendered">⚠ Modified</span>'
+            : '<span class="daw-chip daw-chip--ok" title="Up to date on disk">✓ Rendered</span>';
 
         const diskSizeText = hasOnDisk
-          ? `<span style="color:#10b981;font-weight:600" title="${c.segFile ?? 'Segment on disk'}">${((c.sizeBytes ?? 0) / (1024 * 1024)).toFixed(1)} MB</span>`
-          : '<span style="color:var(--sys-text-muted)">—</span>';
+          ? `<span class="nle-disk-size" title="${c.segFile ?? 'Segment on disk'}">${((c.sizeBytes ?? 0) / (1024 * 1024)).toFixed(1)} MB</span>`
+          : '<span class="nle-disk-none">—</span>';
 
         const deleteBtn = hasOnDisk
-          ? `<button class="nle-scene-btn-single" data-delete-clip="${c.id}" title="Delete ${c.id} segment from disk" style="color:#ef4444;margin-left:4px">✕</button>`
+          ? `<button class="win-button ds-btn-xs daw-btn-err daw-btn-ghost" data-delete-clip="${c.id}" title="Delete ${c.id} segment from disk">✕</button>`
           : '';
 
         html += `
@@ -745,13 +739,13 @@ export class RenderDialog {
             <td class="nle-col-frames">${c.f0}–${c.f1} (${c.total}f)</td>
             <td class="nle-col-disk">${diskSizeText}</td>
             <td class="nle-col-prog">
-              <div class="nle-mini-track">
-                <div class="nle-mini-fill ${isDone ? 'nle-mini-fill--done' : ''}" id="fill-clip-${c.id}" style="width:${pct}%"></div>
+              <div class="ds-progress-track ds-progress-track--thin">
+                <div class="ds-progress-fill ${isDone ? 'nle-fill-done' : ''}" id="fill-clip-${c.id}" style="width:${pct}%"></div>
               </div>
             </td>
             <td class="nle-col-status" id="badge-clip-${c.id}">${statusBadge}</td>
             <td class="nle-col-actions" style="text-align:right">
-              <button class="nle-scene-btn-single" data-render-clip="${c.id}" title="Render only ${c.id}">Render</button>
+              <button class="win-button ds-btn-xs" data-render-clip="${c.id}" title="Render only ${c.id}">Render</button>
               ${deleteBtn}
             </td>
           </tr>
@@ -814,8 +808,8 @@ export class RenderDialog {
     this.cancelRequested = false;
     this.updateControls();
 
-    this.resultSection.classList.add('hidden');
-    this.statusText.className = `nle-chip ${s.chip}`;
+    this.resultSection.classList.add('sw-hidden');
+    this.statusText.className = `daw-chip ${s.chip}`;
     this.statusText.textContent = s.status;
     this.headerBadgeEl.textContent = s.badge;
     this.overallBar.style.width = `${s.percent}%`;
@@ -830,7 +824,7 @@ export class RenderDialog {
     this.isRendering = false;
     this.webCodecsActive = false;
     this.updateControls();
-    this.statusText.className = 'nle-chip nle-chip--err';
+    this.statusText.className = 'daw-chip daw-chip--err';
     this.statusText.textContent = 'ERROR';
     this.opts.onRenderStateChange?.({ active: false, stage: 'error', error: message });
     return message;
@@ -950,7 +944,7 @@ export class RenderDialog {
               const oldRow = this.clipTableBody.querySelector(`#row-clip-${lastActiveClipId}`);
               oldRow?.classList.remove('nle-scene-row--active');
               const oldBadge = this.clipTableBody.querySelector(`#badge-clip-${lastActiveClipId}`);
-              if (oldBadge) oldBadge.innerHTML = '<span class="nle-badge-status nle-badge-status--ok">✓ Rendered</span>';
+              if (oldBadge) oldBadge.innerHTML = '<span class="daw-chip daw-chip--ok">✓ Rendered</span>';
               clipProgressMap.set(lastActiveClipId, { percent: 100, status: 'done' });
             }
             lastActiveClipId = activeEntry.id;
@@ -965,7 +959,7 @@ export class RenderDialog {
             const fill = this.clipTableBody.querySelector<HTMLElement>(`#fill-clip-${activeEntry.id}`);
             if (fill) fill.style.width = `${clipPct}%`;
             const badge = this.clipTableBody.querySelector(`#badge-clip-${activeEntry.id}`);
-            if (badge) badge.innerHTML = `<span class="nle-badge-status nle-badge-status--active">⚡ ${clipPct}%</span>`;
+            if (badge) badge.innerHTML = `<span class="daw-chip daw-chip--accent">⚡ ${clipPct}%</span>`;
 
             this.opts.onProgressUpdate(clipProgressMap);
           }
@@ -987,7 +981,7 @@ export class RenderDialog {
       if (this.cancelRequested) {
         encoder.close();
         await upload.cancel();
-        this.statusText.className = 'nle-chip nle-chip--warn';
+        this.statusText.className = 'daw-chip daw-chip--warn';
         this.statusText.textContent = 'CANCELLED';
         this.pillTextEl.textContent = 'Export cancelled';
         this.isRendering = false;
@@ -1002,7 +996,7 @@ export class RenderDialog {
       encoder.close();
       await upload.flush();
 
-      this.statusText.className = 'nle-chip nle-chip--warn';
+      this.statusText.className = 'daw-chip daw-chip--warn';
       this.statusText.textContent = 'FINALIZING MP4...';
       this.headerBadgeEl.textContent = '● FINALIZING';
       this.pillTextEl.textContent = 'Finalizing MP4...';
@@ -1014,12 +1008,12 @@ export class RenderDialog {
       this.webCodecsActive = false;
       this.updateControls();
 
-      this.statusText.className = 'nle-chip nle-chip--ok';
+      this.statusText.className = 'daw-chip daw-chip--ok';
       this.statusText.textContent = 'COMPLETE';
       this.overallBar.style.width = '100%';
       this.overallText.textContent = `Rendered & encoded in ${((performance.now() - tStart) / 1000).toFixed(1)}s`;
 
-      this.resultSection.classList.remove('hidden');
+      this.resultSection.classList.remove('sw-hidden');
       const pathEl = this.resultSection.querySelector('#render-result-path')!;
       const mb = (data.size / (1024 * 1024)).toFixed(1);
       pathEl.textContent = `${data.outputFile} (${mb} MB)`;
@@ -1094,7 +1088,7 @@ export class RenderDialog {
       this.isRendering = false;
       this.webCodecsActive = false;
       this.updateControls();
-      this.statusText.className = 'nle-chip nle-chip--warn';
+      this.statusText.className = 'daw-chip daw-chip--warn';
       this.statusText.textContent = 'CANCELLED';
       this.pillTextEl.textContent = 'Render cancelled';
       this.opts.onRenderStateChange?.({ active: false, stage: 'aborted' });
@@ -1106,7 +1100,7 @@ export class RenderDialog {
       this.isRendering = false;
       this.webCodecsActive = false;
       this.updateControls();
-      this.statusText.className = 'nle-chip nle-chip--err';
+      this.statusText.className = 'daw-chip daw-chip--err';
       this.statusText.textContent = 'ERROR';
       if (data.error) this.overallText.textContent = data.error;
       this.floatingPillEl.className = 'nle-render-floating-pill nle-render-floating-pill--err';
@@ -1117,7 +1111,7 @@ export class RenderDialog {
     }
 
     if (data.status === 'encoding') {
-      this.statusText.className = 'nle-chip nle-chip--warn';
+      this.statusText.className = 'daw-chip daw-chip--warn';
       this.statusText.textContent = 'ENCODING FINAL MP4';
       this.headerBadgeEl.textContent = '● ENCODING FINAL MP4';
       this.overallBar.style.width = '100%';
@@ -1131,12 +1125,12 @@ export class RenderDialog {
       this.isRendering = false;
       this.webCodecsActive = false;
       this.updateControls();
-      this.statusText.className = 'nle-chip nle-chip--ok';
+      this.statusText.className = 'daw-chip daw-chip--ok';
       this.statusText.textContent = 'COMPLETE';
       this.overallBar.style.width = '100%';
       this.overallText.textContent = 'All frames rendered and encoded.';
 
-      this.resultSection.classList.remove('hidden');
+      this.resultSection.classList.remove('sw-hidden');
       const pathEl = this.resultSection.querySelector('#render-result-path')!;
       pathEl.textContent = data.outputFile ?? 'out/render/full/pdoom_original-full.mp4';
 
@@ -1160,7 +1154,7 @@ export class RenderDialog {
       this.isRendering = true;
       this.updateControls();
 
-      this.statusText.className = 'nle-chip nle-chip--cyan';
+      this.statusText.className = 'daw-chip daw-chip--accent';
       this.statusText.textContent = `RENDERING (${data.activeClip ?? '...'})`;
 
       const total = data.totalFrames ?? 1;
@@ -1182,7 +1176,7 @@ export class RenderDialog {
 
           if (fill) {
             fill.style.width = `${c.percent}%`;
-            if (c.status === 'done') fill.classList.add('nle-mini-fill--done');
+            if (c.status === 'done') fill.classList.add('nle-fill-done');
           }
           if (row) {
             if (c.status === 'rendering') row.classList.add('nle-scene-row--active');
@@ -1191,10 +1185,10 @@ export class RenderDialog {
           if (badge) {
             badge.innerHTML =
               c.status === 'done'
-                ? '<span class="nle-badge-status nle-badge-status--ok">✓ Rendered</span>'
+                ? '<span class="daw-chip daw-chip--ok">✓ Rendered</span>'
                 : c.status === 'rendering'
-                ? `<span class="nle-badge-status nle-badge-status--active">⚡ ${c.percent}%</span>`
-                : '<span class="nle-badge-status nle-badge-status--pending">○ Not Rendered</span>';
+                ? `<span class="daw-chip daw-chip--accent">⚡ ${c.percent}%</span>`
+                : '<span class="daw-chip">○ Not Rendered</span>';
           }
         }
       }

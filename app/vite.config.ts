@@ -1,4 +1,5 @@
 import { defineConfig, normalizePath, type ModuleNode, type Plugin } from 'vite';
+import { soulwindow } from 'soulwindow/vite';
 import { $ } from 'bun';
 import path from 'node:path';
 import { PROJECTS, REPO, projectDir } from '@pve/core/projects';
@@ -7,6 +8,7 @@ import { notesApi } from './scripts/api-notes';
 import { renderApi } from './scripts/api-render';
 import { projectInputs } from './scripts/inputs';
 import { inputsHash, sceneVersions } from './scripts/versions';
+import { SW_OPTIONS } from './src/ui/soulwindow-options';
 
 /** Query git status for modified/untracked scene files in a project (async: a sync spawn stalls the dev server for every file write). */
 async function getProjectStatus(id: string) {
@@ -142,7 +144,7 @@ function projects(): Plugin {
 export default defineConfig({
   root: '.',
   publicDir: 'public',
-  plugins: [projects()],
+  plugins: [projects(), soulwindow(SW_OPTIONS)],
   // PVE_NO_HMR=1: no live reload (export renders must not reload mid-run when a file changes)
   server: {
     port: 5173,

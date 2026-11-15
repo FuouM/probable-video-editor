@@ -12,6 +12,8 @@
 import type { Features, SongTiming } from '@pve/core';
 import type { TimelineEntry } from '@pve/engine/engine';
 import type { Lyrics } from '@pve/engine/lyrics';
+import { readTokens } from 'soulwindow/runtime';
+import { onTheme } from './soulwindow';
 
 export interface TimelineData {
   duration: number;
@@ -41,6 +43,26 @@ const TOTAL_H = 236;
 
 const RULER_STEPS = [0.1, 0.2, 0.5, 1, 2, 5, 10, 15, 30, 60, 120, 300];
 
+/** The `--tl-*` tokens the canvas paints with: SoulWindow pro names, then pve extras (styles/tokens.css). */
+const TL_KEYS = [
+  'bg', 'laneAlt', 'laneBorder', 'ruler', 'rulerText', 'beat', 'downbeat', 'waveMix', 'waveVocal', 'pitch',
+  'clip', 'clipAlt', 'clipHead', 'clipPinned', 'clipPinnedHead', 'clipSelected', 'clipText',
+  'playhead', 'snap', 'snapText', 'edgeHover', 'hotspot', 'overviewBg', 'overviewBorder',
+  'tick', 'barNum', 'loop', 'loopFill', 'loopRibbon', 'loopDim', 'overviewLoop', 'overviewView', 'overviewClip',
+  'clipEdge', 'clipLabel', 'clipLabelStrong', 'clipLabelInk', 'clipBrief', 'clipLoop', 'clipLoopHead',
+  'reloaded', 'reloadedEdge', 'renderFill', 'done', 'doneEdge', 'dirty', 'dirtyEdge',
+  'over', 'overHatch', 'overEdge', 'overText', 'section', 'sectionEdge', 'sectionText',
+  'lyric', 'lyricEdge', 'lyricText', 'lyricActive', 'lyricActiveEdge', 'lyricActiveText', 'waveBase',
+] as const;
+type TlPalette = Record<(typeof TL_KEYS)[number], string>;
+
+/** Walks every stylesheet: call it only at start and on a theme / accent change. */
+function readPalette(): TlPalette {
+  const t = readTokens('--tl-');
+  for (const k of TL_KEYS) if (!t[k]) throw new Error(`timeline token --tl-${k} is missing`);
+  return t as TlPalette;
+}
+
 export class NleTimeline {
   private c: CanvasRenderingContext2D;
   private width = 800;
@@ -55,6 +77,7 @@ export class NleTimeline {
   private overviewDragOffset = 0;
   private snapGuide: { time: number; label: string } | null = null;
   private follow = true;
+  private C: TlPalette = readPalette();
 
   constructor(
     private canvas: HTMLCanvasElement,
@@ -64,6 +87,10 @@ export class NleTimeline {
     this.c = canvas.getContext('2d')!;
     this.viewDuration = Math.min(data.duration, 40);
     this.attachEvents();
+    onTheme(() => {
+      this.C = readPalette();
+      this.draw();
+    });
     this.resize();
   }
 
@@ -165,11 +192,12 @@ export class NleTimeline {
 
   draw() {
     const c = this.c;
+    const C = this.C;
     const w = this.width, h = this.height;
     if (w <= 0 || h <= 0) return;
 
     // Background
-    c.fillStyle = '#0f1013';
+    c.fillStyle = C.bg;
     c.fillRect(0, 0, w, h);
 
     const now = performance.now();
@@ -185,16 +213,16 @@ export class NleTimeline {
       const contentBottom = h - TRACK_OVERVIEW.h;
 
       // Dim regions outside loop for sharp focus
-      c.fillStyle = 'rgba(0, 0, 0, 0.45)';
+      c.fillStyle = C.loopDim;
       if (x0 > 0) c.fillRect(0, contentTop, Math.min(w, x0), contentBottom - contentTop);
       if (x1 < w) c.fillRect(Math.max(0, x1), contentTop, w - Math.max(0, x1), contentBottom - contentTop);
 
       // Subtle warm highlight inside loop
-      c.fillStyle = 'rgba(245, 158, 11, 0.08)';
+      c.fillStyle = C.loopFill;
       c.fillRect(Math.max(0, x0), contentTop, Math.min(w, x1) - Math.max(0, x0), contentBottom - contentTop);
 
       // Solid 2px amber boundary needles
-      c.strokeStyle = '#f59e0b';
+      c.strokeStyle = C.loop;
       c.lineWidth = 2;
       c.beginPath();
       c.moveTo(Math.round(x0) + 0.5, 0); c.lineTo(Math.round(x0) + 0.5, contentBottom);
@@ -203,14 +231,14 @@ export class NleTimeline {
 
       // Ruler Loop Ribbon (top 10px of ruler)
       if (x1 > 0 && x0 < w) {
-        c.fillStyle = 'rgba(245, 158, 11, 0.28)';
+        c.fillStyle = C.loopRibbon;
         c.fillRect(x0, 0, x1 - x0, 10);
-        c.strokeStyle = '#f59e0b';
+        c.strokeStyle = C.loop;
         c.lineWidth = 1;
         c.strokeRect(x0, 0, x1 - x0, 10);
 
         // In flag (bracket arrow pointing right)
-        c.fillStyle = '#f59e0b';
+        c.fillStyle = C.loop;
         c.beginPath();
         c.moveTo(x0, 0); c.lineTo(x0 + 7, 0); c.lineTo(x0, 10);
         c.closePath(); c.fill();
@@ -222,7 +250,7 @@ export class NleTimeline {
 
         if (x1 - x0 > 45) {
           c.font = 'bold 8.5px "Cascadia Mono", Consolas, monospace';
-          c.fillStyle = '#f59e0b';
+          c.fillStyle = C.loop;
           c.textBaseline = 'middle';
           c.fillText(`LOOP ${(this.loop[1] - this.loop[0]).toFixed(2)}s`, x0 + 10, 5);
         }
@@ -251,7 +279,7 @@ export class NleTimeline {
     // 9. Snap Guide
     if (this.snapGuide?.label) {
       const sx = Math.round(this.tToX(this.snapGuide.time)) + 0.5;
-      c.strokeStyle = '#00e5ff';
+      c.strokeStyle = C.snap;
       c.setLineDash([4, 3]);
       c.lineWidth = 1;
       c.beginPath();
@@ -262,9 +290,9 @@ export class NleTimeline {
 
       c.font = 'bold 9px "Segoe UI", sans-serif';
       const tw = c.measureText(this.snapGuide.label).width + 8;
-      c.fillStyle = '#00e5ff';
+      c.fillStyle = C.snap;
       c.fillRect(sx + 3, TRACK_RULER.h + 2, tw, 13);
-      c.fillStyle = '#001318';
+      c.fillStyle = C.snapText;
       c.fillText(this.snapGuide.label, sx + 7, TRACK_RULER.h + 12);
     }
 
@@ -279,7 +307,7 @@ export class NleTimeline {
     const contentBottom = this.height - TRACK_OVERVIEW.h;
 
     // Sub-beats
-    c.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+    c.strokeStyle = this.C.beat;
     c.lineWidth = 1;
     c.beginPath();
     for (const b of timing.beats ?? []) {
@@ -291,7 +319,7 @@ export class NleTimeline {
     c.stroke();
 
     // Downbeats (Bars)
-    c.strokeStyle = 'rgba(245, 158, 11, 0.22)';
+    c.strokeStyle = this.C.downbeat;
     c.lineWidth = 1;
     c.beginPath();
     for (const db of timing.downbeats ?? []) {
@@ -304,9 +332,10 @@ export class NleTimeline {
   }
 
   private drawRuler(c: CanvasRenderingContext2D, w: number) {
-    c.fillStyle = '#14161c';
+    const C = this.C;
+    c.fillStyle = C.ruler;
     c.fillRect(0, 0, w, TRACK_RULER.h);
-    c.strokeStyle = '#282c37';
+    c.strokeStyle = C.laneBorder;
     c.lineWidth = 1;
     c.beginPath();
     c.moveTo(0, TRACK_RULER.h + 0.5);
@@ -318,7 +347,7 @@ export class NleTimeline {
     const minor = step / 5;
 
     // Major and minor tick marks (Lyric-Sync standard)
-    c.strokeStyle = '#4a5160';
+    c.strokeStyle = C.tick;
     c.lineWidth = 1;
     c.beginPath();
     const firstMinor = Math.floor(this.viewStart / minor) * minor;
@@ -333,7 +362,7 @@ export class NleTimeline {
 
     // Second time stamps
     c.font = '9px "Cascadia Mono", Consolas, monospace';
-    c.fillStyle = '#64748b';
+    c.fillStyle = C.rulerText;
     c.textBaseline = 'top';
     const firstMajor = Math.floor(this.viewStart / step) * step;
     for (let t = firstMajor; t <= this.viewStart + this.viewDuration; t += step) {
@@ -352,7 +381,7 @@ export class NleTimeline {
       const every = pxPerBar >= 36 ? 1 : pxPerBar >= 18 ? 2 : pxPerBar >= 9 ? 4 : pxPerBar >= 4.5 ? 8 : 16;
 
       c.font = 'bold 9px "Cascadia Mono", Consolas, monospace';
-      c.fillStyle = '#f59e0b';
+      c.fillStyle = C.barNum;
       for (let i = 0; i < downs.length; i++) {
         const bar = i + 1;
         if (((bar - 1) % every) !== 0) continue;
@@ -366,7 +395,8 @@ export class NleTimeline {
 
   private drawClips(c: CanvasRenderingContext2D, now: number) {
     const y0 = TRACK_CLIPS.y, th = TRACK_CLIPS.h;
-    c.strokeStyle = '#282c37';
+    const C = this.C;
+    c.strokeStyle = C.laneBorder;
     c.lineWidth = 1;
     c.beginPath();
     c.moveTo(0, y0 + th + 0.5);
@@ -387,40 +417,40 @@ export class NleTimeline {
       const isLooping = this.loop !== null && Math.abs(clip.start - this.loop[0]) < 0.05 && Math.abs(clip.end - this.loop[1]) < 0.05;
 
       // WinForms NLE Clip Styling
-      let fillCol = '#2d5f9a';
-      let borderCol = '#3b82f6';
-      let headCol = '#22476f';
+      let fillCol = C.clip;
+      let borderCol = C.clipEdge;
+      let headCol = C.clipHead;
 
       const prog = this.data.renderProgress?.get(clip.id);
       if (prog) {
         if (prog.status === 'done') {
-          fillCol = '#064e3b';
-          borderCol = '#10b981';
-          headCol = '#10b981';
+          fillCol = C.done;
+          borderCol = C.doneEdge;
+          headCol = C.doneEdge;
         } else if (prog.status === 'rendering') {
-          fillCol = '#0f4c5c';
-          borderCol = '#00e5ff';
-          headCol = '#00e5ff';
+          fillCol = C.reloaded;
+          borderCol = C.reloadedEdge;
+          headCol = C.reloadedEdge;
         }
       } else if (isReloaded) {
-        fillCol = '#0f4c5c';
-        borderCol = '#00e5ff';
-        headCol = '#00e5ff';
+        fillCol = C.reloaded;
+        borderCol = C.reloadedEdge;
+        headCol = C.reloadedEdge;
       } else if (isDirty) {
-        fillCol = '#5a3810';
-        borderCol = '#f59e0b';
-        headCol = '#f59e0b';
+        fillCol = C.dirty;
+        borderCol = C.dirtyEdge;
+        headCol = C.dirtyEdge;
       } else if (isLooping) {
-        fillCol = '#2a3d5e';
-        borderCol = '#f59e0b';
-        headCol = '#d97706';
+        fillCol = C.clipLoop;
+        borderCol = C.loop;
+        headCol = C.clipLoopHead;
       }
 
       // Clip body
       c.fillStyle = fillCol;
       c.fillRect(x0 + 0.5, y0 + 1.5, cw - 1, th - 3);
       if (prog && prog.status === 'rendering') {
-        c.fillStyle = 'rgba(0, 229, 255, 0.25)';
+        c.fillStyle = C.renderFill;
         c.fillRect(x0 + 0.5, y0 + 1.5, Math.max(0, (cw - 1) * (prog.percent / 100)), th - 3);
       }
 
@@ -439,25 +469,25 @@ export class NleTimeline {
         c.textBaseline = 'middle';
 
         if (prog && prog.status === 'done') {
-          c.fillStyle = '#ffffff';
+          c.fillStyle = C.clipLabelStrong;
           c.fillText(`✓ ${clip.id}`, x0 + 4, y0 + 9);
         } else if (prog && prog.status === 'rendering') {
-          c.fillStyle = '#000000';
+          c.fillStyle = C.clipLabelInk;
           c.fillText(`${clip.id} ${prog.percent}%`, x0 + 4, y0 + 9);
         } else {
-          c.fillStyle = (isReloaded || isDirty) ? '#000000' : isLooping ? '#ffffff' : '#cbd5e1';
+          c.fillStyle = (isReloaded || isDirty) ? C.clipLabelInk : isLooping ? C.clipLabelStrong : C.clipLabel;
           const prefix = isLooping ? '🔁 ' : '';
           c.fillText(`${prefix}${clip.id}`, x0 + 4, y0 + 9);
         }
 
         if (cw > 40) {
           c.font = '9px "Segoe UI", Tahoma, sans-serif';
-          c.fillStyle = '#f1f5f9';
+          c.fillStyle = C.clipText;
           c.fillText(`${(clip.end - clip.start).toFixed(2)}s`, x0 + 4, y0 + 26);
 
           const brief = clip.params?.brief as string | undefined;
           if (brief && cw > 110) {
-            c.fillStyle = '#94a3b8';
+            c.fillStyle = C.clipBrief;
             const bStr = brief.length > 25 ? brief.slice(0, 22) + '...' : brief;
             c.fillText(bStr, x0 + 4, y0 + 40);
           }
@@ -469,7 +499,8 @@ export class NleTimeline {
   /** Over transitions (video.json `transitions`): a hatched bar each, its cut marked. */
   private drawTransitions(c: CanvasRenderingContext2D) {
     const y0 = TRACK_OVER.y, th = TRACK_OVER.h;
-    c.strokeStyle = '#282c37';
+    const C = this.C;
+    c.strokeStyle = C.laneBorder;
     c.lineWidth = 1;
     c.beginPath();
     c.moveTo(0, y0 + th + 0.5);
@@ -484,14 +515,14 @@ export class NleTimeline {
       c.beginPath();
       c.rect(x0 + 0.5, y0 + 2.5, cw - 1, th - 5);
       c.clip();
-      c.fillStyle = dirty ? '#5a3810' : '#3b2a52';
+      c.fillStyle = dirty ? C.dirty : C.over;
       c.fillRect(x0, y0 + 2, cw, th - 4);
-      c.strokeStyle = 'rgba(255,255,255,0.10)';
+      c.strokeStyle = C.overHatch;
       c.beginPath();
       for (let x = x0 - th; x < x1; x += 6) { c.moveTo(x, y0 + th); c.lineTo(x + th, y0); }
       c.stroke();
       c.restore();
-      c.strokeStyle = dirty ? '#f59e0b' : '#a78bfa';
+      c.strokeStyle = dirty ? C.dirtyEdge : C.overEdge;
       c.strokeRect(x0 + 0.5, y0 + 2.5, cw - 1, th - 5);
       const at = tr.params?.at as number | undefined;
       if (at !== undefined) {
@@ -504,7 +535,7 @@ export class NleTimeline {
       if (cw > 24) {
         c.font = 'bold 9px "Cascadia Mono", Consolas, monospace';
         c.textBaseline = 'middle';
-        c.fillStyle = '#e9d5ff';
+        c.fillStyle = C.overText;
         c.fillText(tr.id, x0 + 4, y0 + th / 2);
       }
     }
@@ -512,9 +543,10 @@ export class NleTimeline {
 
   private drawSections(c: CanvasRenderingContext2D) {
     const y0 = TRACK_SECTIONS.y, th = TRACK_SECTIONS.h;
-    c.fillStyle = '#14161c';
+    const C = this.C;
+    c.fillStyle = C.ruler;
     c.fillRect(0, y0, this.width, th);
-    c.strokeStyle = '#282c37';
+    c.strokeStyle = C.laneBorder;
     c.lineWidth = 1;
     c.beginPath();
     c.moveTo(0, y0 + th + 0.5);
@@ -534,13 +566,13 @@ export class NleTimeline {
       const x1 = Math.min(this.width, this.tToX(sec.end));
       const cw = x1 - x0;
 
-      c.fillStyle = '#1e293b';
+      c.fillStyle = C.section;
       c.fillRect(x0 + 0.5, y0 + 2.5, cw - 1, th - 5);
-      c.strokeStyle = '#334155';
+      c.strokeStyle = C.sectionEdge;
       c.strokeRect(x0 + 0.5, y0 + 2.5, cw - 1, th - 5);
 
       if (cw > 26) {
-        c.fillStyle = '#e2e8f0';
+        c.fillStyle = C.sectionText;
         c.fillText(sec.name, x0 + 6, y0 + th / 2);
       }
     }
@@ -548,7 +580,8 @@ export class NleTimeline {
 
   private drawLyrics(c: CanvasRenderingContext2D) {
     const y0 = TRACK_LYRICS.y, th = TRACK_LYRICS.h;
-    c.strokeStyle = '#282c37';
+    const C = this.C;
+    c.strokeStyle = C.laneBorder;
     c.lineWidth = 1;
     c.beginPath();
     c.moveTo(0, y0 + th + 0.5);
@@ -572,13 +605,13 @@ export class NleTimeline {
         const cw = Math.max(2, x1 - x0);
         const active = now >= word.start && now < word.end;
 
-        c.fillStyle = active ? '#78350f' : '#1e293b';
+        c.fillStyle = active ? C.lyricActive : C.lyric;
         c.fillRect(x0 + 0.5, y0 + 3.5, cw - 1, th - 7);
-        c.strokeStyle = active ? '#f59e0b' : '#334155';
+        c.strokeStyle = active ? C.lyricActiveEdge : C.lyricEdge;
         c.strokeRect(x0 + 0.5, y0 + 3.5, cw - 1, th - 7);
 
         if (cw > 14) {
-          c.fillStyle = active ? '#fbbf24' : '#cbd5e1';
+          c.fillStyle = active ? C.lyricActiveText : C.lyricText;
           c.fillText(word.w, x0 + 3, y0 + th / 2);
         }
       }
@@ -587,9 +620,10 @@ export class NleTimeline {
 
   private drawWaveform(c: CanvasRenderingContext2D, w: number) {
     const y0 = TRACK_WAVE.y, th = TRACK_WAVE.h;
-    c.fillStyle = '#111317';
+    const C = this.C;
+    c.fillStyle = C.laneAlt;
     c.fillRect(0, y0, w, th);
-    c.strokeStyle = '#282c37';
+    c.strokeStyle = C.laneBorder;
     c.lineWidth = 1;
     c.beginPath();
     c.moveTo(0, y0 + th + 0.5);
@@ -604,13 +638,13 @@ export class NleTimeline {
     const t0 = this.viewStart, dt = this.viewDuration / w;
 
     // Baseline
-    c.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+    c.strokeStyle = C.waveBase;
     c.beginPath();
     c.moveTo(0, midY); c.lineTo(w, midY);
     c.stroke();
 
     // Peak waveform
-    c.fillStyle = '#208b7e';
+    c.fillStyle = C.waveMix;
     for (let px = 0; px < w; px++) {
       const t = t0 + px * dt;
       const idx = Math.floor(t * 100);
@@ -624,9 +658,10 @@ export class NleTimeline {
     const y0 = TRACK_OVERVIEW.y, th = TRACK_OVERVIEW.h;
     const total = Math.max(1, this.data.duration);
 
-    c.fillStyle = '#0a0b0e';
+    const C = this.C;
+    c.fillStyle = C.overviewBg;
     c.fillRect(0, y0, w, th);
-    c.strokeStyle = '#1e293b';
+    c.strokeStyle = C.laneBorder;
     c.lineWidth = 1;
     c.strokeRect(0, y0 + 0.5, w, th - 1);
 
@@ -635,16 +670,16 @@ export class NleTimeline {
       if (clip.over) continue;
       const x0 = (clip.start / total) * w, x1 = (clip.end / total) * w;
       const isDirty = this.data.dirtyClips.has(clip.id);
-      c.fillStyle = isDirty ? '#f59e0b' : '#334155';
+      c.fillStyle = isDirty ? C.dirtyEdge : C.overviewClip;
       c.fillRect(x0, y0 + 2, Math.max(1, x1 - x0), th - 4);
     }
 
     // Loop region in overview
     if (this.loop) {
       const lx0 = (this.loop[0] / total) * w, lx1 = (this.loop[1] / total) * w;
-      c.fillStyle = 'rgba(245, 158, 11, 0.35)';
+      c.fillStyle = C.overviewLoop;
       c.fillRect(lx0, y0 + 1, Math.max(2, lx1 - lx0), th - 2);
-      c.strokeStyle = '#f59e0b';
+      c.strokeStyle = C.loop;
       c.lineWidth = 1;
       c.strokeRect(lx0, y0 + 1, Math.max(2, lx1 - lx0), th - 2);
     }
@@ -654,15 +689,15 @@ export class NleTimeline {
     const vx1 = ((this.viewStart + this.viewDuration) / total) * w;
     const vw = Math.max(6, vx1 - vx0);
 
-    c.fillStyle = 'rgba(255, 255, 255, 0.08)';
+    c.fillStyle = C.overviewView;
     c.fillRect(vx0, y0 + 1, vw, th - 2);
-    c.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+    c.strokeStyle = C.overviewBorder;
     c.lineWidth = 1;
     c.strokeRect(vx0 + 0.5, y0 + 1.5, vw - 1, th - 3);
 
     // Playhead in overview
     const px = (this.currentTime / total) * w;
-    c.fillStyle = '#ff3b30';
+    c.fillStyle = C.playhead;
     c.fillRect(px - 1, y0, 2, th);
   }
 
@@ -673,7 +708,7 @@ export class NleTimeline {
     const contentBottom = h - TRACK_OVERVIEW.h;
 
     // Needle line
-    c.strokeStyle = '#ff3b30';
+    c.strokeStyle = this.C.playhead;
     c.lineWidth = 1;
     c.beginPath();
     c.moveTo(px, TRACK_RULER.y + 12);
@@ -681,7 +716,7 @@ export class NleTimeline {
     c.stroke();
 
     // Top arrow badge (Lyric-Sync standard)
-    c.fillStyle = '#ff3b30';
+    c.fillStyle = this.C.playhead;
     c.beginPath();
     c.moveTo(px - 6, TRACK_RULER.y + 2);
     c.lineTo(px + 6, TRACK_RULER.y + 2);

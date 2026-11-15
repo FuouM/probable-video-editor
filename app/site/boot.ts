@@ -1,4 +1,6 @@
-// Page entry. As in ../src/boot.ts, the project palette must be in place before the engine modules load.
+// Page entry. The SoulWindow runtime (theme, accent, density) starts first; it loads no engine module.
+// As in ../src/boot.ts, the project palette must be in place before the engine modules load.
+import '../src/ui/soulwindow';
 import { setPalette } from '@pve/engine/palette';
 import { fetchInputs, projectId } from '../src/inputs';
 

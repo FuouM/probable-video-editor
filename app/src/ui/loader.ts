@@ -1,7 +1,7 @@
 // The loading screen of the player (app/site) and the studio (app/index.html). One box: the steps of the load
 // (project data, fonts, scenes, audio) with their own state, a chip for every scene that turns green when it is
 // ready, one bar over all steps, the time that has passed. The engine reports the first three (Engine.init), the
-// audio engine the last. The look is daw.css (.ld-*).
+// audio engine the last. The look is styles/loader.css (.ld-*) on SoulWindow primitives (.daw-chip, .ds-progress-*).
 import type { InitProgress } from '@pve/engine/engine';
 
 export type StepId = 'data' | 'fonts' | 'scenes' | 'audio';
@@ -39,11 +39,11 @@ export class Loader {
     this.root = document.createElement('div');
     this.root.className = 'ld';
     this.root.innerHTML = `
-      <div class="ld-head"><span class="nle-brand-badge ld-badge">PVE</span><strong class="ld-title"></strong><span class="nle-title-sep">&middot;</span><span class="ld-muted">LOADING</span></div>
+      <div class="ld-head"><span class="daw-chip daw-chip--accent">PVE</span><strong class="ld-title"></strong><span class="ld-muted">&middot;</span><span class="ld-muted">LOADING</span></div>
       <ol class="ld-steps">${o.steps.map((s) => `<li class="ld-step" data-s="wait" data-id="${s}"><i class="ld-dot"></i><span class="ld-name">${LABEL[s]}</span><span class="ld-info"></span></li>`).join('')}</ol>
       <div class="ld-chips"></div>
       <div class="ld-status"></div>
-      <div class="ld-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="ld-bar"></div></div>
+      <div class="ds-progress-track ld-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="ds-progress-fill ld-bar"></div></div>
       <div class="ld-foot"><span class="ld-diag">${esc(o.diag ?? '')}</span><span class="ld-time">0.0 s</span><strong class="ld-pct">0%</strong></div>`;
     host.append(this.root);
     const q = <T extends HTMLElement>(sel: string) => this.root.querySelector(sel) as T;

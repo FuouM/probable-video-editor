@@ -25,6 +25,7 @@
     "@pve/engine": "workspace:*",
     "codemirror": "^6.0.2",
     "opentype.js": "^2.0.0",
+    "soulwindow": "link:soulwindow",
     "three": "^0.186.0"
   }
 }

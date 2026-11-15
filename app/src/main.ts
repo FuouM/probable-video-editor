@@ -10,6 +10,7 @@ import { fetchInputs } from './inputs';
 import { NleStudio } from './ui/nle';
 import { StudioAudioEngine } from './ui/audio';
 import { Loader } from './ui/loader';
+import { mountThemeMenu } from './ui/theme-menu';
 
 const params = new URLSearchParams(location.search);
 const EXPORT = params.has('export');
@@ -20,6 +21,9 @@ const canvas = document.getElementById('c') as HTMLCanvasElement;
 // physical size: 1920x1080 times ?scale= (the page CSS keeps showing it at 1920x1080)
 canvas.width = PW;
 canvas.height = PH;
+
+const themeHost = document.getElementById('menu-right');
+if (themeHost && !EXPORT) mountThemeMenu(themeHost);
 
 const engine = new Engine(canvas, loadProject);
 
@@ -303,6 +307,6 @@ function setupPlayer(audio: StudioAudioEngine) {
 
 boot().catch((e) => {
   console.error(e);
-  document.body.insertAdjacentHTML('beforeend', `<pre style="color:#f55;position:fixed;top:0;left:0">${String(e?.stack ?? e)}</pre>`);
+  document.body.insertAdjacentHTML('beforeend', `<pre class="nle-boot-error">${String(e?.stack ?? e)}</pre>`);
   window.__pve = { error: String(e?.stack ?? e) };
 });

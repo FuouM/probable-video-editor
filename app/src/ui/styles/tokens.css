@@ -1,0 +1,165 @@
+/* pve-only colour tokens, per theme (light = :root, dark, high contrast). The only app file that holds
+ * literal colours. Canvas code reads them with readTokens('--tl-') / readTokens('--perf-') at start and
+ * again in onTheme() — never per frame. Shared timeline roles (bg, ruler, clip, playhead, snap, ...)
+ * come from SoulWindow's own --tl-* tokens; these are the extras only pve paints. */
+@layer app {
+  :root {
+    /* timeline: ruler, loop, overview */
+    --tl-tick: #9ca3af;
+    --tl-bar-num: #b45309;
+    --tl-loop: #d97706;
+    --tl-loop-fill: rgba(217, 119, 6, 0.08);
+    --tl-loop-ribbon: rgba(217, 119, 6, 0.25);
+    --tl-loop-dim: rgba(0, 0, 0, 0.12);
+    --tl-overview-loop: rgba(217, 119, 6, 0.35);
+    --tl-overview-view: rgba(0, 0, 0, 0.08);
+    --tl-overview-clip: #cbd5e1;
+    /* timeline: clip states */
+    --tl-clip-edge: #1d4ed8;
+    --tl-clip-label: #ffffff;
+    --tl-clip-label-strong: #ffffff;
+    --tl-clip-label-ink: #000000;
+    --tl-clip-brief: #dbeafe;
+    --tl-clip-loop: #4f6fa3;
+    --tl-clip-loop-head: #b45309;
+    --tl-reloaded: #0e7490;
+    --tl-reloaded-edge: #06b6d4;
+    --tl-render-fill: rgba(6, 182, 212, 0.3);
+    --tl-done: #047857;
+    --tl-done-edge: #10b981;
+    --tl-dirty: #92400e;
+    --tl-dirty-edge: #f59e0b;
+    /* timeline: Over transitions lane */
+    --tl-over: #6d28d9;
+    --tl-over-hatch: rgba(255, 255, 255, 0.15);
+    --tl-over-edge: #4c1d95;
+    --tl-over-text: #ffffff;
+    /* timeline: sections lane */
+    --tl-section: #e2e8f0;
+    --tl-section-edge: #94a3b8;
+    --tl-section-text: #1e293b;
+    /* timeline: lyrics lane */
+    --tl-lyric: #f1f5f9;
+    --tl-lyric-edge: #cbd5e1;
+    --tl-lyric-text: #334155;
+    --tl-lyric-active: #fef3c7;
+    --tl-lyric-active-edge: #d97706;
+    --tl-lyric-active-text: #92400e;
+    /* timeline: waveform lane */
+    --tl-wave-base: rgba(0, 0, 0, 0.12);
+
+    /* perf graph (status bars follow the SoulWindow status tones of the active theme) */
+    --perf-bg: #f8fafc;
+    --perf-ok: var(--sw-ok);
+    --perf-warn: var(--sw-warn);
+    --perf-err: var(--sw-err);
+    --perf-ref60: rgba(2, 132, 199, 0.45);
+    --perf-ref60-text: rgba(2, 132, 199, 0.9);
+    --perf-ref30: rgba(176, 96, 0, 0.45);
+    --perf-ref30-text: rgba(176, 96, 0, 0.9);
+    --perf-ref-ok: rgba(16, 124, 65, 0.45);
+    --perf-ref-ok-text: rgba(16, 124, 65, 0.9);
+    --perf-scale-text: rgba(71, 85, 105, 0.75);
+    --perf-stalk: rgba(0, 0, 0, 0.4);
+  }
+
+  :root[data-theme="dark"] {
+    --tl-tick: #4a5160;
+    --tl-bar-num: #f59e0b;
+    --tl-loop: #f59e0b;
+    --tl-loop-fill: rgba(245, 158, 11, 0.08);
+    --tl-loop-ribbon: rgba(245, 158, 11, 0.28);
+    --tl-loop-dim: rgba(0, 0, 0, 0.45);
+    --tl-overview-loop: rgba(245, 158, 11, 0.35);
+    --tl-overview-view: rgba(255, 255, 255, 0.08);
+    --tl-overview-clip: #334155;
+    --tl-clip-edge: #3b82f6;
+    --tl-clip-label: #cbd5e1;
+    --tl-clip-label-strong: #ffffff;
+    --tl-clip-label-ink: #000000;
+    --tl-clip-brief: #94a3b8;
+    --tl-clip-loop: #2a3d5e;
+    --tl-clip-loop-head: #d97706;
+    --tl-reloaded: #0f4c5c;
+    --tl-reloaded-edge: #00e5ff;
+    --tl-render-fill: rgba(0, 229, 255, 0.25);
+    --tl-done: #064e3b;
+    --tl-done-edge: #10b981;
+    --tl-dirty: #5a3810;
+    --tl-dirty-edge: #f59e0b;
+    --tl-over: #3b2a52;
+    --tl-over-hatch: rgba(255, 255, 255, 0.1);
+    --tl-over-edge: #a78bfa;
+    --tl-over-text: #e9d5ff;
+    --tl-section: #1e293b;
+    --tl-section-edge: #334155;
+    --tl-section-text: #e2e8f0;
+    --tl-lyric: #1e293b;
+    --tl-lyric-edge: #334155;
+    --tl-lyric-text: #cbd5e1;
+    --tl-lyric-active: #78350f;
+    --tl-lyric-active-edge: #f59e0b;
+    --tl-lyric-active-text: #fbbf24;
+    --tl-wave-base: rgba(255, 255, 255, 0.08);
+
+    --perf-bg: #0b0d11;
+    --perf-ref60: rgba(56, 189, 248, 0.35);
+    --perf-ref60-text: rgba(56, 189, 248, 0.7);
+    --perf-ref30: rgba(251, 191, 36, 0.4);
+    --perf-ref30-text: rgba(251, 191, 36, 0.75);
+    --perf-ref-ok: rgba(74, 222, 128, 0.4);
+    --perf-ref-ok-text: rgba(74, 222, 128, 0.75);
+    --perf-scale-text: rgba(148, 163, 184, 0.5);
+    --perf-stalk: rgba(255, 255, 255, 0.35);
+  }
+
+  :root[data-theme="high-contrast"] {
+    --tl-tick: #aaaaaa;
+    --tl-bar-num: #ffdd55;
+    --tl-loop: #ffaa00;
+    --tl-loop-fill: rgba(255, 170, 0, 0.12);
+    --tl-loop-ribbon: rgba(255, 170, 0, 0.4);
+    --tl-loop-dim: rgba(0, 0, 0, 0.6);
+    --tl-overview-loop: rgba(255, 170, 0, 0.5);
+    --tl-overview-view: rgba(255, 255, 255, 0.15);
+    --tl-overview-clip: #555555;
+    --tl-clip-edge: #4da3ff;
+    --tl-clip-label: #ffffff;
+    --tl-clip-label-strong: #ffffff;
+    --tl-clip-label-ink: #000000;
+    --tl-clip-brief: #dddddd;
+    --tl-clip-loop: #1a3a6a;
+    --tl-clip-loop-head: #ffaa00;
+    --tl-reloaded: #004455;
+    --tl-reloaded-edge: #00ffff;
+    --tl-render-fill: rgba(0, 255, 255, 0.3);
+    --tl-done: #004d2a;
+    --tl-done-edge: #22dd88;
+    --tl-dirty: #4d3000;
+    --tl-dirty-edge: #ffaa00;
+    --tl-over: #2a1050;
+    --tl-over-hatch: rgba(255, 255, 255, 0.2);
+    --tl-over-edge: #cc99ff;
+    --tl-over-text: #ffffff;
+    --tl-section: #000000;
+    --tl-section-edge: #888888;
+    --tl-section-text: #ffffff;
+    --tl-lyric: #000000;
+    --tl-lyric-edge: #777777;
+    --tl-lyric-text: #ffffff;
+    --tl-lyric-active: #4d3000;
+    --tl-lyric-active-edge: #ffdd55;
+    --tl-lyric-active-text: #ffdd55;
+    --tl-wave-base: rgba(255, 255, 255, 0.25);
+
+    --perf-bg: #000000;
+    --perf-ref60: rgba(0, 255, 255, 0.6);
+    --perf-ref60-text: #00ffff;
+    --perf-ref30: rgba(255, 221, 85, 0.6);
+    --perf-ref30-text: #ffdd55;
+    --perf-ref-ok: rgba(34, 221, 136, 0.6);
+    --perf-ref-ok-text: #22dd88;
+    --perf-scale-text: #cccccc;
+    --perf-stalk: rgba(255, 255, 255, 0.6);
+  }
+}

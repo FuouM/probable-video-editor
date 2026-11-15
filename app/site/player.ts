@@ -1,8 +1,8 @@
 // The real-time player of the static site: the engine draws each frame in the visitor's browser, the
 // audio clock (Web Audio) sets the song time. Controls: play/pause, seek bar with section ticks, section
 // jumps, volume, loop, speed, video, subtitles (language, word highlight), the options of the project
-// (projects/<id>/video/player.ts), resolution (0.5x, 1x, 2x), fullscreen and keyboard shortcuts. The look is the NLE's
-// (../src/ui/daw.css).
+// (projects/<id>/video/player.ts), resolution (0.5x, 1x, 2x), fullscreen, the Theme menu and keyboard shortcuts. The look
+// is SoulWindow (./player.css); the transport and its seek bar are shared with the studio (../src/ui/fs-controls.ts).
 // Resolution is the engine's output SCALE, which it reads once from the page URL: a change reloads the page
 // at the same song time. A video is a project: the palette is baked into the engine modules, so a change of video
 // loads the page again with ?project=.
@@ -14,6 +14,8 @@ import { loadProject, project } from '../src/project';
 import { lineAt, type SubLine, type SubTrack, type Subtitles } from '../src/subtitles';
 import { Loader } from '../src/ui/loader';
 import { StudioAudioEngine } from '../src/ui/audio';
+import { ICON, fmtTime as fmt, timeSeek } from '../src/ui/fs-controls';
+import { mountThemeMenu } from '../src/ui/theme-menu';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const frame = $('frame');
@@ -21,20 +23,6 @@ const canvas = $<HTMLCanvasElement>('c');
 const splash = $('splash');
 const splashPlay = $<HTMLButtonElement>('splash-play');
 const splashStatus = $('splash-status');
-
-const svg = (path: string, size = 12, extra = '') => `<svg width="${size}" height="${size}" viewBox="0 0 16 16" fill="currentColor" ${extra}>${path}</svg>`;
-const ICON = {
-  start: svg('<path d="M4 4h2v8H4V4zm7.5 4L7 4.5v7l4.5-3.5z"/>'),
-  prev: svg('<path d="M10.5 4L6 8l4.5 4V4z"/>'),
-  next: svg('<path d="M5.5 4L10 8l-4.5 4V4z"/>'),
-  play: svg('<path d="M5 3.5v9l7-4.5-7-4.5z"/>', 14),
-  pause: svg('<path d="M4 3.5h3v9H4v-9zm5 0h3v9H9v-9z"/>', 14),
-  loop: svg('<path d="M11 1v2A5 5 0 0 0 6 8h2a3 3 0 0 1 3-3V7l4-3-4-3zm-6 8a3 3 0 0 1-3 3V10L1 13l4 3v-2a5 5 0 0 0 5-5H8z"/>'),
-  vol: svg('<path d="M2 6v4h3l4 3V3L5 6H2z"/><path d="M11 5.5a3.5 3.5 0 0 1 0 5" fill="none" stroke="currentColor" stroke-width="1.2"/>'),
-  mute: svg('<path d="M2 6v4h3l4 3V3L5 6H2z"/><path d="M11 6l4 4m0-4l-4 4" fill="none" stroke="currentColor" stroke-width="1.2"/>'),
-  fsOn: svg('<path d="M1.5 1a.5.5 0 0 0-.5.5v4a.5.5 0 0 0 1 0V2h3.5a.5.5 0 0 0 0-1h-4zm13 0h-4a.5.5 0 0 0 0 1H14v3.5a.5.5 0 0 0 1 0v-4a.5.5 0 0 0-.5-.5zm-13 14a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 0-1H2v-3.5a.5.5 0 0 0-1 0v4zm13.5 0v-4a.5.5 0 0 0-1 0V14h-3.5a.5.5 0 0 0 0 1h4a.5.5 0 0 0 .5-.5z"/>'),
-  fsOff: svg('<path d="M5.5 0a.5.5 0 0 1 .5.5v4A1.5 1.5 0 0 1 4.5 6h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5zm5 0a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 10 4.5v-4a.5.5 0 0 1 .5-.5zM0 10.5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 6 11.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zm10 1a1.5 1.5 0 0 1 1.5-1.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4z"/>'),
-};
 
 /** Output scales the player offers: the engine renders 1920x1080 times the scale. */
 const RESOLUTIONS = [0.5, 1, 2] as const;
@@ -48,7 +36,6 @@ const BLUR: Record<string, AdaptiveSampling> = {
 const STORE = 'pve.player.';
 
 const clamp = (x: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, x));
-const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 const store = {
   get: (k: string) => { try { return localStorage.getItem(STORE + k); } catch { return null; } },
@@ -70,6 +57,18 @@ function videoUrl(id: string): string {
   u.search = SCALE !== 1 ? `?scale=${SCALE}` : '';
   $<HTMLAnchorElement>('home').href = u.toString();
 }
+
+// the Theme menu sits before the Fullscreen item at the right of the menu bar
+{
+  const right = $('menu-right');
+  mountThemeMenu(right);
+  right.append($('menu-fullscreen'));
+}
+
+// the seek bar is in place from the first moment (inert until the song is known); main() connects it
+let scrub: { seek: (t: number) => void; start: () => void; end: () => void } | null = null;
+const seek = timeSeek({ id: 'seek', onSeek: (t) => scrub?.seek(t), onScrubStart: () => scrub?.start(), onScrubEnd: () => scrub?.end() });
+$('controls').prepend(seek.el);
 
 // the loading screen is up from the first moment; main() fills it
 let loader: Loader | null = null;
@@ -169,7 +168,7 @@ async function main() {
   const loopEnd = () => (audio.duration > 0 ? Math.min(duration, audio.duration) : duration);
   const applyLoop = () => {
     audio.setLoop(looping ? [0, loopEnd()] : null);
-    btnLoop.classList.toggle('active', looping);
+    btnLoop.classList.toggle('daw-on', looping);
     btnLoop.setAttribute('aria-pressed', String(looping));
   };
   const seekTo = (x: number) => {
@@ -227,7 +226,7 @@ async function main() {
     vol.value = String(muted ? 0 : volume);
     const off = muted || volume === 0;
     btnMute.innerHTML = off ? ICON.mute : ICON.vol;
-    btnMute.classList.toggle('active', off);
+    btnMute.classList.toggle('daw-on', off);
     btnMute.setAttribute('aria-label', off ? 'Unmute' : 'Mute');
   };
   const setVolume = (v: number) => {
@@ -284,7 +283,7 @@ async function main() {
   const optionsEl = $('options');
   const optionSelects = new Map<string, HTMLSelectElement>();
   optionsEl.innerHTML = options
-    .map((o) => `<label class="pl-field"><span class="pl-muted">${esc(o.label)}:</span><select class="nle-select pl-select" data-option="${esc(o.id)}" aria-label="${esc(o.label)}">${o.values.map((v) => `<option value="${esc(v.id)}"${v.id === chosen.get(o.id) ? ' selected' : ''}>${esc(v.label)}</option>`).join('')}</select></label>`)
+    .map((o) => `<label class="pl-field"><span class="pl-muted">${esc(o.label)}:</span><select class="input-field ds-select pl-select" data-option="${esc(o.id)}" aria-label="${esc(o.label)}">${o.values.map((v) => `<option value="${esc(v.id)}"${v.id === chosen.get(o.id) ? ' selected' : ''}>${esc(v.label)}</option>`).join('')}</select></label>`)
     .join('');
   for (const sel of optionsEl.querySelectorAll<HTMLSelectElement>('select')) {
     const o = options.find((x) => x.id === sel.dataset.option)!;
@@ -375,7 +374,7 @@ async function main() {
     for (const [k, v] of Object.entries(vars)) subsEl.style.setProperty(k, v);
   }
   const applySub = () => {
-    btnSub.classList.toggle('active', subOn);
+    btnSub.classList.toggle('daw-on', subOn);
     btnSub.setAttribute('aria-pressed', String(subOn));
     subLine = null; // build the line again
     subsEl.hidden = true;
@@ -430,38 +429,21 @@ async function main() {
   };
 
   // ---------------------------------------------------------------- seek bar
-  const seek = $('seek'), seekFill = $('seek-fill'), seekTip = $('seek-tip');
-  $('seek-ticks').innerHTML = sections
-    .slice(1)
-    .map((s) => `<i style="left:${(s.start / duration) * 100}%"></i>`)
-    .join('');
-  seek.setAttribute('aria-valuemax', String(Math.round(duration)));
-  const fracAt = (e: PointerEvent) => {
-    const r = seek.getBoundingClientRect();
-    return clamp((e.clientX - r.left) / r.width, 0, 1);
+  // positions are deciseconds (SEEK_RES); a drag pauses the song and plays it again after
+  seek.setSong(duration, sections);
+  let resume = false;
+  scrub = {
+    seek: seekTo,
+    start: () => {
+      resume = audio.playing;
+      if (resume) audio.pause();
+      $('controls').classList.add('is-active'); // the transport stays shown in fullscreen while the pointer drags
+    },
+    end: () => {
+      $('controls').classList.remove('is-active');
+      if (resume) void play();
+    },
   };
-  let dragging = false, resume = false;
-  seek.addEventListener('pointerdown', (e) => {
-    dragging = true;
-    resume = audio.playing;
-    if (resume) audio.pause();
-    seek.setPointerCapture(e.pointerId);
-    seekTo(fracAt(e) * duration);
-  });
-  seek.addEventListener('pointermove', (e) => {
-    const f = fracAt(e), x = f * duration;
-    const s = sections[sectionAt(x)];
-    seekTip.textContent = s ? `${fmt(x)}  ${s.name}` : fmt(x);
-    seekTip.style.left = `${clamp(f * 100, 6, 94)}%`;
-    if (dragging) seekTo(x);
-  });
-  const endDrag = () => {
-    if (!dragging) return;
-    dragging = false;
-    if (resume) void play();
-  };
-  seek.addEventListener('pointerup', endDrag);
-  seek.addEventListener('pointercancel', endDrag);
 
   // ---------------------------------------------------------------- keyboard
   document.addEventListener('keydown', (e) => {
@@ -523,8 +505,7 @@ async function main() {
       btnPlay.setAttribute('aria-label', shownPlaying ? 'Pause' : 'Play');
     }
     timeNow.textContent = fmt(t);
-    seekFill.style.width = `${(t / duration) * 100}%`;
-    seek.setAttribute('aria-valuenow', String(Math.round(t)));
+    seek.setTime(t);
     sectionEl.textContent = sections[sectionAt(t)]?.name ?? '\u2014';
     drawSubs(t);
     if (now - lastStats > 500) {

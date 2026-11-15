@@ -311,15 +311,15 @@ export class NotesEditor {
   }
 
   private setSaveStatus(status: 'saved' | 'saving' | 'error') {
-    this.chipStatus.className = 'nle-chip';
+    this.chipStatus.className = 'daw-chip';
     if (status === 'saved') {
-      this.chipStatus.classList.add('nle-chip--ok');
+      this.chipStatus.classList.add('daw-chip--ok');
       this.chipStatus.textContent = '● SAVED';
     } else if (status === 'saving') {
-      this.chipStatus.classList.add('nle-chip--warn');
+      this.chipStatus.classList.add('daw-chip--warn');
       this.chipStatus.textContent = '● SAVING...';
     } else {
-      this.chipStatus.classList.add('nle-chip--err');
+      this.chipStatus.classList.add('daw-chip--err');
       this.chipStatus.textContent = '● ERROR';
     }
   }
@@ -397,11 +397,11 @@ export class NotesEditor {
     if (active) {
       // Pause playback so frame stays frozen
       this.ctx.pause();
-      this.overlayEl.classList.remove('hidden');
+      this.overlayEl.classList.remove('sw-hidden');
       this.btnSnippet.classList.add('active');
     } else {
-      this.overlayEl.classList.add('hidden');
-      this.marqueeEl.classList.add('hidden');
+      this.overlayEl.classList.add('sw-hidden');
+      this.marqueeEl.classList.add('sw-hidden');
       this.btnSnippet.classList.remove('active');
       this.isDragging = false;
     }
@@ -419,7 +419,7 @@ export class NotesEditor {
     this.marqueeEl.style.top = `${this.dragStartY}px`;
     this.marqueeEl.style.width = '0px';
     this.marqueeEl.style.height = '0px';
-    this.marqueeEl.classList.remove('hidden');
+    this.marqueeEl.classList.remove('sw-hidden');
   }
 
   private onSnippetMouseMove(ev: MouseEvent) {
@@ -511,8 +511,8 @@ export class NotesEditor {
 
   open() {
     this.isOpen = true;
-    this.paneEl.classList.remove('hidden');
-    document.getElementById('menu-notes')?.classList.add('active');
+    this.paneEl.classList.remove('sw-hidden');
+    document.getElementById('menu-notes')?.setAttribute('aria-pressed', 'true');
     try {
       localStorage.setItem('pve.studio.notes', 'true');
     } catch {}
@@ -520,9 +520,9 @@ export class NotesEditor {
 
   close() {
     this.isOpen = false;
-    this.paneEl.classList.add('hidden');
+    this.paneEl.classList.add('sw-hidden');
     this.setSnippetMode(false);
-    document.getElementById('menu-notes')?.classList.remove('active');
+    document.getElementById('menu-notes')?.setAttribute('aria-pressed', 'false');
     try {
       localStorage.setItem('pve.studio.notes', 'false');
     } catch {}

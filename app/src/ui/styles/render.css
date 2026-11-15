@@ -1,0 +1,213 @@
+/* Render & Export dialog (render-dialog.ts): what SoulWindow's .ds-modal-*, .win-button, .daw-chip,
+ * .ds-progress-* and .ds-banner do not cover — dialog size, form grid, scene table, result box,
+ * the active scene row and the floating background pill. */
+@layer app {
+  /* ── Dialog ─────────────────────────────────────────────── */
+  .nle-render-window {
+    width: 740px;
+    max-width: 92vw;
+    max-height: 88vh;
+  }
+  .nle-render-title {
+    font-family: var(--sw-font-mono);
+    font-size: var(--font-sm);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    user-select: none;
+  }
+  .nle-rec-dot {
+    color: var(--sw-err);
+  }
+  .nle-header-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .nle-render-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* ── Export configuration form ──────────────────────────── */
+  .nle-render-form {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .nle-form-row {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--font-sm);
+  }
+  .nle-form-row label {
+    color: var(--sys-text-muted);
+    font-family: var(--sw-font-mono);
+  }
+  .nle-form-row .ds-select {
+    width: 100%;
+  }
+  .nle-form-actions {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .nle-form-actions .win-button {
+    font-family: var(--sw-font-mono);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  /* ── Overall progress ───────────────────────────────────── */
+  .nle-progress-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .nle-progress-stats {
+    font-family: var(--sw-font-mono);
+    font-size: var(--font-sm);
+    color: var(--sys-control-text);
+  }
+
+  /* ── Scenes toolbar & table ─────────────────────────────── */
+  .nle-scenes-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    font-family: var(--sw-font-mono);
+    font-size: var(--font-xs);
+  }
+  .nle-scenes-summary {
+    color: var(--sys-text-muted);
+  }
+  .nle-scenes-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .nle-scene-table-container {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--sys-border-dark);
+    background: var(--sys-window-bg);
+  }
+  .nle-scene-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--sw-font-mono);
+    font-size: var(--font-xs);
+    color: var(--sys-control-text);
+  }
+  .nle-scene-table th {
+    text-align: left;
+    padding: 4px 6px;
+    background: var(--sys-control-bg);
+    border-bottom: 1px solid var(--sys-border-dark);
+    color: var(--sys-text-muted);
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    /* Above the rows' positioned progress tracks while they scroll under the header. */
+    z-index: var(--z-topbar);
+  }
+  .nle-scene-table td {
+    padding: 3px 6px;
+    border-bottom: 1px solid var(--sys-border-light);
+  }
+  .nle-scene-row:hover {
+    background: var(--sys-hover-bg);
+  }
+  .nle-scene-row.nle-scene-row--active {
+    background: color-mix(in srgb, var(--sys-border-focus) 8%, transparent);
+  }
+  .nle-col-actions .win-button + .win-button {
+    margin-left: 4px;
+  }
+  .nle-disk-size {
+    color: var(--sw-ok);
+    font-weight: 600;
+  }
+  .nle-disk-none {
+    color: var(--sys-text-muted);
+  }
+  .ds-progress-fill.nle-fill-done {
+    background: var(--sw-ok);
+  }
+
+  /* ── Final MP4 banner & result box ──────────────────────── */
+  .nle-mp4-banner {
+    font-family: var(--sw-font-mono);
+  }
+  .nle-mp4-text {
+    color: var(--sys-control-text);
+    font-size: var(--font-sm);
+  }
+  .nle-render-result {
+    padding: 8px 10px;
+    background: var(--sw-ok-bg);
+    border: 1px solid var(--sw-ok);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .nle-render-result-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .nle-btn-row {
+    display: flex;
+    gap: 4px;
+  }
+  .nle-render-result-path {
+    font-family: var(--sw-font-mono);
+    font-size: var(--font-sm);
+    color: var(--sys-control-text);
+    word-break: break-all;
+  }
+
+  /* ── Floating background render pill ────────────────────── */
+  .nle-render-floating-pill {
+    position: fixed;
+    bottom: 28px;
+    right: 16px;
+    z-index: var(--z-banner);
+    background: var(--sys-control-bg);
+    border: 1px solid var(--sys-border-focus);
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--sw-font-mono);
+    font-size: var(--font-sm);
+    cursor: pointer;
+    user-select: none;
+  }
+  .nle-render-floating-pill--done {
+    border-color: var(--sw-ok);
+  }
+  .nle-render-floating-pill--err {
+    border-color: var(--sw-err);
+  }
+  .nle-pill-dot {
+    color: var(--sys-border-focus);
+  }
+  .nle-pill-text {
+    color: var(--sys-control-text);
+    white-space: nowrap;
+  }
+  .nle-pill-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+}
