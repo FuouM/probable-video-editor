@@ -65,7 +65,6 @@ vec3 invAces(vec3 y) {
   vec3 A = 2.43 * y - 2.51, B = 0.59 * y - 0.03, C = 0.14 * y;
   return (-B - sqrt(max(B * B - 4.0 * A * C, 0.0))) / (2.0 * A);
 }
-vec3 toLin(vec3 c) { return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(0.04045, c)); }
 // the engine's tone shoulder (the inverse of \`unshoulder\` of the output pass of LitView)
 vec3 shoulder(vec3 x) {
   const float k = 0.72;
@@ -78,12 +77,12 @@ void main() {
   if (g.y >= 0 && g.y < 360) {
     // the picture is the 640 x 360 render at x3: its pixel centres are exact
     vec3 px = texture(uGame, (vec2(g) + 0.5) / vec2(640.0, 360.0)).rgb;
-    c = mix(toLin(px), px, uLinear) * uShow;
+    c = mix(toLinear(px), px, uLinear) * uShow;
     // the picture of a finished render target is pre-shoulder: the engine's tone shoulder turns it into the displayed light
     vec3 lit = mix(shoulder(px), px, uLinear) * uShow;
     c = mix(c, invAces(lit) / uFitE, uFit);
     vec4 tx = texelFetch(uTitle, g, 0);
-    c = mix(c, toLin(tx.rgb), tx.a);
+    c = mix(c, toLinear(tx.rgb), tx.a);
   }
   // the tube warms up: a bright line that opens into the picture
   float band = step(abs(vUv.y - 0.5) * 2.0, max(uPower, 0.008));

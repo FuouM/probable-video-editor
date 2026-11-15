@@ -15,16 +15,18 @@ import { bench as litview } from '../litview.bench';
 import { bench as mosh } from '../mosh.bench';
 import { bench as physics } from '../physics.bench';
 import { bench as post } from '../post.bench';
+import { bench as readback } from '../readback.bench';
 import { bench as storyboard } from '../storyboard.bench';
 import { bench as stroke } from '../stroke.bench';
 import { bench as textlayer } from '../textlayer.bench';
 import { bench as textmode } from '../textmode.bench';
+import { bench as tiles } from '../tiles.bench';
 import { bench as track } from '../track.bench';
 import { bench as type } from '../type.bench';
 import { bench as ui } from '../ui.bench';
 import type { EffectBench } from './types';
 
-export const BENCH: readonly EffectBench[] = [...post, ...engine, ...lines, ...gl, ...stroke, ...type, ...glslCommon, ...hud, ...storyboard, ...jpeg, ...physics, ...lit, ...litview, ...textlayer, ...track, ...ui, ...frost, ...blendcam, ...mosh, ...textmode, ...chunks, ...crt];
+export const BENCH: readonly EffectBench[] = [...post, ...engine, ...tiles, ...readback, ...lines, ...gl, ...stroke, ...type, ...glslCommon, ...hud, ...storyboard, ...jpeg, ...physics, ...lit, ...litview, ...textlayer, ...track, ...ui, ...frost, ...blendcam, ...mosh, ...textmode, ...chunks, ...crt];
 
 /** Engine modules that do no GPU or draw work: they need no bench file. */
 export const NON_EFFECT_MODULES = ['audio', 'lyrics', 'marks', 'memo', 'options', 'palette', 'scale', 'scene', 'skew', 'util'] as const;

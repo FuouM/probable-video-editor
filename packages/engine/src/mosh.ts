@@ -7,7 +7,7 @@
 // pass looks up where that point was in the frame before. The sky is at the far plane. Moving objects move as if they stood still.
 // A frame of the mosh is the chain of all frames since the key frame: the caller steps the chain from the key frame to the frame.
 import * as THREE from 'three';
-import { FSPass } from './gl';
+import { COPY_FRAG, FSPass } from './gl';
 import { LH, LW } from './lit';
 import { UNSHOULDER_GLSL } from './litview';
 
@@ -29,10 +29,6 @@ void main() {
   fragColor = texelFetch(uPrev, ivec2(uRect.xy + q * uRect.zw), 0);
 }`;
 
-const COPY_FRAG = /* glsl */ `
-uniform sampler2D uSrc;
-void main() { fragColor = texture(uSrc, vUv); }`;
-
 // The chain holds display colours (sRGB, as a text layer) and in alpha whether it holds the key picture. `uPic` and the output are
 // the engine's frame colours (linear, under the tone shoulder of the output pass of `LitView`). The output: the clean picture, and
 // over it the moshed key picture where the chain still holds it, dissolving pixel by pixel as `uU` goes from 0 to 1.
@@ -44,7 +40,7 @@ void main() {
   vec4 m = texture(uSrc, vUv);
   vec3 pic = texture(uPic, vUv).rgb;
   float keep = m.a * step(uU, h1(floor(vUv * vec2(${LW}.0, ${LH}.0))));
-  fragColor = vec4(mix(pic, unshoulder(min(toLin(m.rgb), vec3(0.99))), keep), 1.0);
+  fragColor = vec4(mix(pic, unshoulder(min(toLinear(m.rgb), vec3(0.99))), keep), 1.0);
 }`;
 
 const target = (type: THREE.TextureDataType) => new THREE.WebGLRenderTarget(LW, LH, {
@@ -76,13 +72,13 @@ export class Mosh {
     uPrev: { value: null }, uPos: { value: null },
     uPrevVP: { value: new THREE.Matrix4() }, uInvVP: { value: new THREE.Matrix4() }, uRect: { value: new THREE.Vector4() },
   });
-  private copy = new FSPass(COPY_FRAG, { uSrc: { value: null } });
+  private copy = new FSPass(COPY_FRAG, { src: { value: null } });
   private out = new FSPass(OUT_FRAG, { uSrc: { value: null }, uPic: { value: null }, uU: { value: 0 } });
 
   /** Starts the chain on the key frame `key` (a 640 x 360 picture). */
   start(r: THREE.WebGLRenderer, key: THREE.Texture) {
     this.cur = 0;
-    this.copy.u.uSrc!.value = key;
+    this.copy.u.src!.value = key;
     this.copy.render(r, this.frames[0]!);
   }
 

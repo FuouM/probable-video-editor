@@ -3,8 +3,8 @@
 import * as THREE from 'three';
 import { AudioData } from './audio';
 import { Lyrics } from './lyrics';
-import { Compositor, FSPass, W, H, PW, PH, SCALE, SS_TAP, FRAME_SKEW, makeRT, clearRT } from './gl';
-import { DEFAULT_POST, Post, SHOULDER_GLSL, type PostParams } from './post';
+import { Compositor, FSPass, W, H, PW, PH, SS_TAP, FRAME_SKEW, COPY_FRAG, makeRT, clearRT } from './gl';
+import { DEFAULT_POST, Post, type PostParams } from './post';
 import { Hud } from './hud';
 import type { Frame, Overlay, OverlayClass, Scene, SceneClass, SceneCtx, PostOverrides } from './scene';
 import { loadFonts } from './type';
@@ -12,6 +12,8 @@ import { loadStrokeFonts } from './stroke';
 import { clearMarks, markScope } from './marks';
 import { cutSpan } from './util';
 import { memo } from './memo';
+import { TileRefiner } from './tiles';
+import { PackedReadback } from './readback';
 
 export interface TimelineEntry {
   id: string;
@@ -78,18 +80,6 @@ function ternaryOffsets(steps: number) {
   return u;
 }
 
-/** Resolve on the next task (a MessageChannel message: no timer clamping), to poll GPU fences cheaply. */
-const yieldChannel = typeof MessageChannel !== 'undefined' ? new MessageChannel() : null;
-const yieldQueue: (() => void)[] = [];
-if (yieldChannel) yieldChannel.port1.onmessage = () => yieldQueue.shift()?.();
-function yieldTask() {
-  return new Promise<void>((res) => {
-    if (!yieldChannel) { setTimeout(res, 0); return; }
-    yieldQueue.push(res);
-    yieldChannel.port2.postMessage(0);
-  });
-}
-
 export class Engine {
   renderer: THREE.WebGLRenderer;
   ctx!: SceneCtx;
@@ -104,43 +94,20 @@ export class Engine {
   // Over transitions ping-pong between these, each reading the one before as `under`
   private overRTs = [makeRT(), makeRT()];
   readonly mixRT = makeRT();
-  // motion-blur sub-frame sums (float: up to hundreds of sub-frames), their average, and the error estimate
+  // motion-blur sub-frame sums (float: up to hundreds of sub-frames) and their average
   readonly sumRT = makeRT(W, H, { type: THREE.FloatType });
   readonly newRT = makeRT(W, H, { type: THREE.FloatType });
   readonly avgRT = makeRT(W, H, { depthBuffer: false });
-  readonly errRT: THREE.WebGLRenderTarget;
-  readonly maxRT: THREE.WebGLRenderTarget;
-  readonly errPass: FSPass;
-  readonly maxPass: FSPass;
-  private errBuf: Float32Array;
-  // per-tile refinement: a tile is one texel of maxRT (R x R error blocks); which tiles still refine (255), and
-  // the gain (1 / its sub-frame count) each tile's sum is averaged with
-  readonly tileOn: Uint8Array;
-  readonly tileTex: THREE.DataTexture;
-  readonly gainBuf: Float32Array;
-  readonly gainTex: THREE.DataTexture;
-  private maskPass: FSPass;
-  readonly errTilePass: FSPass;
-  readonly gainPass: FSPass;
-  /**
-   * The targets that carry the tile mask, with the margin (in tiles) it is widened by: the engine's own
-   * (everything a sub-frame's scenes draw into) and the targets scenes declare in Scene.tileMasked.
-   */
-  readonly maskedRTs = new Map<THREE.WebGLRenderTarget, { margin: number; moving?: boolean }>();
-  private tileOnWide: Uint8Array;
-  private tileTexWide: THREE.DataTexture;
-  private nextTileOn: Uint8Array;
-  /** Masking: draws into maskedRTs are depth-tested against the mask. `depthSeen`: a draw there wanted its own depth test. */
-  private masking = false;
-  private depthSeen = false;
-  /** Timeline entries seen drawing with a depth test of their own: never masked (their 3D needs the depth buffer). */
-  private depthEntries = new Set<string>();
+  /** Per-tile refinement of the adaptive sampling: the error estimate, the tile mask and the per-tile gain. */
+  readonly tiles: TileRefiner;
   /** Sub-frames used for the last rendered frame, and its estimated sampling error after each step. */
   lastSamples = 1;
   lastErrors: number[] = [];
   /** Share of the last frame's extra sub-frames (beyond the first set) actually shaded (1 = every tile). */
   lastShaded = 1;
   readonly finalRT = new THREE.WebGLRenderTarget(PW, PH, { type: THREE.UnsignedByteType, depthBuffer: false });
+  /** Packed RGB readback of the finished frame (readStart / readFinish). */
+  readonly readback: PackedReadback;
   readonly blit: FSPass;
   readonly xfade: FSPass;
   readonly accum: FSPass;
@@ -160,14 +127,13 @@ export class Engine {
    */
   private sliceUntil = Infinity;
   private sliceWaiters: (() => void)[] = [];
-  private pbos: WebGLBuffer[] = [];
 
   constructor(public canvas: HTMLCanvasElement, private loadProject: () => Promise<EngineProject>) {
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(1);
     this.renderer.setSize(PW, PH, false);
     this.renderer.autoClear = false;
-    this.blit = new FSPass(`uniform sampler2D src; void main(){ fragColor = texture(src, vUv); }`, { src: { value: null } });
+    this.blit = new FSPass(COPY_FRAG, { src: { value: null } });
     this.xfade = new FSPass(`uniform sampler2D a; uniform sampler2D b; uniform float k;
       void main(){ fragColor = mix(texture(a, vUv), texture(b, vUv), k); }`, { a: { value: null }, b: { value: null }, k: { value: 0 } });
     // adds a sub-frame to a sum; a non-finite pixel (a stray NaN from some shader in one sub-frame out of
@@ -182,181 +148,9 @@ export class Engine {
     am.blendEquation = THREE.AddEquation;
     am.blendSrc = THREE.OneFactor; am.blendDst = THREE.OneFactor;
     am.blendSrcAlpha = THREE.ZeroFactor; am.blendDstAlpha = THREE.OneFactor;
-    // sampling error: per block of B x B physical px (2x2 logical), how far the displayed average moves when a
-    // step's new sub-frames (2n, summed in b) are merged with the n before them (summed in a): 2/3 of the gap
-    const B = 2 * SCALE, ew = Math.ceil(PW / B), eh = Math.ceil(PH / B), R = 16;
-    const small = { depthBuffer: false, type: THREE.FloatType, minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, pxScale: 1 } as const;
-    this.errRT = makeRT(ew, eh, small);
-    this.maxRT = makeRT(Math.ceil(ew / R), Math.ceil(eh / R), small);
-    this.errBuf = new Float32Array(this.maxRT.width * this.maxRT.height * 4);
-    this.errPass = new FSPass(/* glsl */ `
-      uniform sampler2D a; uniform sampler2D b; uniform float invA, invB;
-      ${SHOULDER_GLSL}
-      vec3 disp(vec3 x) { return toSRGB(sat(shoulder(max(x, 0.0)))); }
-      void main() {
-        ivec2 p0 = ivec2(gl_FragCoord.xy) * ${B}, lim = ivec2(${PW - 1}, ${PH - 1});
-        vec3 sa = vec3(0.0), sb = vec3(0.0);
-        for (int y = 0; y < ${B}; y++) for (int x = 0; x < ${B}; x++) {
-          ivec2 p = min(p0 + ivec2(x, y), lim);
-          sa += texelFetch(a, p, 0).rgb; sb += texelFetch(b, p, 0).rgb;
-        }
-        vec3 e = abs(disp(sa * (invA / ${B * B}.0)) - disp(sb * (invB / ${B * B}.0)));
-        fragColor = vec4(170.0 * max(e.r, max(e.g, e.b)), 0.0, 0.0, 1.0);
-      }`, { a: { value: null }, b: { value: null }, invA: { value: 1 }, invB: { value: 1 } });
-    this.maxPass = new FSPass(/* glsl */ `
-      uniform sampler2D e;
-      void main() {
-        ivec2 p0 = ivec2(gl_FragCoord.xy) * ${R};
-        float m = 0.0;
-        for (int y = 0; y < ${R}; y++) for (int x = 0; x < ${R}; x++) {
-          ivec2 p = p0 + ivec2(x, y);
-          if (p.x < ${ew} && p.y < ${eh}) m = max(m, texelFetch(e, p, 0).r);
-        }
-        fragColor = vec4(m, 0.0, 0.0, 1.0);
-      }`, { e: { value: null } });
-
-    // per-tile refinement (see render): TP = physical px per tile side
-    const tw = this.maxRT.width, th = this.maxRT.height, TP = B * R;
-    this.tileOn = new Uint8Array(tw * th);
-    this.tileTex = new THREE.DataTexture(this.tileOn, tw, th, THREE.RedFormat, THREE.UnsignedByteType);
-    this.tileOnWide = new Uint8Array(tw * th);
-    this.tileTexWide = new THREE.DataTexture(this.tileOnWide, tw, th, THREE.RedFormat, THREE.UnsignedByteType);
-    this.nextTileOn = new Uint8Array(tw * th);
-    this.gainBuf = new Float32Array(tw * th);
-    this.gainTex = new THREE.DataTexture(this.gainBuf, tw, th, THREE.RedFormat, THREE.FloatType);
-    for (const t of [this.tileTex, this.tileTexWide, this.gainTex]) { t.unpackAlignment = 1; t.minFilter = t.magFilter = THREE.NearestFilter; t.generateMipmaps = false; }
-    // the tile mask in a depth buffer: 1 where a tile still refines, 0 where it has converged
-    // (map: the target's px to output px, gl_FragCoord.xy * map.xy + map.zw)
-    this.maskPass = new FSPass(/* glsl */ `
-      uniform sampler2D tiles; uniform vec4 map;
-      void main() {
-        vec2 p = gl_FragCoord.xy * map.xy + map.zw;
-        if (p.x < 0.0 || p.y < 0.0 || p.x >= ${PW}.0 || p.y >= ${PH}.0) discard;
-        if (texelFetch(tiles, ivec2(floor(p / ${TP}.0)), 0).r < 0.5) discard;
-        gl_FragDepth = 1.0;
-        fragColor = vec4(0.0);
-      }`, { tiles: { value: this.tileTex }, map: { value: new THREE.Vector4(1, 1, 0, 0) } });
-    const mm = this.maskPass.mat;
-    mm.colorWrite = false; mm.depthTest = true; mm.depthWrite = true; mm.depthFunc = THREE.AlwaysDepth;
-    for (const rt of [...this.rts, ...this.overRTs, this.mixRT, this.newRT, this.sumRT]) this.maskedRTs.set(rt, { margin: 0 });
-    this.hookDepthState();
-    // errPass with the error of tiles no longer refining forced to 0 (their sums hold nothing new)
-    this.errTilePass = new FSPass(/* glsl */ `
-      uniform sampler2D a; uniform sampler2D b; uniform float invA, invB; uniform sampler2D tiles;
-      ${SHOULDER_GLSL}
-      vec3 disp(vec3 x) { return toSRGB(sat(shoulder(max(x, 0.0)))); }
-      void main() {
-        ivec2 p0 = ivec2(gl_FragCoord.xy) * ${B}, lim = ivec2(${PW - 1}, ${PH - 1});
-        vec3 sa = vec3(0.0), sb = vec3(0.0);
-        for (int y = 0; y < ${B}; y++) for (int x = 0; x < ${B}; x++) {
-          ivec2 p = min(p0 + ivec2(x, y), lim);
-          sa += texelFetch(a, p, 0).rgb; sb += texelFetch(b, p, 0).rgb;
-        }
-        vec3 e = abs(disp(sa * (invA / ${B * B}.0)) - disp(sb * (invB / ${B * B}.0)));
-        float on = texelFetch(tiles, ivec2(gl_FragCoord.xy) / ${R}, 0).r;
-        fragColor = vec4(170.0 * max(e.r, max(e.g, e.b)) * on, 0.0, 0.0, 1.0);
-      }`, { a: { value: null }, b: { value: null }, invA: { value: 1 }, invB: { value: 1 }, tiles: { value: this.tileTex } });
-    // the final average with a gain per tile: the Compositor's 'replace' draw (same uv maths, so a tile
-    // comes out exactly as the whole-frame average at its count would) with opacity read from gainTex
-    this.gainPass = new FSPass(/* glsl */ `
-      uniform sampler2D tex; uniform vec3 tint; uniform vec4 uvXform; uniform bool premult; uniform sampler2D gain;
-      void main() {
-        vec2 uv = (vUv - 0.5) * uvXform.xy + 0.5 + uvXform.zw;
-        if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) discard;
-        vec4 c = texture(tex, uv);
-        c.rgb *= tint;
-        if (premult) c.rgb *= c.a;
-        fragColor = vec4(c.rgb, c.a) * texelFetch(gain, ivec2(gl_FragCoord.xy) / ${TP}, 0).r;
-      }`, { tex: { value: null }, tint: { value: new THREE.Vector3(1, 1, 1) }, uvXform: { value: new THREE.Vector4(1, 1, 0, 0) }, premult: { value: false }, gain: { value: this.gainTex } });
-    const gl = this.renderer.getContext() as WebGL2RenderingContext;
-    this.pbos = [gl.createBuffer()!, gl.createBuffer()!, gl.createBuffer()!];
-    for (const b of this.pbos) {
-      gl.bindBuffer(gl.PIXEL_PACK_BUFFER, b);
-      gl.bufferData(gl.PIXEL_PACK_BUFFER, Engine.RGB_BYTES, gl.STREAM_READ);
-    }
-    gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
-  }
-
-  /**
-   * Masked drawing for per-tile refinement. While `masking` is on, every draw into one of maskedRTs is
-   * depth-tested (LEQUAL, no depth writes, clears included) against the tile mask, whatever its material
-   * says: the draws scenes make are at depth <= 1, so they pass where the mask is 1 and converged tiles
-   * (mask 0) are rejected before their fragments are shaded (early-Z). Draws into other targets (scenes'
-   * own) keep their materials' depth state. A material that wants its own depth test while drawing into a
-   * masked target sets depthSeen (its sub-frame is then drawn again unmasked, see render).
-   */
-  private hookDepthState() {
-    const r = this.renderer, st = r.state, d = st.buffers.depth;
-    const setTest = d.setTest.bind(d), setFunc = d.setFunc.bind(d), setMask = d.setMask.bind(d);
-    let forced = false;
-    const force = (on: boolean) => {
-      if (on === forced) return;
-      forced = on;
-      if (on) { setTest(true); setFunc(THREE.LessEqualDepth); setMask(false); }
-    };
-    d.setTest = (v: boolean) => { if (!forced) setTest(v); };
-    d.setFunc = (f: THREE.DepthModes) => { if (!forced) setFunc(f); };
-    d.setMask = (m: boolean) => { if (!forced) setMask(m); };
-    const setRenderTarget = r.setRenderTarget.bind(r);
-    r.setRenderTarget = (target, ...rest) => {
-      setRenderTarget(target, ...rest);
-      force(this.masking && !!target && this.maskedRTs.has(target as THREE.WebGLRenderTarget));
-    };
-    const setMaterial = st.setMaterial.bind(st);
-    st.setMaterial = (m, ...rest) => {
-      if (forced && m.depthTest) this.depthSeen = true;
-      setMaterial(m, ...rest);
-    };
-    this.setMasking = (on: boolean) => {
-      this.masking = on;
-      const t = r.getRenderTarget();
-      force(on && !!t && this.maskedRTs.has(t));
-    };
-  }
-  private setMasking: (on: boolean) => void = () => {};
-
-  /** Write tileOn into the depth buffer of the masked targets (1 = still refining, 0 = converged). */
-  writeTileMask() {
-    const r = this.renderer, was = this.masking;
-    if (was) this.setMasking(false);
-    this.tileTex.needsUpdate = true;
-    // the mask widened by a tile, for scene targets read a little off the pixel
-    const on = this.tileOn, wide = this.tileOnWide, tw = this.maxRT.width, th = this.maxRT.height;
-    wide.fill(0);
-    for (let y = 0; y < th; y++) for (let x = 0; x < tw; x++) {
-      if (!on[y * tw + x]) continue;
-      for (let yy = Math.max(0, y - 1); yy <= Math.min(th - 1, y + 1); yy++)
-        for (let xx = Math.max(0, x - 1); xx <= Math.min(tw - 1, x + 1); xx++) wide[yy * tw + xx] = 255;
-    }
-    this.tileTexWide.needsUpdate = true;
-    // (a moving target is drawn whole unless its scene maps the mask, see mapTileMask)
-    for (const [rt, m] of this.maskedRTs) this.drawMask(rt, m.margin, m.moving ? null : new THREE.Vector4(PW / rt.width, PH / rt.height, 0, 0));
-    if (was) this.setMasking(true);
-  }
-
-  /** Write the tile mask into rt's depth buffer, through `map` (rt px -> output px); null: all of rt on. */
-  drawMask(rt: THREE.WebGLRenderTarget, margin: number, map: THREE.Vector4 | null) {
-    const r = this.renderer, d = r.state.buffers.depth;
-    r.setRenderTarget(rt);
-    if (!map) { r.clear(false, true, false); return; }
-    d.setClear(0);
-    r.clear(false, true, false);
-    d.setClear(1);
-    this.maskPass.u.tiles!.value = margin ? this.tileTexWide : this.tileTex;
-    (this.maskPass.u.map!.value as THREE.Vector4).copy(map);
-    this.maskPass.render(r, rt);
-  }
-
-  /** SceneCtx.mapTileMask: `map` takes rt uv to screen uv. */
-  private mapTileMask(rt: THREE.WebGLRenderTarget, map: THREE.Vector4 | null) {
-    const m = this.maskedRTs.get(rt);
-    if (!this.masking || !m?.moving) return;
-    const r = this.renderer, prev = r.getRenderTarget(), x = new THREE.Vector4();
-    if (map) x.set((map.x * PW) / rt.width, (map.y * PH) / rt.height, map.z * PW, map.w * PH);
-    this.setMasking(false);
-    this.drawMask(rt, m.margin, map ? x : null);
-    this.setMasking(true);
-    r.setRenderTarget(prev);
+    this.tiles = new TileRefiner(this.renderer, this);
+    for (const rt of [...this.rts, ...this.overRTs, this.mixRT, this.newRT, this.sumRT]) this.tiles.maskedRTs.set(rt, { margin: 0 });
+    this.readback = new PackedReadback(this.renderer, this.finalRT);
   }
 
   async init(
@@ -373,7 +167,7 @@ export class Engine {
     this.timeline = project.timeline;
     this.ctx = {
       renderer: this.renderer, audio: this.audio, lyrics: this.lyrics, comp: this.comp, W, H, id: '', params: {}, start: 0, end: 0, assets: project.assets,
-      mapTileMask: (rt, map) => this.mapTileMask(rt, map),
+      mapTileMask: (rt, map) => this.tiles.mapTileMask(rt, map),
       ensureClip: (id) => this.ensureClip(id),
       renderClip: (id, t, target, dt) => this.renderClip(id, t, target, dt),
       slice: () => this.slice(),
@@ -486,10 +280,10 @@ export class Engine {
         rec.scene = s;
         if (prev?.scene) {
           this.loaded.set(e.id, rec);
-          for (const m of prev.scene.tileMasked) this.maskedRTs.delete(m.rt);
+          for (const m of prev.scene.tileMasked) this.tiles.maskedRTs.delete(m.rt);
           prev.scene.dispose();
         }
-        for (const m of s.tileMasked) this.maskedRTs.set(m.rt, { margin: m.margin, moving: m.moving });
+        for (const m of s.tileMasked) this.tiles.maskedRTs.set(m.rt, { margin: m.margin, moving: m.moving });
       } catch (err) {
         rec.error = String((err as Error)?.stack ?? err);
         this.errors.push(`[${e.id}] ${rec.error}`);
@@ -626,22 +420,23 @@ export class Engine {
         const ts = Math.min(Math.max(0, cutLo, t + dt * shutter * u), cutHi - 1e-6);
         FRAME_SKEW.value = t - ts;
         let res: ReturnType<Engine['composite']>;
-        if (!this.masking) res = this.composite(ts, step, seeked && k === 0, t);
+        const tiles = this.tiles;
+        if (!tiles.masking) res = this.composite(ts, step, seeked && k === 0, t);
         else {
           // a scene that depth-tests its own 3D can't draw over the mask: its sub-frames are drawn unmasked
           // (and the mask written again after, since it has cleared and drawn into the scene target's depth)
           const ids = this.timeline.filter((e) => ts >= e.start && ts < e.end).map((e) => e.id);
-          let own = ids.some((id) => this.depthEntries.has(id));
+          let own = ids.some((id) => tiles.depthEntries.has(id));
           if (!own) {
-            this.depthSeen = false;
+            tiles.depthSeen = false;
             res = this.composite(ts, step, seeked && k === 0, t);
-            if (this.depthSeen) { own = true; for (const id of ids) this.depthEntries.add(id); }
+            if (tiles.depthSeen) { own = true; for (const id of ids) tiles.depthEntries.add(id); }
           }
           if (own) {
-            this.setMasking(false);
+            tiles.setMasking(false);
             res = this.composite(ts, step, seeked && k === 0, t);
-            this.writeTileMask();
-            this.setMasking(true);
+            tiles.writeTileMask();
+            tiles.setMasking(true);
           }
         }
         this.accum.u.src!.value = res!.outTex;
@@ -666,65 +461,29 @@ export class Engine {
           for (let l = lo; l < hi; l++) {
             clearRT(r, this.newRT, [0, 0, 0], 0);
             for (let k = n; k < 3 * n; k++) sub(k, u[k]!, this.newRT, dt / (3 * n));
-            const err = this.sampleError(n) / 2;
+            const err = this.tiles.sampleError(n) / 2;
             this.lastErrors.push(err);
             this.comp.draw(r, this.newRT.texture, this.sumRT, { mode: 'add', opacity: 1, premult: false });
             n *= 3;
             if (err < samples.tol) break;
           }
         } else {
-          // Per-tile refinement: after each set, a tile goes on to the next only while it or one of its 8
-          // neighbours is still at or over `tol`; a tile that stopped never restarts. Later sub-frames are
-          // drawn with converged tiles masked out by the depth test (rejected before shading), only the tiles
-          // still refining are added to the sums, and each tile is averaged over its own count. So every
-          // tile is exactly the whole-frame sampler's frame had it stopped at that tile's count.
-          const on = this.tileOn, tw = this.maxRT.width, th = this.maxRT.height, T = on.length;
-          on.fill(255); // (an R8 texture: 255 reads as 1.0)
-          const tileN = this.gainBuf; // count per tile, turned into the gain at the end
-          tileN.fill(0);
-          let live = T, shaded = 0, full = 0;
-          for (let l = lo; l < hi && live > 0; l++) {
-            const masked = live < T;
-            clearRT(r, this.newRT, [0, 0, 0], 0);
-            if (masked) { this.writeTileMask(); this.setMasking(true); }
-            for (let k = n; k < 3 * n; k++) sub(k, u[k]!, this.newRT, dt / (3 * n));
-            if (masked) this.setMasking(false);
-            const err = this.sampleError(n, masked) / 2;
-            this.lastErrors.push(err);
-            if (masked) this.setMasking(true);
-            this.comp.draw(r, this.newRT.texture, this.sumRT, { mode: 'add', opacity: 1, premult: false });
-            if (masked) this.setMasking(false);
-            shaded += 2 * n * live; full += 2 * n * T;
-            n *= 3;
-            // tiles whose neighbourhood is converged stop at this count
-            const e = this.errBuf, next = this.nextTileOn;
-            next.fill(0);
-            for (let y = 0; y < th; y++) for (let x = 0; x < tw; x++) {
-              const i = y * tw + x;
-              if (!on[i]) continue;
-              let m = 0;
-              for (let yy = Math.max(0, y - 1); yy <= Math.min(th - 1, y + 1); yy++)
-                for (let xx = Math.max(0, x - 1); xx <= Math.min(tw - 1, x + 1); xx++) m = Math.max(m, e[(yy * tw + xx) * 4]!);
-              if (m / 2 >= samples.tol) next[i] = 255;
-              else { tileN[i] = n; live--; }
-            }
-            on.set(next);
-          }
-          if (full > 0) {
-            this.lastShaded = shaded / full;
-            // tiles still refining when the sets ran out end at the last count, which is the frame's
-            for (let i = 0; i < T; i++) if (on[i]) tileN[i] = n;
-            perTile = tileN.some((c) => c !== n);
-            if (perTile) { for (let i = 0; i < T; i++) tileN[i] = 1 / tileN[i]!; this.gainTex.needsUpdate = true; }
-          }
+          // per-tile refinement (TileRefiner.refine): converged tiles are masked out of later sets
+          const res = this.tiles.refine(
+            n, hi - lo, samples.tol,
+            (m) => { for (let k = m; k < 3 * m; k++) sub(k, u[k]!, this.newRT, dt / (3 * m)); },
+            () => this.comp.draw(r, this.newRT.texture, this.sumRT, { mode: 'add', opacity: 1, premult: false }),
+          );
+          n = res.n;
+          perTile = res.perTile;
+          this.lastErrors = res.errors;
+          if (res.shaded !== undefined) this.lastShaded = res.shaded;
         }
       }
       SS_TAP.value = -1;
       FRAME_SKEW.value = 0;
-      if (perTile) {
-        this.gainPass.u.tex!.value = this.sumRT.texture;
-        this.gainPass.render(r, this.avgRT);
-      } else this.comp.draw(r, this.sumRT.texture, this.avgRT, { mode: 'replace', opacity: 1 / n, premult: false });
+      if (perTile) this.tiles.average(this.sumRT.texture, this.avgRT);
+      else this.comp.draw(r, this.sumRT.texture, this.avgRT, { mode: 'replace', opacity: 1 / n, premult: false });
       outTex = this.avgRT.texture;
     }
     this.lastSamples = n;
@@ -736,28 +495,6 @@ export class Engine {
       this.blit.render(r, null);
     }
     return n;
-  }
-
-  /**
-   * How far the displayed frame (8-bit levels, worst block) moves when the 2n sub-frames summed in newRT
-   * are merged with the n summed in sumRT. Stepped copies of a fast edge differ between the two
-   * interleaved sets; a converged streak does not.
-   */
-  private sampleError(n: number, tiles = false) {
-    const r = this.renderer;
-    // (with some tiles stopped, the error of those is forced to 0: their sums hold nothing new)
-    const p = tiles ? this.errTilePass : this.errPass;
-    p.u.a!.value = this.sumRT.texture;
-    p.u.b!.value = this.newRT.texture;
-    p.u.invA!.value = 1 / n;
-    p.u.invB!.value = 1 / (2 * n);
-    p.render(r, this.errRT);
-    this.maxPass.u.e!.value = this.errRT.texture;
-    this.maxPass.render(r, this.maxRT);
-    r.readRenderTargetPixels(this.maxRT, 0, 0, this.maxRT.width, this.maxRT.height, this.errBuf);
-    let m = 0;
-    for (let i = 0; i < this.errBuf.length; i += 4) m = Math.max(m, this.errBuf[i]!);
-    return m;
   }
 
   /**
@@ -857,24 +594,8 @@ export class Engine {
     return out;
   }
 
-  private packs: ({ buf: WebGLBuffer; sync: WebGLSync } | undefined)[] = [];
-  // the frame as packed RGB (rgb24, a quarter fewer bytes to read back and send than RGBA): texel i of a row
-  // holds bytes 4i..4i+3 of the row's R,G,B stream, copied exactly (8-bit in, 8-bit out)
-  readonly rgbRT = new THREE.WebGLRenderTarget((PW * 3) / 4, PH, { type: THREE.UnsignedByteType, depthBuffer: false, minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter });
-  readonly rgbPass = new FSPass(/* glsl */ `
-    uniform sampler2D src;
-    void main() {
-      ivec2 o = ivec2(gl_FragCoord.xy);
-      vec4 v;
-      for (int c = 0; c < 4; c++) {
-        int b = o.x * 4 + c, i = b / 3, ch = b - i * 3;
-        vec4 p = texelFetch(src, ivec2(i, o.y), 0);
-        v[c] = ch == 0 ? p.r : ch == 1 ? p.g : p.b;
-      }
-      fragColor = v;
-    }`, { src: { value: null } });
   /** Bytes per frame of readStart/readFinish (packed RGB, bottom-up rows). */
-  static readonly RGB_BYTES = PW * PH * 3;
+  static readonly RGB_BYTES = PackedReadback.BYTES;
   /**
    * Pipelined readback of the last rendered frame as packed RGB (rgb24, bottom-up rows; the bytes of
    * readPixels() without alpha): queue the copy into pixel-pack buffer `slot` (it runs on the GPU after
@@ -883,37 +604,12 @@ export class Engine {
    * Chrome warns on every frame when a read-back buffer is reused, though it reads no faster.)
    */
   readStart(slot: number) {
-    const r = this.renderer, gl = r.getContext() as WebGL2RenderingContext;
-    const old = this.packs[slot];
-    if (old) { gl.deleteSync(old.sync); }
-    const buf = this.pbos[slot]!;
-    this.rgbPass.u.src!.value = this.finalRT.texture;
-    this.rgbPass.render(r, this.rgbRT);
-    r.setRenderTarget(this.rgbRT);
-    gl.bindBuffer(gl.PIXEL_PACK_BUFFER, buf);
-    gl.readPixels(0, 0, this.rgbRT.width, PH, gl.RGBA, gl.UNSIGNED_BYTE, 0);
-    gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
-    this.packs[slot] = { buf, sync: gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0)! };
-    gl.flush();
+    this.readback.start(slot);
   }
 
   /** Wait for readStart(slot)'s copy and copy it into `out` (Engine.RGB_BYTES). */
-  async readFinish(slot: number, out: Uint8Array) {
-    const gl = this.renderer.getContext() as WebGL2RenderingContext, p = this.packs[slot];
-    if (!p) throw new Error(`readFinish: nothing queued in slot ${slot}`);
-    // (a sync object's status only changes between tasks: yield to the event loop between polls)
-    for (;;) {
-      const s = gl.clientWaitSync(p.sync, gl.SYNC_FLUSH_COMMANDS_BIT, 0);
-      if (s === gl.ALREADY_SIGNALED || s === gl.CONDITION_SATISFIED) break;
-      if (s === gl.WAIT_FAILED) throw new Error('readFinish: fence wait failed');
-      await yieldTask();
-    }
-    this.packs[slot] = undefined;
-    gl.deleteSync(p.sync);
-    gl.bindBuffer(gl.PIXEL_PACK_BUFFER, p.buf);
-    gl.getBufferSubData(gl.PIXEL_PACK_BUFFER, 0, out);
-    gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
-    return out;
+  readFinish(slot: number, out: Uint8Array) {
+    return this.readback.finish(slot, out);
   }
 
   dispose() {
@@ -923,21 +619,13 @@ export class Engine {
     this.sumRT.dispose();
     this.newRT.dispose();
     this.avgRT.dispose();
-    this.errRT.dispose();
-    this.maxRT.dispose();
+    this.tiles.dispose();
     this.finalRT.dispose();
-    this.rgbRT.dispose();
-    this.tileTex.dispose();
-    this.gainTex.dispose();
+    this.readback.dispose();
 
     this.blit.dispose();
     this.xfade.dispose();
     this.accum.dispose();
-    this.errPass.dispose();
-    this.errTilePass.dispose();
-    this.maxPass.dispose();
-    this.gainPass.dispose();
-    this.maskPass.dispose();
 
     this.comp.dispose();
     this.post.dispose();
@@ -947,18 +635,6 @@ export class Engine {
       rec.scene?.dispose();
     }
     this.loaded.clear();
-
-    const gl = this.renderer.getContext() as WebGL2RenderingContext;
-    for (let i = 0; i < this.packs.length; i++) {
-      const p = this.packs[i];
-      if (p) {
-        gl.deleteSync(p.sync);
-        gl.deleteBuffer(p.buf);
-        this.packs[i] = undefined;
-      }
-    }
-    for (const b of this.pbos) gl.deleteBuffer(b);
-    this.pbos = [];
 
     this.renderer.dispose();
   }

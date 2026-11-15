@@ -117,9 +117,8 @@ void main() {
   fragColor = vec4(c / 12.0 + texture(uBase, vUv).rgb, 1.0);
 }`;
 
-/** `toLin` (sRGB to linear) and `unshoulder` (the inverse of the tone shoulder of `SHOULDER_GLSL` below its white blend, k = 0.72). */
+/** `unshoulder`: the inverse of the tone shoulder of `SHOULDER_GLSL` below its white blend, k = 0.72. */
 export const UNSHOULDER_GLSL = /* glsl */ `
-vec3 toLin(vec3 c) { return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(0.04045, c)); }
 // the inverse of the engine's tone shoulder below its white blend, so the frame arrives on screen as written here
 vec3 unshoulder(vec3 y) {
   const float k = 0.72;
@@ -133,7 +132,6 @@ uniform sampler2D uHdr, uBloom, uText, uOver, uTop;
 uniform vec4 uRect;
 uniform float uExposure, uBloomK, uLevels, uCrt, uFade, uScreen;
 vec3 aces(vec3 x) { return sat((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14)); }
-vec3 toSrgb(vec3 c) { return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(0.0031308, c)); }
 ${UNSHOULDER_GLSL}
 void main() {
   vec2 q = (gl_FragCoord.xy - uRect.xy) / uRect.zw;
@@ -150,12 +148,12 @@ void main() {
   ivec2 t = ivec2(floor(q * vec2(${LW}.0, ${LH}.0)));
   vec2 tc = (vec2(t) + 0.5) / vec2(${LW}.0, ${LH}.0);
   vec3 hdr = texelFetch(uHdr, t, 0).rgb + texture(uBloom, tc).rgb * uBloomK;
-  vec3 s = toSrgb(aces(hdr * uExposure));
+  vec3 s = toSRGB(aces(hdr * uExposure));
   vec4 tx = texelFetch(uText, t, 0);
   s = mix(s, tx.rgb, tx.a);
   // the overlay: a 3D layer over the interface (an object on a window's title bar), alpha 0 where it is empty
   vec4 ov = texelFetch(uOver, t, 0);
-  s = mix(s, toSrgb(aces(ov.rgb * uExposure)), step(0.5, ov.a));
+  s = mix(s, toSRGB(aces(ov.rgb * uExposure)), step(0.5, ov.a));
   // the top layer: over the overlay too
   vec4 tp = texelFetch(uTop, t, 0);
   s = mix(s, tp.rgb, tp.a);
@@ -170,7 +168,7 @@ void main() {
     s *= mix(1.0, 1.0 - 0.35 * dot(c * c, vec2(0.5)), uCrt);
   }
   s *= edge * (1.0 - uFade);
-  vec3 lin = toLin(s);
+  vec3 lin = toLinear(s);
   fragColor = vec4(uScreen > 0.5 ? lin : unshoulder(min(lin, vec3(0.99))), 1.0);
 }`;
 
@@ -181,7 +179,7 @@ void main() {
  * 16-bit step higher in some texels. The dither of the output pass then moves a few pixels by one level step. The fault comes and goes
  * with the frames that the page rendered before, so it looks like a frame that depends on the render order. At 32 bits the step is
  * too small to reach the dither. A check that must tell a true order fault from this rounding renders at both precisions
- * (`scripts/determinism.ts`, `pve order --precision float`).
+ * (`pve determinism`, `pve order --precision float`).
  */
 const HDR_TYPE = typeof location !== 'undefined' && new URLSearchParams(location.search).get('hdr') === 'float' ? THREE.FloatType : THREE.HalfFloatType;
 

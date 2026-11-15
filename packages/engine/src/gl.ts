@@ -111,21 +111,32 @@ export class FSPass {
   }
 }
 
-export type BlendMode = 'normal' | 'add' | 'screen' | 'multiply' | 'max' | 'replace';
+/** FSPass body that copies texture `src` (uniform `src`). */
+export const COPY_FRAG = /* glsl */ `uniform sampler2D src; void main(){ fragColor = texture(src, vUv); }`;
 
-/** Draws a texture over a target with a blend mode, opacity, tint and optional UV transform. */
-export class Compositor {
-  private passes = new Map<BlendMode, FSPass>();
-  private frag = /* glsl */ `
-    uniform sampler2D tex; uniform float opacity; uniform vec3 tint; uniform vec4 uvXform; uniform bool premult;
+/**
+ * FSPass body of a Compositor draw (`tex` through `uvXform`, `tint`, `premult`) scaled by `opacity`, a GLSL
+ * float expression over the uniforms in `decl` (the Compositor: one opacity uniform).
+ */
+export function compositeFrag(decl = 'uniform float opacity;', opacity = 'opacity') {
+  return /* glsl */ `
+    uniform sampler2D tex; ${decl} uniform vec3 tint; uniform vec4 uvXform; uniform bool premult;
     void main() {
       vec2 uv = (vUv - 0.5) * uvXform.xy + 0.5 + uvXform.zw;
       if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) discard;
       vec4 c = texture(tex, uv);
       c.rgb *= tint;
       if (premult) c.rgb *= c.a;
-      fragColor = vec4(c.rgb, c.a) * opacity;
+      fragColor = vec4(c.rgb, c.a) * ${opacity};
     }`;
+}
+
+export type BlendMode = 'normal' | 'add' | 'screen' | 'multiply' | 'max' | 'replace';
+
+/** Draws a texture over a target with a blend mode, opacity, tint and optional UV transform. */
+export class Compositor {
+  private passes = new Map<BlendMode, FSPass>();
+  private frag = compositeFrag();
   private get(mode: BlendMode) {
     let p = this.passes.get(mode);
     if (!p) {
