@@ -68,6 +68,7 @@ export class StudioAudioEngine {
       this.gainNode.connect(this.master);
 
       const res = await fetch(this.url);
+      if (!res.ok) throw new Error(`HTTP ${res.status} for ${new URL(this.url, location.href).href}`);
       const arrayBuf = await this.download(res);
       this.buffer = await this.ctx.decodeAudioData(arrayBuf);
       this.isBufferReady = true;

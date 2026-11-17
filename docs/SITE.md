@@ -33,6 +33,18 @@ In fullscreen the bar is always hidden. It shows only while the pointer is over 
 
 One box (`app/src/ui/loader.ts`, `.ld-*` in `app/src/ui/styles/loader.css`) in the start dialog of the player and in the monitor of the studio. It shows four steps: project data, fonts, scenes and audio. Each scene has a chip that turns green when the scene is ready. One bar covers all steps and never moves back. The studio waits for the decoded audio too. A failed step turns red and shows its message.
 
+## Load errors
+
+A file that does not load stops the load. The inline script of `app/site/index.html` (`pveLoadFailure`) finds the cause and shows the help. It must work before any module runs, because a script of the page can fail first. `player.ts` and `boot.ts` call it for the files that they load themselves.
+
+| Cause | How the page finds it | Help |
+|---|---|---|
+| A new deploy while the page was open, or an old `index.html` in the cache | The entry script of the live `index.html` (fetched with `cache: 'no-store'`) differs from the entry script of the page. | The page reloads once. Then: "This site was updated", and a Reload button. |
+| An error answer of the server | A failed file has a response in the Resource Timing list, or a file has an HTTP error status. Right after a deploy, GitHub Pages answers 404 (an HTML page, which a browser refuses as a module) or 503 for a short time. | The page reloads once. Then: "The server sent an error", and a Reload button. |
+| An ad blocker, a privacy extension or no network | The request has no response. | The help about blockers (`#blocked`). |
+
+The key `pve.player.reloaded` in session storage stops a reload loop. The player clears it when the video is ready. Safari's module errors do not name the file, so in Safari a failed module counts as an error answer only when the site changed.
+
 ## Videos
 
 A video is a project. The page without `?project=` shows only the cover cards of the videos ("Choose a video") and loads nothing. A card opens `?project=<id>`, which loads that video and shows its Play button. The palette of a project is baked into the engine modules, so a change of video loads the page again. The cover is `projects/<id>/site/thumbnail.jpg`. The page keeps `?scale=`.

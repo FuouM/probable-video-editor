@@ -16,6 +16,7 @@ import { Loader } from '../src/ui/loader';
 import { StudioAudioEngine } from '../src/ui/audio';
 import { ICON, fmtTime as fmt, timeSeek } from '../src/ui/fs-controls';
 import { mountThemeMenu } from '../src/ui/theme-menu';
+import { DOWNLOAD, failedUrls } from './failure';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const frame = $('frame');
@@ -81,16 +82,12 @@ function fail(message: string) {
 }
 
 /**
- * A download that the browser refused before any answer came: an ad blocker or a privacy extension that matched a file
- * of the video (a scene module, a texture, the song), or no network. The text of the error differs by browser; a failed
- * image or media load has no text, only its event.
+ * Files did not download: the load stops, and the page tells why (pveLoadFailure in index.html: a new deploy or an
+ * error answer reloads, a refused request shows the help about blockers).
  */
-const BLOCKED = /Failed to fetch|NetworkError|Load failed|dynamically imported module|Importing a module script failed|ERR_BLOCKED|\[object (Progress)?Event\]/i;
-
-/** A file did not download: the load stops, and the help about blockers in the page (#blocked) shows. */
-function blocked() {
+function loadFailed(urls: string[]) {
   fail('Some files of this video could not be downloaded.');
-  $('blocked').hidden = false;
+  void window.pveLoadFailure(urls);
 }
 
 /** The cards of the videos in the start dialog (only with more than one). */
@@ -165,7 +162,9 @@ async function main() {
   await Promise.all([engine.init(undefined, (p) => loader?.engine(p)), audio.ready]);
   if (engine.errors.length) console.error(engine.errors.join('\n\n'));
   if (audio.loadError) console.error(audio.loadError);
-  if (engine.errors.some((e) => BLOCKED.test(e)) || BLOCKED.test(String(audio.loadError ?? ''))) return blocked();
+  const failed = engine.errors.filter((e) => DOWNLOAD.test(e));
+  if (audio.loadError && DOWNLOAD.test(String(audio.loadError))) failed.push(new URL(inputs.mix, location.href).href);
+  if (failed.length) return loadFailed(failed.flatMap((e) => failedUrls(e)));
   document.title = project.title;
   $('title').textContent = project.title;
   $('dlg-title').textContent = project.title;
@@ -537,6 +536,7 @@ async function main() {
 
   // ---------------------------------------------------------------- start
   loader?.dispose();
+  window.pveLoadDone();
   splash.firstElementChild!.classList.remove('loading');
   loader = null;
   splashStatus.textContent = engine.errors.length ? `${engine.errors.length} scene(s) failed to load, see the console` : startAt > 0 ? `Resumes at ${fmt(t)}` : '';
@@ -551,7 +551,7 @@ async function main() {
 
 main().catch((e) => {
   console.error(e);
-  const message = String((e as Error)?.message ?? e);
-  if (BLOCKED.test(message)) blocked();
-  else fail(`Could not load: ${message}`);
+  const error = String(e);
+  if (DOWNLOAD.test(error)) loadFailed(failedUrls(error));
+  else fail(`Could not load: ${String((e as Error)?.message ?? e)}`);
 });

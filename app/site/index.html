@@ -46,6 +46,7 @@
               <div id="loader-host"></div>
               <p class="pl-status" id="splash-status"></p>
               <p class="pl-status error" id="blocked" hidden>An ad blocker or a privacy extension can block the files of this video. This site has no ads and no trackers: please allow it in your blocker, then reload the page.</p>
+              <p class="pl-status error" id="reload" hidden></p>
             </div>
             <div class="ds-modal-footer" id="splash-foot">
               <button class="win-button primary" id="splash-play" disabled>Loading</button>
@@ -102,12 +103,58 @@
   </div>
 </div>
 <script>
-  // An ad blocker can block a file of the player before any of its code runs. A script or a style sheet that does not
-  // load shows the help (player.ts shows it for the files that it loads itself).
+  // A file of the player that did not load. The causes need different help:
+  // - the site was deployed again while the page was open (or the browser kept the old index.html): the page asks for
+  //   files of the old build. The entry script of the live index.html differs from the entry script of this page.
+  // - the server answered with an error. Right after a deploy, GitHub Pages answers 404 (an HTML page) or 503 for a
+  //   short time. A failed file of `urls` has a response in the Resource Timing list (responseStart > 0), or a file has
+  //   an error status (responseStatus, not in Safari).
+  // - an ad blocker, a privacy extension or no network refused the request: it has no response at all.
+  // The first two need a reload: the page reloads once by itself (PVE_RELOAD in session storage stops a loop, player.ts
+  // calls pveLoadDone to clear it when the video is ready), then it asks the visitor. The last one shows the help #blocked.
+  // `urls` are the files that failed, when the error names them (Safari's module errors and failed fetches do not).
+  // player.ts and boot.ts call it for the files that they load themselves, the listener below for the scripts and style
+  // sheets of the page. The first call decides.
+  // the browser keeps 250 Resource Timing entries by default: a video loads more files than that
+  performance.setResourceTimingBufferSize(10000);
+  const PVE_RELOAD = 'pve.player.reloaded';
+  let pveFailure = null;
+  window.pveLoadDone = () => sessionStorage.removeItem(PVE_RELOAD);
+  window.pveLoadFailure = (urls) => (pveFailure ??= (async () => {
+    const entry = (doc) => {
+      const s = doc.querySelector('script[type="module"][src]');
+      return s ? new URL(s.getAttribute('src'), location.href).href : '';
+    };
+    // null: the live index.html did not download, so the page cannot tell that the site changed
+    const live = await fetch(location.href, { cache: 'no-store' })
+      .then((r) => r.text())
+      .then((html) => entry(new DOMParser().parseFromString(html, 'text/html')), () => null);
+    const updated = live !== null && live !== entry(document);
+    const answered = urls.some((u) => performance.getEntriesByName(new URL(u, location.href).href).some((t) => t.responseStart > 0))
+      || performance.getEntriesByType('resource').some((t) => t.responseStatus >= 400);
+    const play = document.getElementById('splash-play');
+    if (!updated && !answered) {
+      document.getElementById('blocked').hidden = false;
+      play.textContent = 'Unavailable';
+      return;
+    }
+    if (sessionStorage.getItem(PVE_RELOAD) === null) {
+      sessionStorage.setItem(PVE_RELOAD, '1');
+      location.reload();
+      return;
+    }
+    const help = document.getElementById('reload');
+    help.textContent = updated
+      ? 'This site was updated after the page opened. Reload the page to get the new version.'
+      : 'The server sent an error for a file of this video. This occurs for a short time after the site is updated. Reload the page.';
+    help.hidden = false;
+    play.textContent = 'Reload';
+    play.disabled = false;
+    play.onclick = () => location.reload();
+  })());
   addEventListener('error', (e) => {
-    if (!(e.target instanceof HTMLScriptElement || e.target instanceof HTMLLinkElement)) return;
-    document.getElementById('blocked').hidden = false;
-    document.getElementById('splash-play').textContent = 'Unavailable';
+    if (e.target instanceof HTMLScriptElement) void pveLoadFailure([e.target.src]);
+    else if (e.target instanceof HTMLLinkElement) void pveLoadFailure([e.target.href]);
   }, true);
 </script>
 <script type="module" src="./boot.ts"></script>

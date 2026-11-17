@@ -285,7 +285,9 @@ export class Engine {
         }
         for (const m of s.tileMasked) this.tiles.maskedRTs.set(m.rt, { margin: m.margin, moving: m.moving });
       } catch (err) {
-        rec.error = String((err as Error)?.stack ?? err);
+        // a V8 stack starts with the message, a Firefox or Safari stack holds only the frames
+        const stack = (err as Error)?.stack;
+        rec.error = stack ? (stack.startsWith(String(err)) ? stack : `${err}\n${stack}`) : String(err);
         this.errors.push(`[${e.id}] ${rec.error}`);
         console.error(`scene ${e.id} failed`, err);
       }
