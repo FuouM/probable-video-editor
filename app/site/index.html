@@ -45,6 +45,7 @@
               <div class="pl-videos" id="videos" hidden></div>
               <div id="loader-host"></div>
               <p class="pl-status" id="splash-status"></p>
+              <p class="pl-status error" id="blocked" hidden>An ad blocker or a privacy extension can block the files of this video. This site has no ads and no trackers: please allow it in your blocker, then reload the page.</p>
             </div>
             <div class="ds-modal-footer" id="splash-foot">
               <button class="win-button primary" id="splash-play" disabled>Loading</button>
@@ -100,6 +101,15 @@
     </div>
   </div>
 </div>
+<script>
+  // An ad blocker can block a file of the player before any of its code runs. A script or a style sheet that does not
+  // load shows the help (player.ts shows it for the files that it loads itself).
+  addEventListener('error', (e) => {
+    if (!(e.target instanceof HTMLScriptElement || e.target instanceof HTMLLinkElement)) return;
+    document.getElementById('blocked').hidden = false;
+    document.getElementById('splash-play').textContent = 'Unavailable';
+  }, true);
+</script>
 <script type="module" src="./boot.ts"></script>
 </body>
 </html>

@@ -80,6 +80,19 @@ function fail(message: string) {
   splashPlay.textContent = 'Unavailable';
 }
 
+/**
+ * A download that the browser refused before any answer came: an ad blocker or a privacy extension that matched a file
+ * of the video (a scene module, a texture, the song), or no network. The text of the error differs by browser; a failed
+ * image or media load has no text, only its event.
+ */
+const BLOCKED = /Failed to fetch|NetworkError|Load failed|dynamically imported module|Importing a module script failed|ERR_BLOCKED|\[object (Progress)?Event\]/i;
+
+/** A file did not download: the load stops, and the help about blockers in the page (#blocked) shows. */
+function blocked() {
+  fail('Some files of this video could not be downloaded.');
+  $('blocked').hidden = false;
+}
+
 /** The cards of the videos in the start dialog (only with more than one). */
 function showVideos(videos: SiteProject[], current: string, always = false) {
   const el = $('videos');
@@ -151,6 +164,8 @@ async function main() {
 
   await Promise.all([engine.init(undefined, (p) => loader?.engine(p)), audio.ready]);
   if (engine.errors.length) console.error(engine.errors.join('\n\n'));
+  if (audio.loadError) console.error(audio.loadError);
+  if (engine.errors.some((e) => BLOCKED.test(e)) || BLOCKED.test(String(audio.loadError ?? ''))) return blocked();
   document.title = project.title;
   $('title').textContent = project.title;
   $('dlg-title').textContent = project.title;
@@ -536,5 +551,7 @@ async function main() {
 
 main().catch((e) => {
   console.error(e);
-  fail(`Could not load: ${String((e as Error)?.message ?? e)}`);
+  const message = String((e as Error)?.message ?? e);
+  if (BLOCKED.test(message)) blocked();
+  else fail(`Could not load: ${message}`);
 });

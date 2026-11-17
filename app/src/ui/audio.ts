@@ -30,6 +30,8 @@ export class StudioAudioEngine {
 
   /** Resolves when the mix is decoded to a buffer (or Web Audio failed and the HTML5 element plays on). */
   readonly ready: Promise<void>;
+  /** Why the mix did not load into Web Audio (null: it loaded). A blocked download leaves the HTML5 element without the file too. */
+  loadError: unknown = null;
 
   constructor(
     private url: string,
@@ -76,8 +78,9 @@ export class StudioAudioEngine {
         this.fallbackAudio.pause();
         this.playAt(cur);
       }
-    } catch {
+    } catch (e) {
       // Keep using fallbackAudio if Web Audio fails
+      this.loadError = e;
     }
   }
 
