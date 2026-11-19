@@ -7,9 +7,7 @@ import { cpSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { foldText, resolveVideo, TimingData, validateVideo, type ResolvedVideo, type SongSection, type VideoJson } from '@pve/core';
 import { loadSong } from '@pve/core/load';
-
-/** A project id is a folder name: letters, digits, `_` and `-`, starting with a letter or digit. */
-const ID_RE = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
+import { PROJECT_ID_RE } from '@pve/core/projects';
 
 export interface InitResult {
   id: string;
@@ -27,7 +25,7 @@ export async function initProject(src: string, projectsDir: string): Promise<Ini
   const from = path.resolve(src);
   if (!existsSync(from)) throw new Error(`no folder ${from}`);
   const id = path.basename(from);
-  if (!ID_RE.test(id)) throw new Error(`the folder name '${id}' is not a project id (letters, digits, _ and -). Rename the song folder.`);
+  if (!PROJECT_ID_RE.test(id)) throw new Error(`the folder name '${id}' is not a project id (letters, digits, _ and -). Rename the song folder.`);
   const inside = path.resolve(path.dirname(from)) === path.resolve(projectsDir);
   const dir = inside ? from : path.join(projectsDir, id);
   const videoDir = path.join(dir, 'video');

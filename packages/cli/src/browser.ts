@@ -5,9 +5,9 @@
 // Chromes cannot share a profile, so a lock file guards each one. A command takes the first free profile of a
 // pool, so commands run side by side. When all profiles are busy, the command fails at once: it never waits.
 // Each page step has a deadline (PVE_READY_TIMEOUT, PVE_FRAME_TIMEOUT): a stuck scene fails the command.
-import { closeSync, mkdirSync, openSync, readFileSync, rmSync, writeSync } from 'node:fs';
+import { closeSync, mkdirSync, openSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync, writeSync } from 'node:fs';
 import path from 'node:path';
-import { chromium, type BrowserContext, type Page } from 'playwright-core';
+import { chromium, type Browser, type BrowserContext, type ConsoleMessage, type Page } from 'playwright-core';
 import type { BenchOptions, BenchPageResult } from '@pve/engine/bench/types';
 import type { AdaptiveSampling } from '@pve/engine/engine';
 import type { CamRecord, Mark, Metric } from '@pve/engine/marks';
@@ -99,26 +99,40 @@ export function killTree(proc: { pid: number; kill: () => void }) {
 /**
  * The dev server for a headless page: `url` if given and it answers, else a private one without live reload.
  * A shared dev server with live reload reloads the page when an agent saves a file mid-render.
+ * Each private server takes its own dependency cache (`out/cache/vite-<k>`, a pool locked as the Chrome profiles). With one
+ * shared cache, a server that bundles the dependencies again replaces the files that another server's page is loading: that
+ * page gets 404 for `.vite/deps/three.js` and never boots.
  */
 export async function ensureServer(url?: string): Promise<{ url: string; stop: () => void }> {
   if (url) {
     if (await reachable(url)) return { url, stop: () => {} };
     throw new Error(`no dev server answers at ${url}`);
   }
+  const busy: string[] = [];
+  let cache: { dir: string; release: () => void } | null = null;
+  for (let k = 0; k < PROFILES && !cache; k++) {
+    const dir = path.join(ROOT, `out/cache/vite-${k}`);
+    const r = tryLock(dir);
+    if (typeof r === 'function') cache = { dir, release: r };
+    else busy.push(r);
+  }
+  if (!cache) throw new Error(`all ${PROFILES} Vite caches are busy:\n  ${busy.join('\n  ')}\nStop a stuck one with taskkill /PID <pid> /T /F.`);
+  const { dir, release } = cache;
   // a free port: the OS picks one for a moment, Vite takes it
   const probe = Bun.serve({ port: 0, fetch: () => new Response() });
   const port = probe.port;
   probe.stop(true);
   // no live reload: a file saved mid-render must not reload the page. `--bun`: the project loader in
   // vite.config.ts reads prompt.yaml with Bun.YAML, so Vite runs in the Bun runtime, not in Node.
-  const proc = Bun.spawn(['bunx', '--bun', 'vite', '--port', String(port), '--strictPort'], { cwd: APP, stdout: 'ignore', stderr: 'ignore', env: { ...process.env, PVE_NO_HMR: '1' } });
+  const proc = Bun.spawn(['bunx', '--bun', 'vite', '--port', String(port), '--strictPort'], { cwd: APP, stdout: 'ignore', stderr: 'ignore', env: { ...process.env, PVE_NO_HMR: '1', PVE_VITE_CACHE: dir } });
   const u = `http://localhost:${port}`;
+  const stop = () => { killTree(proc); release(); };
   for (let i = 0; i < 300 && !(await reachable(u)); i++) await Bun.sleep(100);
-  if (!(await reachable(u))) { killTree(proc); throw new Error(`the Vite dev server did not start on port ${port} within 30 s`); }
-  return { url: u, stop: () => killTree(proc) };
+  if (!(await reachable(u))) { stop(); throw new Error(`the Vite dev server did not start on port ${port} within 30 s`); }
+  return { url: u, stop };
 }
 
-function alive(pid: number): boolean {
+export function alive(pid: number): boolean {
   try { process.kill(pid, 0); return true; } catch (e) { return e instanceof Error && 'code' in e && e.code === 'EPERM'; }
 }
 
@@ -169,6 +183,11 @@ export interface OpenOptions {
   gpuCanvas?: boolean;
   /** The precision of the lit HDR targets: `half` (16-bit float, the default) or `float` (32-bit: free of the GPU's 16-bit blend rounding, for the checks). */
   hdr?: 'half' | 'float';
+  /**
+   * Reuse a warm page of the render server (`pve serve`) with the same URL and the current sources, and keep it warm
+   * after. Only for commands that render frames and leave no state (a frame is a pure function of its time).
+   */
+  warm?: boolean;
 }
 
 /**
@@ -183,19 +202,68 @@ export const CHROME_ARGS = [
   '--disable-accelerated-2d-canvas',
   '--enable-gpu-rasterization', '--ignore-gpu-blocklist',
   '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows',
+  // after a lost WebGL context (a GPU reset: a shader too slow for the driver's watchdog), Chrome blocks WebGL for the
+  // site, and the next page of that profile cannot open a context ("Web page caused context loss and was blocked")
+  '--disable-domain-blocking-for-3d-apis',
 ];
 
-/** An open export page. Closing `browser` releases the profile lock. */
+/** An open export page. `release` ends its use: it closes the Chrome of the command, or the page of the render server, or hands a warm page back. */
 export interface OpenPage {
   browser: BrowserContext;
   page: Page;
   /** Console errors and warnings, page errors and failed requests. */
   logs: string[];
+  release(): Promise<void>;
 }
 
-/** Open project `project` in export mode and wait until it is ready. Takes a free profile first (fails at once if none). */
-export async function openPage(url: string, project: string, o: OpenOptions = {}): Promise<OpenPage> {
+/** Collects the console errors and warnings, page errors and failed requests of `page` into `logs`. Returns the function that stops it. */
+function listen(page: Page, logs: string[]): () => void {
+  // A failed load (404, network error) is a console error whose location is the failed URL. The
+  // favicon request is not a page request, so the console is the only place where it shows.
+  const onConsole = (m: ConsoleMessage) => {
+    if (m.type() !== 'error' && m.type() !== 'warning') return;
+    logs.push(`[${m.type()}] ${m.text()}${m.text().startsWith('Failed to load resource') ? ` ${m.location().url}` : ''}`);
+  };
+  const onError = (e: Error) => logs.push(`[pageerror] ${e.message}`);
+  page.on('console', onConsole);
+  page.on('pageerror', onError);
+  return () => { page.off('console', onConsole); page.off('pageerror', onError); };
+}
+
+/** Loads the export page `target` in `page` and waits until it is ready, then checks it. */
+async function bootPage(page: Page, target: string, o: OpenOptions, logs: string[]): Promise<void> {
   const scale = o.scale ?? 1;
+  // One deadline for load and init. Playwright's own timeouts do not fire while the page's main thread is busy.
+  // A page error or a WebGL context that does not open while the page boots stops it for good: fail at once, not
+  // after the deadline (a module that did not load, a GPU process that went away).
+  const t0 = performance.now();
+  const { promise: broke, reject: fail } = Promise.withResolvers<never>();
+  broke.catch(() => {});
+  const onError = (e: Error) => fail(new Error(`the page failed while it loaded: ${e.message}`));
+  const onConsole = (m: ConsoleMessage) => { if (m.type() === 'error' && m.text().includes('Error creating WebGL context')) fail(new Error(`the page could not open a WebGL context (the GPU process failed or is out of contexts): ${m.text()}`)); };
+  page.on('pageerror', onError);
+  page.on('console', onConsole);
+  try {
+    const boot = (async () => {
+      await page.goto(target, { timeout: READY_MS });
+      await page.waitForFunction(() => { const p = (window as unknown as PveWindow).__pve; return p?.ready || p?.error; }, null, { timeout: READY_MS });
+    })();
+    await deadline(Promise.race([boot, broke]), READY_MS, `loading the page (clips: ${o.only ?? 'all'})`);
+  } finally {
+    page.off('pageerror', onError);
+    page.off('console', onConsole);
+  }
+  if (process.env.PVE_VERBOSE) console.error(`page ready in ${((performance.now() - t0) / 1000).toFixed(1)} s`);
+  const err = await page.evaluate(() => (window as unknown as PveWindow).__pve!.error);
+  if (err) throw new Error(`app failed to boot:\n${err}\n${logs.join('\n')}`);
+  const size: [number, number] = await page.evaluate(() => { const p = (window as unknown as PveWindow).__pve!; return [p.width ?? 1920, p.height ?? 1080]; });
+  if (size[0] !== 1920 * scale || size[1] !== 1080 * scale) throw new Error(`app renders ${size[0]}x${size[1]}, expected ${1920 * scale}x${1080 * scale} (--scale ${scale})`);
+  const sceneErrors: string[] = await page.evaluate(() => (window as unknown as PveWindow).__pve!.errors);
+  if (sceneErrors.length) console.error('SCENE ERRORS:\n' + sceneErrors.join('\n'));
+}
+
+/** Open project `project` in export mode in a Chrome of its own and wait until it is ready. Takes a free profile first (fails at once if none). */
+export async function openPage(url: string, project: string, o: OpenOptions = {}): Promise<OpenPage> {
   const { dir: profile, release } = acquireProfile();
   let browser: BrowserContext;
   try {
@@ -214,28 +282,9 @@ export async function openPage(url: string, project: string, o: OpenOptions = {}
   const logs: string[] = [];
   try {
     const page = browser.pages()[0] ?? (await browser.newPage());
-    // A failed load (404, network error) is a console error whose location is the failed URL. The
-    // favicon request is not a page request, so the console is the only place where it shows.
-    page.on('console', (m) => {
-      if (m.type() !== 'error' && m.type() !== 'warning') return;
-      logs.push(`[${m.type()}] ${m.text()}${m.text().startsWith('Failed to load resource') ? ` ${m.location().url}` : ''}`);
-    });
-    page.on('pageerror', (e) => logs.push(`[pageerror] ${e.message}`));
-    // One deadline for load and init. Playwright's own timeouts do not fire while the page's main thread is busy.
-    const t0 = performance.now();
-    const boot = (async () => {
-      await page.goto(`${url}/?export=1&project=${encodeURIComponent(project)}${o.only ? `&only=${o.only}` : ''}${scale !== 1 ? `&scale=${scale}` : ''}${o.hdr === 'float' ? '&hdr=float' : ''}`, { timeout: READY_MS });
-      await page.waitForFunction(() => { const p = (window as unknown as PveWindow).__pve; return p?.ready || p?.error; }, null, { timeout: READY_MS });
-    })();
-    await deadline(boot, READY_MS, `loading the page (clips: ${o.only ?? 'all'})`);
-    if (process.env.PVE_VERBOSE) console.error(`page ready in ${((performance.now() - t0) / 1000).toFixed(1)} s`);
-    const err = await page.evaluate(() => (window as unknown as PveWindow).__pve!.error);
-    if (err) throw new Error(`app failed to boot:\n${err}\n${logs.join('\n')}`);
-    const size: [number, number] = await page.evaluate(() => { const p = (window as unknown as PveWindow).__pve!; return [p.width ?? 1920, p.height ?? 1080]; });
-    if (size[0] !== 1920 * scale || size[1] !== 1080 * scale) throw new Error(`app renders ${size[0]}x${size[1]}, expected ${1920 * scale}x${1080 * scale} (--scale ${scale})`);
-    const sceneErrors: string[] = await page.evaluate(() => (window as unknown as PveWindow).__pve!.errors);
-    if (sceneErrors.length) console.error('SCENE ERRORS:\n' + sceneErrors.join('\n'));
-    return { browser, page, logs };
+    listen(page, logs);
+    await bootPage(page, pageUrl(url, project, o), o, logs);
+    return { browser, page, logs, release: () => closeBrowser(browser) };
   } catch (e) {
     if (logs.length) console.error('BROWSER LOG:\n' + logs.slice(0, 40).join('\n'));
     await closeBrowser(browser);
@@ -279,25 +328,152 @@ export async function closeBrowser(browser: BrowserContext): Promise<void> {
 export interface Pages {
   /** Opens a page of the project (the options of `withPages`, then these). */
   open(o?: OpenOptions): Promise<OpenPage>;
-  /** Prints the log of the page, then closes it. */
+  /** Prints the log of the page, then releases it. */
   close(p: OpenPage): Promise<void>;
-  /** Closes every open page. */
+  /** Releases every open page. */
   closeAll(): Promise<void>;
-  /** Closes every open page, then throws when a page logged an error (`assertNoBrowserErrors`). */
+  /** Releases every open page, then throws when a page logged an error (`assertNoBrowserErrors`). */
   check(): Promise<void>;
 }
 
+// ------------------------------------------------------------------ the render server (pve serve)
+
+/** The state file of the render server (`pve serve run` writes it, the commands read it). */
+export const SERVE_FILE = path.join(ROOT, 'out/cache/serve.json');
+/** Its mtime is the last use of the render server: the server stops after its idle time. */
+export const SERVE_USED = path.join(ROOT, 'out/cache/serve.used');
+export interface ServeState { pid: number; url: string; cdp: string; angle: string; profile: string; since: string; idleMin: number }
+/** The ANGLE backend of the Chrome that these flags launch: a server serves only the commands of its backend. */
+export const angleOf = () => process.env.PVE_ANGLE ?? ANGLE[process.platform] ?? 'default';
+/** Idle warm pages that the server keeps (the least recently used one closes first). */
+const WARM_PAGES = 3;
+
+/** The state of a running render server, or null (a state file of a process that is gone is removed). */
+export function readServe(): ServeState | null {
+  let s: ServeState;
+  try { s = JSON.parse(readFileSync(SERVE_FILE, 'utf8')) as ServeState; } catch { return null; }
+  if (alive(s.pid)) return s;
+  rmSync(SERVE_FILE, { force: true });
+  return null;
+}
+
+/** The newest mtime of the files that a page loads: the app, the engine, the core and the project (not its out/ and site/). */
+function sourceStamp(project: string): number {
+  let newest = 0;
+  const walk = (dir: string) => {
+    let names: string[];
+    try { names = readdirSync(dir); } catch { return; }
+    for (const n of names) {
+      if (n === 'out' || n === 'site' || n === 'node_modules' || n.startsWith('.')) continue;
+      const f = path.join(dir, n);
+      const s = statSync(f);
+      if (s.isDirectory()) walk(f);
+      else if (s.mtimeMs > newest) newest = s.mtimeMs;
+    }
+  };
+  for (const d of ['app/src', 'app/index.html', 'packages/engine/src', 'packages/core/src', `projects/${project}`]) {
+    const f = path.join(ROOT, d);
+    if (d.endsWith('.html')) newest = Math.max(newest, statSync(f).mtimeMs);
+    else walk(f);
+  }
+  return newest;
+}
+
+/** The URL of the export page of `project` with these options. */
+function pageUrl(url: string, project: string, o: OpenOptions): string {
+  const scale = o.scale ?? 1;
+  return `${url}/?export=1&project=${encodeURIComponent(project)}${o.only ? `&only=${o.only}` : ''}${scale !== 1 ? `&scale=${scale}` : ''}${o.hdr === 'float' ? '&hdr=float' : ''}`;
+}
+
+/** What a page of the server holds: its lease (the pid of the command that uses it), the source stamp it loaded, its last use. */
+type WarmWindow = PveWindow & { __pveLease?: number | null; __pveStamp?: number; __pveUsed?: number };
+
+/** Hands a warm page back to the server, then closes the least recently used idle warm pages over WARM_PAGES. */
+async function handBack(ctx: BrowserContext, page: Page): Promise<void> {
+  await page.evaluate(() => { const w = window as unknown as WarmWindow; w.__pveLease = null; w.__pveUsed = Date.now(); }).catch(() => {});
+  const idle: { page: Page; used: number }[] = [];
+  for (const p of ctx.pages()) {
+    const used = await p.evaluate(() => { const w = window as unknown as WarmWindow; return w.__pveStamp !== undefined && !w.__pveLease ? w.__pveUsed ?? 0 : -1; }).catch(() => -1);
+    if (used >= 0) idle.push({ page: p, used });
+  }
+  idle.sort((a, b) => b.used - a.used);
+  for (const { page: p } of idle.slice(WARM_PAGES)) await p.close().catch(() => {});
+}
+
+/** Takes a warm page of the server for `target` that loaded the current sources, or null. A page with stale sources closes. */
+async function leaseWarm(ctx: BrowserContext, target: string, stamp: number): Promise<Page | null> {
+  for (const p of ctx.pages()) {
+    if (p.url() !== target) continue;
+    const got = await p.evaluate(({ pid, stamp }) => {
+      const w = window as unknown as WarmWindow;
+      if (w.__pveStamp === undefined) return 'booting';
+      if (w.__pveLease && w.__pveLease !== pid) return w.__pveLease;
+      if (w.__pveStamp !== stamp) return 'stale';
+      w.__pveLease = pid;
+      return 'ok';
+    }, { pid: process.pid, stamp }).catch(() => 'gone');
+    if (got === 'ok') return p;
+    if (got === 'stale') { await p.close().catch(() => {}); continue; }
+    // a lease of a command that is gone: take the page over
+    if (typeof got === 'number' && !alive(got)) {
+      const taken = await p.evaluate(({ pid, old, stamp }) => {
+        const w = window as unknown as WarmWindow;
+        if (w.__pveLease !== old || w.__pveStamp !== stamp) return false;
+        w.__pveLease = pid;
+        return true;
+      }, { pid: process.pid, old: got, stamp }).catch(() => false);
+      if (taken) return p;
+    }
+  }
+  return null;
+}
+
+/** Opens a page on the render server: a warm page when `o.warm` and one is free, else a new page. */
+async function openOnServer(ctx: BrowserContext, url: string, project: string, o: OpenOptions): Promise<OpenPage> {
+  writeFileSync(SERVE_USED, '');
+  const target = pageUrl(url, project, o);
+  const stamp = o.warm ? sourceStamp(project) : 0;
+  const logs: string[] = [];
+  const warm = o.warm ? await leaseWarm(ctx, target, stamp) : null;
+  if (warm) {
+    const detach = listen(warm, logs);
+    if (process.env.PVE_VERBOSE) console.error('pve: warm page of the render server');
+    return { browser: ctx, page: warm, logs, release: async () => { detach(); await handBack(ctx, warm); } };
+  }
+  const page = await ctx.newPage();
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  const detach = listen(page, logs);
+  try {
+    await bootPage(page, target, o, logs);
+  } catch (e) {
+    if (logs.length) console.error('BROWSER LOG:\n' + logs.slice(0, 40).join('\n'));
+    await page.close().catch(() => {});
+    throw e;
+  }
+  if (!o.warm) return { browser: ctx, page, logs, release: async () => { detach(); await page.close().catch(() => {}); } };
+  await page.evaluate(({ pid, stamp }) => { const w = window as unknown as WarmWindow; w.__pveLease = pid; w.__pveStamp = stamp; }, { pid: process.pid, stamp });
+  return { browser: ctx, page, logs, release: async () => { detach(); await handBack(ctx, page); } };
+}
+
 /**
- * Runs `fn` with pages of `project`: starts the server if needed, closes every page (log first) and the server after.
- * Fails on browser errors of any page.
+ * Runs `fn` with pages of `project`. With a render server (`pve serve`, same ANGLE backend) the pages open in its Chrome
+ * on its dev server; else the command starts its own server and Chrome. Releases every page (log first) after, and
+ * fails on browser errors of any page. `PVE_NO_SERVE=1`, `url`, `headed` and `gpuCanvas` never use the render server.
  */
 export async function withPages<T>(project: string, o: OpenOptions & { url?: string }, fn: (pages: Pages) => Promise<T>): Promise<T> {
-  const { url, stop } = await ensureServer(o.url);
+  const serve = o.url || o.headed || o.gpuCanvas || process.env.PVE_NO_SERVE ? null : readServe();
+  let ctx: BrowserContext | null = null, cdp: Browser | null = null;
+  if (serve && serve.angle === angleOf()) {
+    cdp = await deadline(chromium.connectOverCDP(serve.cdp), 10_000, 'connecting to the render server');
+    ctx = cdp.contexts()[0] ?? null;
+    if (!ctx) throw new Error(`the render server (pid ${serve.pid}) has no browser context: stop it with pve serve stop`);
+  }
+  const { url, stop } = serve && ctx ? { url: serve.url, stop: () => {} } : await ensureServer(o.url);
   const open = new Set<OpenPage>();
   const logs: string[] = [];
   const pages: Pages = {
     async open(more = {}) {
-      const p = await openPage(url, project, { ...o, ...more });
+      const p = ctx ? await openOnServer(ctx, url, project, { ...o, ...more }) : await openPage(url, project, { ...o, ...more });
       open.add(p);
       return p;
     },
@@ -305,7 +481,7 @@ export async function withPages<T>(project: string, o: OpenOptions & { url?: str
       if (!open.delete(p)) return;
       if (p.logs.length) console.error('BROWSER LOG:\n' + p.logs.slice(0, 40).join('\n'));
       logs.push(...p.logs);
-      await closeBrowser(p.browser);
+      await p.release();
     },
     async closeAll() {
       for (const p of [...open]) await pages.close(p);
@@ -322,6 +498,8 @@ export async function withPages<T>(project: string, o: OpenOptions & { url?: str
   } finally {
     await pages.closeAll();
     stop();
+    // disconnects from the render server (its Chrome keeps running); the end of a long command is a use too
+    if (cdp) { writeFileSync(SERVE_USED, ''); await cdp.close().catch(() => {}); }
   }
 }
 

@@ -102,7 +102,7 @@ The sprites and `timeline.json` are not in git. They are assets of the GitHub re
 { "v": 1, "release": "sardine-assets", "assets": [ { "path": "ca_1.png", "sha256": "...", "size": 1234 } ] }
 ```
 
-`path` is the file name under `video/assets/`. It is also the name of the release asset. Release assets have no folders, so `video/assets/` must have no folders.
+`path` is the file name under `video/assets/`. It is also the name of the release asset. Release assets have no folders: only the files directly in `video/assets/` are release assets. A folder of `video/assets/` (such as `assets/ui/` with the interface code of a scene) stays in git, and `pack` and `fetch` do not touch it.
 
 ### `pve assets pack`
 
@@ -110,7 +110,7 @@ The sprites and `timeline.json` are not in git. They are assets of the GitHub re
 bun run pve assets pack -p <id>
 ```
 
-The command writes `video/assets.json` from the files in `video/assets/`. It prints the `gh release upload` command and the `gh release create` command for a new release. It does not run them. Run the upload yourself after `pack`, and commit `video/assets.json`.
+The command writes `video/assets.json` from the files directly in `video/assets/`. It prints the `gh release upload` command and the `gh release create` command for a new release. It does not run them. Run the upload yourself after `pack`, and commit `video/assets.json`.
 
 ### `pve assets fetch`
 

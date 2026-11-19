@@ -144,6 +144,8 @@ function projects(): Plugin {
 export default defineConfig({
   root: '.',
   publicDir: 'public',
+  // PVE_VITE_CACHE: the private dependency cache of a headless command's server (packages/cli/src/browser.ts ensureServer)
+  cacheDir: process.env.PVE_VITE_CACHE,
   plugins: [projects(), soulwindow(SW_OPTIONS)],
   // PVE_NO_HMR=1: no live reload (export renders must not reload mid-run when a file changes)
   server: {

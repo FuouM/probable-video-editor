@@ -41,6 +41,8 @@ export class NleStudio {
 
   /** Resolves when the mix is decoded (the loading screen waits for it). */
   readonly audioReady: Promise<void>;
+  /** The project frame rate from video.json (30 when it gives none). */
+  private readonly videoFps: number;
 
   constructor(
     private engine: Engine,
@@ -51,6 +53,8 @@ export class NleStudio {
     audio: StudioAudioEngine,
   ) {
     this.t = initialT ?? 0;
+    const v = project.video;
+    this.videoFps = (v && typeof v === 'object' && 'fps' in v && typeof v.fps === 'number') ? v.fps : 30;
     const savedFollow = localStorage.getItem(NleStudio.STORAGE_FOLLOW);
     this.follow = savedFollow !== null ? savedFollow === 'true' : true;
     const savedSpeed = localStorage.getItem(NleStudio.STORAGE_SPEED);
@@ -180,7 +184,7 @@ export class NleStudio {
       },
       engine: this.engine,
       canvas: this.canvas,
-      fps: (project.video && typeof project.video === 'object' && 'fps' in project.video && typeof project.video.fps === 'number') ? project.video.fps : 30,
+      fps: this.videoFps,
       duration: this.engine.duration,
       timelineEntries: this.timelineEntries,
     });
@@ -188,7 +192,7 @@ export class NleStudio {
     this.perfGraph = new PerfGraph();
     const tlTitle = document.getElementById('tl-title-info');
     if (tlTitle) {
-      const fps = (project.video && typeof project.video === 'object' && 'fps' in project.video && typeof project.video.fps === 'number') ? project.video.fps : 30;
+      const fps = this.videoFps;
       const bpm = project.timing?.bpm ?? 200;
       tlTitle.textContent = `[${fps} fps · ${Math.round(bpm)} BPM]`;
     }
@@ -378,10 +382,10 @@ export class NleStudio {
         this.seek(this.t - (ev.shiftKey ? 5 : 1));
       } else if (ev.key === '.') {
         ev.preventDefault();
-        this.seek(this.t + 1 / 30);
+        this.seek((Math.round(this.t * this.videoFps) + 1) / this.videoFps);
       } else if (ev.key === ',') {
         ev.preventDefault();
-        this.seek(this.t - 1 / 30);
+        this.seek((Math.round(this.t * this.videoFps) - 1) / this.videoFps);
       } else if (ev.key === 'l' || ev.key === 'L') {
         ev.preventDefault();
         this.toggleLoop();
@@ -495,11 +499,18 @@ export class NleStudio {
       const isDownbeat = beatInBar === 1;
       this.metronome.tick(this.playing, beat, isDownbeat);
 
-      // Render frame in engine with timing
-      const t0 = performance.now();
-      this.engine.render(this.t, 1 / 60);
-      const renderMs = performance.now() - t0;
-      this.renderMsAvg = this.renderMsAvg * 0.85 + renderMs * 0.15;
+      // Render frame in engine with timing. A frame is a pure function of t: a paused frame that nothing changed since
+      // it was drawn (no reload, no other render) stays on the canvas, and the GPU rests. A WebCodecs export owns the
+      // engine and the canvas: a preview render between its frames would seek the scenes to the playhead and back.
+      let renderMs = 0;
+      if (!this.renderDialog.isWebCodecsRendering() && (this.playing || this.t !== this.drawnT || this.engine.generation !== this.drawnGen)) {
+        const t0 = performance.now();
+        this.engine.render(this.t, 1 / 60);
+        renderMs = performance.now() - t0;
+        this.renderMsAvg = this.renderMsAvg * 0.85 + renderMs * 0.15;
+        this.drawnT = this.t;
+        this.drawnGen = this.engine.generation;
+      }
       // a reload of an edited scene may run in the time this frame left over
       const until = tickT + NleStudio.FRAME_MS;
       this.engine.paceLoads(until);
@@ -541,6 +552,9 @@ export class NleStudio {
   /** Clips whose scene module changed: they draw the old scene until pump reloads them. */
   private stale = new Set<TimelineEntry>();
   private overlayStale = false;
+  /** The time and the engine generation of the frame on the canvas (see startTick). */
+  private drawnT = -1;
+  private drawnGen = -1;
   private reloadTimer = 0;
   private pumping = false;
   /** Resolves in the next tick that has time left after its frame (see frameBudget). */

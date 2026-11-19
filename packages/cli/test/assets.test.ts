@@ -46,9 +46,10 @@ test('pack writes the manifest with SHA-256, size and the release tag, and print
   expect(readFileSync(path.join(ref.dir, 'video/assets.json'), 'utf8').split('\n')).toHaveLength(9);
 });
 
-test('pack refuses a folder inside video/assets/ (release assets are flat)', () => {
-  mkdirSync(path.join(assets(), 'sub'));
-  expect(() => packAssets(ref)).toThrow(/has folders \(sub\)/);
+test('pack leaves out the folders of video/assets/ (they stay in git)', () => {
+  mkdirSync(path.join(assets(), 'ui'));
+  writeFileSync(path.join(assets(), 'ui', 'desk.html'), '<p>');
+  expect(packAssets(ref).manifest.assets.map((a) => a.path)).toEqual(['a.png', 'timeline.json']);
 });
 
 test('verify reports a missing file and a changed file', () => {
