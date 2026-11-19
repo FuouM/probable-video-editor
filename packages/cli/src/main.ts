@@ -6,7 +6,7 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync, unlinkSync, watch, w
 import path from 'node:path';
 import { parseArgs, type ParseArgsOptionsConfig } from 'node:util';
 import { runBench } from './bench';
-import { ROOT, withPage } from './browser';
+import { readServe, ROOT, withPage } from './browser';
 import { addBoard, BOARD_T0, renderBoard } from './board';
 import { checkProject } from './check';
 import { importAup } from './aup';
@@ -33,8 +33,11 @@ import { SUB_FORMATS } from 'lyricsync/formats';
 import { replaceFirstFrame } from './first-frame';
 import { KIT_FILE, kitIndex } from './kit';
 import { findJob, logPath, MAX_WAIT_S, startJob, waitJob, type WaitResult } from './jobs';
+import { CHAT_DIR, clearRoom, formatMessage, openRoom, readMessages, roomStatus, sendMessage, takeUnread, waitUnread, type ChatMsg } from './chat';
 import { decodePng, diffImages, type Image } from './png';
 import { findCulprit, runOrder } from './order';
+import { runNan } from './nan';
+import { runServe, servePages, startServe, stopServe } from './serve';
 import { runDeterminism, seededTimes } from './determinism';
 import { GOLDEN_PROJECT, runGolden } from './golden';
 import { verifyExport } from './verify-export';
@@ -143,6 +146,13 @@ function resolveBoardFile(p: Project, file: string): { abs: string; rel: string 
   const rel = path.relative(ROOT, abs).split(path.sep).join('/');
   if (rel.startsWith('..') || !existsSync(abs)) throw new UsageError(`${file}: no such file under ${path.relative(process.cwd(), p.dir)}`);
   return { abs, rel };
+}
+
+/** The --crop option: x,y,w,h in 1920 x 1080 px. */
+function cropRect(s: string): [number, number, number, number] {
+  const [x, y, w, h, ...rest] = s.split(',').map(Number);
+  if (rest.length || [x, y, w, h].some((v) => !Number.isFinite(v)) || !(w! > 0) || !(h! > 0)) throw new UsageError('--crop takes x,y,w,h in 1920x1080 px');
+  return [x!, y!, w!, h!];
 }
 
 /** Prints the log of a waited job and returns its exit code. A job that still runs: the last `tail` lines, EXIT.running. */
@@ -415,13 +425,11 @@ const COMMANDS: Record<string, Command> = {
       const dir = path.resolve(str(a, 'out', path.join(p.dir, 'out/stills')));
       const times = [...expandTimes(p, a.positionals, step, 240), ...(tr ? transitionTimes(p, tr, num(a, 'count', 6)) : [])];
       const items = times.map((t) => ({ t, file: stillFile(dir, t) }));
-      const cropOpt = typeof a.values.crop === 'string' ? a.values.crop.split(',').map(Number) : undefined;
-      if (cropOpt && (cropOpt.length !== 4 || cropOpt.some((v) => !Number.isFinite(v)) || cropOpt[2]! <= 0 || cropOpt[3]! <= 0)) throw new UsageError('--crop takes x,y,w,h in 1920x1080 px');
-      const crop = cropOpt as [number, number, number, number] | undefined;
+      const crop = typeof a.values.crop === 'string' ? cropRect(a.values.crop) : undefined;
       const sheetFile = typeof a.values.sheet === 'string' ? path.resolve(a.values.sheet) : crop ? path.join(dir, 'sheet.png') : undefined;
       const cols = num(a, 'cols', times.length <= 4 ? times.length : 2);
       const precision = hdrOf(a);
-      const counts = await withPage(servedId(p), { scale: o.scale, only: onlyOf(p, times), hdr: precision }, async (page) => {
+      const counts = await withPage(servedId(p), { scale: o.scale, only: onlyOf(p, times), hdr: precision, warm: true }, async (page) => {
         const c = await stills(page, items, o);
         if (sheetFile) {
           const tiles: SheetTile[] = times.map((t) => ({ t, label: frameLabel(p, t) }));
@@ -466,6 +474,46 @@ const COMMANDS: Record<string, Command> = {
       const out = path.resolve(str(a, 'out', path.join(p.dir, 'out/boards', `${id}.png`)));
       const count = await withPage(servedId(p), { scale: o.scale, only: 'none' }, (page) => renderBoard(page, `/${rel}`, id, out, num(a, 'at', 0.5), o));
       console.log(`${path.relative(process.cwd(), out)}  ${count} sub-frame${count === 1 ? '' : 's'}`);
+      return EXIT.ok;
+    },
+  },
+  props: {
+    args: '<props-file> [model...]',
+    summary: 'a contact sheet of the models of a scene module: one row per model, one tile per view (front, back, side, top, wire) under a neutral studio light on a grid, each labelled with its size in metres and its triangles. The file exports a PropTable through propBoard() of @pve/engine/props as its default scene (see docs/ENGINE.md)',
+    options: {
+      ...PROJECT_OPT, ...SAMPLE_OPT,
+      sheet: sOpt('PNG file (default <project>/out/props/<file>.png)'),
+      views: sOpt('views to show, a list of front,back,side,top,wire (default all)'),
+      cols: sOpt('columns of the sheet (default: the number of views)'),
+      crop: sOpt('x,y,w,h in frame px (1920 x 1080): each tile is that part of the frame, zoomed in whole pixels'),
+    },
+    async run(a) {
+      const [file, ...names] = a.positionals;
+      if (!file) throw new UsageError('props takes a scene module under the project folder, then model names (default all)');
+      const p = await openProject(projectOf(a));
+      const { abs, rel } = resolveBoardFile(p, file);
+      const o = { ...sampling(a, '1'), fps: p.resolved.fps };
+      const id = slug(path.basename(abs, path.extname(abs)));
+      const params: Record<string, unknown> = {};
+      if (names.length) params.names = names;
+      if (typeof a.values.views === 'string') params.views = a.values.views.split(',').map((s) => s.trim());
+      const crop = typeof a.values.crop === 'string' ? cropRect(a.values.crop) : undefined;
+      const sheetFile = path.resolve(str(a, 'sheet', path.join(p.dir, 'out/props', `${id}.png`)));
+      await withPage(servedId(p), { scale: o.scale, only: 'none' }, async (page) => {
+        // the board clip is long enough for any table; tile k is second k of it
+        await addBoard(page, `/${rel}`, id, BOARD_T0, 1000, params);
+        // the global that propBoard() of @pve/engine/props writes (PROPS_GLOBAL there)
+        const info = await page.evaluate(() => Reflect.get(globalThis, '__pveProps') as { views: string[]; models: { name: string; tris: number; size: number[] }[] } | undefined);
+        if (!info) throw new UsageError(`${file}: its default export is not a propBoard() of @pve/engine/props`);
+        const V = info.views.length;
+        const tiles: SheetTile[] = info.models.flatMap((m, i) => info.views.map((v, j) => ({
+          t: BOARD_T0 + i * V + j + 0.5,
+          label: `${m.name}  ${v}  ${m.size.map((s) => s.toFixed(3)).join(' x ')} m  ${Math.round(m.tris)} tris`,
+        })));
+        await sheet(page, tiles, num(a, 'cols', V), sheetFile, o, crop);
+        for (const m of info.models) console.log(`${m.name.padEnd(16)} ${m.size.map((s) => s.toFixed(3)).join(' x ')} m  ${Math.round(m.tris)} tris`);
+      });
+      console.log(path.relative(process.cwd(), sheetFile));
       return EXIT.ok;
     },
   },
@@ -562,7 +610,7 @@ const COMMANDS: Record<string, Command> = {
         label = 'song';
       }
       const out = path.resolve(str(a, 'out', path.join(p.dir, `out/look/${slug(label)}.png`)));
-      await withPage(servedId(p), { scale: o.scale, only }, (page) => sheet(page, tiles, cols, out, o));
+      await withPage(servedId(p), { scale: o.scale, only, warm: true }, (page) => sheet(page, tiles, cols, out, o));
       console.log(`${path.relative(process.cwd(), out)}  (${tiles.length} tiles)`);
       return EXIT.ok;
     },
@@ -597,7 +645,7 @@ const COMMANDS: Record<string, Command> = {
           const c = clips.find((x) => x.id === id)!;
           return sungSyllables(p, c.start, c.end).map((s) => ({ ...s, clip: id }));
         });
-        const ms = await withPage(servedId(p), { scale: o.scale, only: a.positionals.join(',') }, (page) => marksAt(page, items.map((s) => s.t), o));
+        const ms = await withPage(servedId(p), { scale: o.scale, only: a.positionals.join(','), warm: true }, (page) => marksAt(page, items.map((s) => s.t), o));
         const checks: LyricCheck[] = items.map((s, i) => ({ t: s.t, clip: s.clip, syl: s.syl, word: s.word, state: judgeSyllable(ms[i]!, s.syl, s.word) }));
         const bad = checks.filter((c) => c.state !== 'shown');
         if (a.values.json) print(checks);
@@ -615,7 +663,7 @@ const COMMANDS: Record<string, Command> = {
 
       if (a.values.cams || a.values['all-cams'] || a.values.metrics) {
         const wantCams = !!(a.values.cams || a.values['all-cams']);
-        const frames = await withPage(servedId(p), { scale: o.scale, only }, (page) => framesAt(page, times, o, wantCams));
+        const frames = await withPage(servedId(p), { scale: o.scale, only, warm: true }, (page) => framesAt(page, times, o, wantCams));
         const onlyJumps = a.values.jumps === true;
         const f3 = (v: number) => v.toFixed(3), f2 = (v: number) => v.toFixed(2);
         const report: unknown[] = [];
@@ -675,7 +723,7 @@ const COMMANDS: Record<string, Command> = {
       if (fixed && (fixed.length !== 4 || fixed.some((v) => !Number.isFinite(v)))) throw new UsageError('--rect takes x,y,w,h in frame px');
       const pad = num(a, 'pad', 24), zoom = num(a, 'zoom', 2);
 
-      await withPage(servedId(p), { scale: o.scale, only }, async (page) => {
+      await withPage(servedId(p), { scale: o.scale, only, warm: true }, async (page) => {
         const ms = await marksAt(page, times, o);
         if (!target && !fixed) {
           // list every mark of each time
@@ -1084,7 +1132,7 @@ const COMMANDS: Record<string, Command> = {
       const f0 = stillFile(dir, t0);
       const fLast = stillFile(dir, tLast);
       const items = [{ t: t0, file: f0 }, { t: tLast, file: fLast }];
-      await withPage(servedId(p), { scale: o.scale, only: onlyOf(p, [t0, tLast]) }, (page) => stills(page, items, o));
+      await withPage(servedId(p), { scale: o.scale, only: onlyOf(p, [t0, tLast]), warm: true }, (page) => stills(page, items, o));
       const { ok, line } = diffLine(decodePng(readFileSync(f0)), decodePng(readFileSync(fLast)), num(a, 'tol', 0.28));
       console.log(`seam ${p.id}: ${line}`);
       return ok ? EXIT.ok : EXIT.error;
@@ -1147,6 +1195,71 @@ const COMMANDS: Record<string, Command> = {
       return rows.some((r) => !r.same) ? EXIT.error : EXIT.ok;
     },
   },
+  nan: {
+    args: '<time|from..to...>',
+    summary: 'find the draw call that writes NaN or Inf into a float target (it shows as a black dot or block after the next 8-bit pass). Renders each time with a readback after each draw: a draw that adds texels that are not finite is a source; prints its target, material, the box in frame px and where the page called it (file:line). Exit 1 when a frame has such texels',
+    options: {
+      ...PROJECT_OPT, ...JSON_OPT, ...PRECISION_OPT,
+      at: sOpt('x,y in 1920x1080 px (y down): also print the value of this point after each draw that changes it (follow a dot through the passes)'),
+      step: sOpt('seconds between the times of a range (default 0.1)'),
+    },
+    async run(a) {
+      const p = await openProject(projectOf(a));
+      if (!a.positionals.length) throw new UsageError('nan needs at least one time (or from..to)');
+      const times = expandTimes(p, a.positionals, num(a, 'step', 0.1), 60);
+      let at: [number, number] | null = null;
+      if (typeof a.values.at === 'string') {
+        const v = a.values.at.split(',').map(Number);
+        if (v.length !== 2 || v.some((x) => !Number.isFinite(x))) throw new UsageError('--at takes x,y in 1920x1080 px');
+        at = [v[0]!, v[1]!];
+      }
+      const box = (b: [number, number, number, number]) => `${b[0]},${b[1]}-${b[2]},${b[3]}`;
+      const frames = await runNan({ project: servedId(p), only: onlyOf(p, times), hdr: hdrOf(a), times, at }, (f) => {
+        if (a.values.json) { console.log(JSON.stringify(f)); return; }
+        console.log(`${frameLabel(p, f.t)}: ${f.draws} draws, ${f.sources.length ? `${f.sources.length} draw${f.sources.length === 1 ? '' : 's'} write NaN/Inf` : 'all float targets finite'}`);
+        // the first draw is the source; a later draw into another target can add texels only because it reads the first one's
+        f.sources.forEach((d, i) => console.log(`  ${i === 0 ? 'SOURCE' : 'also  '} call ${d.call}: +${d.added} (${d.nan} NaN, ${d.inf} Inf)  box ${box(d.box)}  ${d.key}\n    at ${d.from}${i === 0 ? '' : '  (may only read an earlier source)'}`));
+        if (f.later.length) console.log(`  ${f.later.length} later draws keep or carry them (first: call ${f.later[0]!.call} ${f.later[0]!.key})`);
+        for (const s of f.trace) console.log(`  @ call ${s.call}: ${s.value.map((v) => (Number.isInteger(v) ? String(v) : v.toPrecision(4))).join(' ')}  ${s.key}  at ${s.from}`);
+      });
+      return frames.some((f) => f.sources.length > 0) ? EXIT.error : EXIT.ok;
+    },
+  },
+  serve: {
+    args: 'start | stop | status | run',
+    summary: 'the render server: keeps a dev server and a headless Chrome running between commands. While it runs, every command opens its pages in that Chrome (no start of Vite and Chrome), and still, look, probe, seam and nan reuse a warm page of the same clips (no page boot). A warm page with older sources than the files closes and boots again. start: in the background, prints the state (and returns at once when one runs); stop; status: the state and the pages; run: in this process. It serves the commands of its ANGLE backend only (PVE_ANGLE). PVE_NO_SERVE=1 makes a command start its own',
+    options: {
+      ...JSON_OPT,
+      idle: sOpt('minutes without a command, then the server stops (default 30)'),
+    },
+    async run(a) {
+      const [sub, ...rest] = a.positionals;
+      if (rest.length) throw new UsageError('serve takes one of start, stop, status, run');
+      const idle = num(a, 'idle', 30);
+      if (!(idle > 0)) throw new UsageError('--idle takes a positive number of minutes');
+      if (sub === 'run') { await runServe(idle); return EXIT.ok; }
+      if (sub === 'start') {
+        const s = await startServe(idle);
+        console.log(a.values.json ? JSON.stringify(s) : `render server pid ${s.pid}: ${s.url}, Chrome ${s.cdp} (${s.angle}), since ${s.since}, stops after ${s.idleMin} min idle`);
+        return EXIT.ok;
+      }
+      if (sub === 'stop') {
+        const s = stopServe();
+        console.log(s ? `stopped the render server (pid ${s.pid})` : 'no render server runs');
+        return EXIT.ok;
+      }
+      if (sub === 'status') {
+        const s = readServe();
+        if (!s) { console.log(a.values.json ? 'null' : 'no render server runs (start one with pve serve start)'); return EXIT.ok; }
+        const ps = await servePages(s);
+        if (a.values.json) { console.log(JSON.stringify({ ...s, pages: ps })); return EXIT.ok; }
+        console.log(`render server pid ${s.pid}: ${s.url}, Chrome ${s.cdp} (${s.angle}), since ${s.since}, stops after ${s.idleMin} min idle`);
+        for (const pg of ps) console.log(`  ${pg.project}  clips ${pg.only}  ${pg.leased ? `in use by pid ${pg.leased}` : pg.warm ? `warm, idle ${pg.idleS} s` : 'in use (not warm)'}`);
+        return EXIT.ok;
+      }
+      throw new UsageError('serve takes one of start, stop, status, run');
+    },
+  },
   wait: {
     args: '[id]',
     summary: 'block until a job ends (default: the newest job), then print its log and exit with its exit code. It returns on the poll tick after the command ends. When the job still runs at the timeout: print the last lines of the log and exit 3. Wait again, or stop it with taskkill /PID <pid> /T /F',
@@ -1159,6 +1272,102 @@ const COMMANDS: Record<string, Command> = {
       const timeout = num(a, 'timeout', MAX_WAIT_S);
       if (!(timeout > 0)) throw new UsageError('--timeout takes a positive number of seconds');
       return reportJob(await waitJob(findJob(a.positionals[0]), timeout), num(a, 'tail', 15));
+    },
+  },
+  chat: {
+    args: '<send|wait|read|status|clear>',
+    summary: `a chat room for the agents of other harnesses and the human, in <project>/${CHAT_DIR}/<room>.jsonl (git ignores it). send appends a message. wait blocks until a message for --as comes (from another participant, to --as or to all), prints it and exits 0, or exits 3 at the timeout: wait again. read prints messages, status the counts, clear empties the room`,
+    options: {
+      ...PROJECT_OPT,
+      as: sOpt('your participant id, such as claude, designer or human (send, wait and read --unread need it)'),
+      room: sOpt('room name: letters, digits, - and _ (default main)'),
+      to: sOpt('send: the participant id to send to, or * (default: all)'),
+      message: { type: 'string', short: 'm', desc: 'send: the body (markdown). -m - reads it from stdin' },
+      file: sOpt('send: read the body from this markdown file'),
+      files: sOpt('send: paths from the repository root to attach, separated by commas'),
+      'needs-human': bOpt('send: the sender waits for the human director'),
+      timeout: sOpt(`wait: seconds (default ${MAX_WAIT_S}; 0: no timeout). Exit 3 on timeout`),
+      after: sOpt('wait: take the messages after this seq, not after your cursor'),
+      peek: bOpt('wait: do not move your cursor'),
+      last: sOpt('read: the last n messages (default 10). Cursors do not move'),
+      unread: bOpt('read: your unread messages, and move your cursor'),
+      all: bOpt('read: all messages. Cursors do not move'),
+      ...JSON_OPT,
+    },
+    async run(a) {
+      const [action, ...more] = a.positionals;
+      if (more.length) throw new UsageError('chat takes one action');
+      const ref = findProject(projectOf(a));
+      let room;
+      try {
+        room = openRoom(ref.dir, str(a, 'room', 'main'));
+      } catch (e) {
+        throw new UsageError(e instanceof Error ? e.message : String(e));
+      }
+      const me = str(a, 'as', '');
+      const json = a.values.json === true;
+      const show = (ms: ChatMsg[]) => {
+        for (const m of ms) console.log(json ? JSON.stringify(m) : `${formatMessage(m)}\n`);
+      };
+      const needMe = () => {
+        if (!me) throw new UsageError(`chat ${action} needs --as <id>`);
+      };
+      if (action === 'send') {
+        needMe();
+        const text = a.values.message, file = a.values.file;
+        if (typeof text === 'string' && typeof file === 'string') throw new UsageError('send takes -m or --file, not both');
+        const body = typeof file === 'string' ? readFileSync(path.resolve(file), 'utf8') : text === '-' ? await Bun.stdin.text() : typeof text === 'string' ? text : '';
+        if (!body.trim()) throw new UsageError('send needs a body: -m <text>, -m - (stdin) or --file <md>');
+        const files = str(a, 'files', '').split(',').map((f) => f.trim()).filter(Boolean);
+        if (files.some((f) => path.isAbsolute(f))) throw new UsageError('--files takes paths from the repository root');
+        const to = str(a, 'to', '') || undefined;
+        const m = sendMessage(room, { from: me, to, body, files, needsHuman: a.values['needs-human'] === true });
+        console.log(json ? JSON.stringify(m) : `sent #${m.seq}`);
+        return EXIT.ok;
+      }
+      if (action === 'wait') {
+        needMe();
+        const timeout = num(a, 'timeout', MAX_WAIT_S);
+        if (!(timeout >= 0)) throw new UsageError('--timeout takes 0 (no timeout) or a positive number of seconds');
+        const after = a.values.after === undefined ? undefined : num(a, 'after', 0);
+        const got = await waitUnread(room, me, timeout, { after, peek: a.values.peek === true });
+        if (!got.length) {
+          console.log(`chat ${room.name}: no message for ${me} after ${timeout} s`);
+          return EXIT.running;
+        }
+        show(got);
+        return EXIT.ok;
+      }
+      if (action === 'read') {
+        if ([a.values.unread, a.values.all, a.values.last !== undefined].filter(Boolean).length > 1) throw new UsageError('read takes one of --unread, --all, --last');
+        if (a.values.unread) {
+          needMe();
+          const got = takeUnread(room, me);
+          if (!got.length && !json) console.log(`chat ${room.name}: no unread message for ${me}`);
+          show(got);
+          return EXIT.ok;
+        }
+        const last = num(a, 'last', 10);
+        if (!Number.isInteger(last) || last < 1) throw new UsageError('--last takes a whole number of at least 1');
+        const all = readMessages(room);
+        show(a.values.all ? all : all.slice(-last));
+        return EXIT.ok;
+      }
+      if (action === 'status') {
+        const s = roomStatus(room);
+        if (json) { console.log(JSON.stringify(s)); return EXIT.ok; }
+        const last = s.last ? `, last #${s.last.seq} from ${s.last.from} at ${s.last.ts}${s.last.needsHuman ? ', NEEDS HUMAN' : ''}` : '';
+        console.log(`chat ${s.room}: ${s.messages} messages${last}`);
+        const unread = Object.entries(s.unread);
+        if (unread.length) console.log(`unread: ${unread.map(([p, n]) => `${p} ${n}`).join(', ')}`);
+        return EXIT.ok;
+      }
+      if (action === 'clear') {
+        clearRoom(room);
+        console.log(`chat ${room.name}: cleared`);
+        return EXIT.ok;
+      }
+      throw new UsageError('chat takes one of send, wait, read, status, clear');
     },
   },
   golden: {

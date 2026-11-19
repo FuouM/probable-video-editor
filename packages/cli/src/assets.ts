@@ -1,6 +1,7 @@
-// pve assets pack|fetch: the files of video/assets/ are not in git. They are assets of a GitHub release (tag `<id>-assets`),
-// and video/assets.json in git lists each file with its SHA-256 and size. Same idea as the site audio (app/scripts/site-data.ts).
-// Release assets have no folders, so every file sits directly in video/assets/ and its release name is its file name.
+// pve assets pack|fetch: the files directly in video/assets/ are not in git. They are assets of a GitHub release (tag
+// `<id>-assets`), and video/assets.json in git lists each file with its SHA-256 and size. Same idea as the site audio
+// (app/scripts/site-data.ts). Release assets have no folders, so a release asset sits directly in video/assets/ and its
+// release name is its file name. Folders of video/assets/ (such as assets/ui/ with the interface code of a scene) stay in git.
 import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -80,14 +81,11 @@ export function assetsError(ref: ProjectRef, problems: AssetProblem[]): CliError
   });
 }
 
-/** Files in video/assets/, sorted. Throws a CliError for a folder inside it (release assets are flat). */
+/** Files directly in video/assets/, sorted. Folders are not release assets: they stay in git. */
 function listAssets(ref: ProjectRef): string[] {
   const dir = path.join(ref.dir, ASSETS_DIR);
   if (!existsSync(dir)) throw new CliError({ rule: 'assets', message: `no folder ${ASSETS_DIR}/ in the project`, fix: `put the asset files in projects/${ref.id}/${ASSETS_DIR}/` });
-  const entries = readdirSync(dir, { withFileTypes: true });
-  const folders = entries.filter((e) => e.isDirectory()).map((e) => e.name);
-  if (folders.length) throw new CliError({ rule: 'assets', message: `${ASSETS_DIR}/ has folders (${folders.join(', ')}). Release assets have no folders`, fix: 'move the files directly into video/assets/' });
-  return entries.map((e) => e.name).sort();
+  return readdirSync(dir, { withFileTypes: true }).filter((e) => e.isFile()).map((e) => e.name).sort();
 }
 
 export interface PackResult {

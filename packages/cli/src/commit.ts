@@ -21,14 +21,18 @@ export function commitMessage(summary: string, ran: GateResult[], extra: string[
 export function changedPaths(cwd: string, paths: string[]): string[] {
   const isIgnored = loadIgnore(cwd);
   const normPaths = paths.map((p) => p.replaceAll('\\', '/'));
-  const r = git(cwd, 'status', '--porcelain', '--untracked-files=all', '--', ...normPaths);
+  // -z: paths come raw (no quoting, no octal escapes of non-ASCII names), each entry ends with NUL
+  const r = git(cwd, 'status', '--porcelain', '-z', '--untracked-files=all', '--', ...normPaths);
   if (r.code !== 0) throw new CliError({ rule: 'git', message: r.out, fix: 'run the command in a git repository' });
-  const lines = r.out.split('\n').filter(Boolean);
+  const entries = r.out.split('\0');
   const out: string[] = [];
-  for (const line of lines) {
-    const status = line.slice(0, 2);
-    let file = line.slice(3).replace(/^"|"$/g, '').replaceAll('\\', '/');
-    if (file.includes(' -> ')) file = file.split(' -> ')[1]!;
+  for (let i = 0; i < entries.length; i++) {
+    const entry = entries[i]!;
+    if (!entry) continue;
+    const status = entry.slice(0, 2);
+    const file = entry.slice(3).replaceAll('\\', '/');
+    // a rename or copy: the entry holds the new path, the next entry the old one
+    if (status[0] === 'R' || status[0] === 'C') i++;
     if (status === '??' && isIgnored(file)) continue;
     out.push(file);
   }

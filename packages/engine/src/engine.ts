@@ -112,6 +112,11 @@ export class Engine {
   readonly xfade: FSPass;
   readonly accum: FSPass;
   private lastT = -1;
+  /**
+   * Counts every render and every scene or overlay (re)load. A frame is a pure function of t, so a caller that drew t at
+   * generation g and still sees g can skip drawing t again (the studio while paused).
+   */
+  generation = 0;
   lastPost: PostParams = { ...DEFAULT_POST };
   errors: string[] = [];
   /** Suppress the HUD (crop marks, project overlay) — used when rendering plate thumbnails. */
@@ -291,6 +296,7 @@ export class Engine {
         this.errors.push(`[${e.id}] ${rec.error}`);
         console.error(`scene ${e.id} failed`, err);
       }
+      this.generation++;
     })();
     this.loading.set(e.id, p);
     return p;
@@ -334,6 +340,7 @@ export class Engine {
       await overlay.init();
       this.hud = new Hud(overlay);
       this.lastT = -1;
+      this.generation++;
     } catch (err) {
       this.errors.push(`[overlay] ${String((err as Error)?.stack ?? err)}`);
       console.error('overlay reload failed', err);
@@ -385,6 +392,7 @@ export class Engine {
     const r = this.renderer;
     const seeked = this.lastT < 0 || t < this.lastT - 1e-6 || t - this.lastT > Math.max(0.25, dt * 4);
     this.lastT = t;
+    this.generation++;
     let outTex: THREE.Texture;
     let post: PostParams = { ...DEFAULT_POST };
     let n = 1;

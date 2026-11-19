@@ -10,10 +10,10 @@ export const BOARD_T0 = 100_000;
 
 /**
  * Adds the scene module at `src` (a path on the dev server, `/projects/<id>/video/scenes/x.ts`) to the page's timeline as the
- * one-second clip `id` starting at `t0` and loads it. Throws the page's errors.
+ * clip `id` of `len` seconds starting at `t0`, with ctx.params `params`, and loads it. Throws the page's errors.
  */
-export async function addBoard(page: Page, src: string, id: string, t0 = BOARD_T0): Promise<void> {
-  await deadline(page.evaluate(async ([t0, s, name]) => {
+export async function addBoard(page: Page, src: string, id: string, t0 = BOARD_T0, len = 1, params: Record<string, unknown> = {}): Promise<void> {
+  await deadline(page.evaluate(async ([t0, s, name, len, params]) => {
     const w = window as unknown as PveWindow & { __pve: { engine: Record<string, unknown> & { timeline: unknown[] } } };
     const [url, exp] = s.split('#');
     const load = async () => {
@@ -23,11 +23,11 @@ export async function addBoard(page: Page, src: string, id: string, t0 = BOARD_T
       if (!Target) throw new Error(`${s}: no export ${exp ?? 'default'}`);
       return { default: Target };
     };
-    const e = { id: name, scene: name, load, start: t0, end: t0 + 1 };
+    const e = { id: name, scene: name, load, start: t0, end: t0 + len, params };
     w.__pve.engine.timeline.push(e);
     await (w.__pve.engine.loadEntry as (e: unknown) => Promise<void>).call(w.__pve.engine, e);
     w.__pve.engine.hudOff = true;
-  }, [t0, src, id] as const), READY_MS, `loading the board ${src}`);
+  }, [t0, src, id, len, params] as const), READY_MS, `loading the board ${src}`);
   const errors = await page.evaluate(() => (window as unknown as PveWindow).__pve!.errors);
   if (errors.length) throw new Error(errors.join('\n'));
 }

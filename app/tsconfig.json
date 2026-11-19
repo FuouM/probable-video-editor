@@ -1,5 +1,6 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": { "types": ["vite/client"] },
-  "include": ["src", "site", "../projects/*/video/scenes"]
+  "include": ["src", "site", "../projects/*/video/scenes"],
+  "exclude": ["../projects/_*"]
 }

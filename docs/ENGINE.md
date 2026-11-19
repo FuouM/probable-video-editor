@@ -13,7 +13,10 @@ The engine is the workspace package `@pve/engine` (`packages/engine/`, TypeScrip
 - The render commands print `SCENE ERRORS` and browser console errors. A console error (a shader that does not compile, a scene that throws) makes `still`, `look`, `bench` and `render` fail.
 - 4K: add `--scale 2` to `still`, `look` or `render` (`still` then saves full-resolution 3840×2160 PNGs). Check your scene at both scales: downscaled, the 4K frame should look like the 1080p one, only sharper.
 - The commands use the dev server at http://localhost:5173 if it answers, else they start a private one without live reload. A live-reloading server reloads the page when a file changes, so do not edit files during a render on it. Headless commands always start their own server unless `--url` is given. Chrome runs with a persistent profile from a pool of 8: a command takes the first free one, so commands run side by side, and it fails at once when all are busy. A page step that takes too long (`PVE_READY_TIMEOUT` seconds for boot and scene init, default 60; `PVE_FRAME_TIMEOUT` for one frame, default 30) fails the command with exit code 1: a scene that loops is a bug in the scene.
+- Each private server has its own dependency cache from a pool of 8 (`out/cache/vite-<k>`), so commands that run side by side never replace each other's bundled dependencies. The first command on a new cache bundles them once (a few seconds more). A page that logs an error while it boots, or that cannot open a WebGL context, fails the command at once instead of at the deadline. Chrome runs with `--disable-domain-blocking-for-3d-apis`: after a lost context (a GPU reset), Chrome otherwise blocks WebGL for the site in that profile.
+- `pve serve start` keeps one dev server and one headless Chrome up between commands (the render server, `packages/cli/src/serve.ts`). A command reads `out/cache/serve.json` and opens its pages in that Chrome over CDP: it skips the start of Vite and Chrome. The commands that only render frames (`still`, `look`, `probe`, `seam`, `nan`) lease a warm page with the same URL (project, clips, scale, precision) and hand it back after. A warm page holds the newest mtime of `app/src`, `packages/engine/src`, `packages/core/src` and the project folder from its boot: when a file is newer, the command closes the page and boots a new one. The server keeps at most 3 idle warm pages and stops after `--idle` minutes without a command. A warm page renders frames after other frames, as the studio does: an order fault can show there and not on a new page. `determinism`, `order`, `golden`, `bench`, `perf` and `render` always take a new page.
 - Headless Chrome renders WebGL on ANGLE over D3D11 on Windows (Metal on macOS). A fault that only one browser setup shows can come from its ANGLE backend: look at "GL_RENDERER" on `chrome://gpu`. `PVE_ANGLE=<backend>` (for example `gl`, `vulkan`, `d3d11`) makes the commands render on that backend, so `PVE_ANGLE=gl bun run pve still 57.5 -p sardine` shows the frame as a Chrome with `--use-angle=gl` draws it.
+- A black dot or a black block in a still is a NaN or an Inf in a float target: the next 8-bit pass writes it as black, and a blur or a bloom spreads it to a block. Backends differ here. ANGLE over OpenGL gives NaN for `pow` of a negative base, and a dot of two unit vectors can come out a little over 1. So write `pow(1.0 - clamp(d, 0.0, 1.0), 5.0)`, not `pow(1.0 - max(d, 0.0), 5.0)`. `bun run pve nan -p <id> <time>` names the draw call and the scene file line that write it (`PVE_ANGLE=gl` for that backend).
 
 ## Data
 
@@ -171,6 +174,58 @@ Key architectural modules for procedural animation and simulations:
 - Memory: bodies × 7 × 4 bytes × hz × seconds. 1500 bodies for 4 s at 120 Hz take about 20 MB. Fixed bodies store one pose. Lower `hz` or `t1 - t0` before you drop bodies.
 - Do not use three's `RapierPhysics` addon. It loads from a CDN and steps on wall-clock time.
 
+## Real interface code (the DOM interpreter)
+
+`@pve/engine/dom` shows real HTML and CSS as objects of a scene. The interface code lives in a hidden frame of the page. The browser parses it, applies the cascade and lays it out. The interpreter reads the computed style and the boxes, paints them on a canvas, and gives a textured object. The read is synchronous: a scene sets the state of the interface from the song time and calls `update()`, so a frame depends only on `t`.
+
+```ts
+import { DomUi, pixelCamera, type Surface } from '@pve/engine/dom';
+
+async init() {
+  const base = new URL(`${this.ctx.assets}ui/`, location.href).href;
+  const html = await fetch(`${base}desk.html`).then((r) => r.text());
+  this.ui = await DomUi.create({ html, styles: [`${base}xp.css`], css: ['body{margin:0}'], width: 640, height: 360 });
+  this.dialog = this.ui.surface('#dialog', { res: 3 });   // 3 canvas px per CSS px
+  this.stage.add(this.dialog.object);
+}
+render(f, out) {
+  const line = this.ui.$('#line');
+  const text = typed(f.t);
+  if (line.textContent !== text) line.textContent = text;  // write only a new value
+  this.dialog.update();                                    // reads and paints only after a change
+  this.dialog.object.position.set(x, y, 0);                // move, turn and scale the object, not the DOM
+  renderer.setRenderTarget(out);
+  renderer.render(this.stage, this.cam);                   // this.cam = pixelCamera()
+}
+```
+
+- `DomUi.create({ html, styles, css, width, height })`: `html` is the content of `<body>`. `styles` are addresses of style sheets (the frame loads each one with a `<link>`). `css` is more CSS as text. The frame is `width` x `height` CSS px. `create` waits for the fonts, for each `<img>` of the markup and for every image that the style sheets name. Call `preload(url)` in `init()` for an image that no style sheet names.
+- `ui.$(selector)` gives the one element (it throws when there is none). `ui.doc` is the document of the frame.
+- `ui.surface(element or selector, { res })` makes a `Surface`: the element and its subtree as one picture. `res` is the number of canvas px for each CSS px, so an interface that the scene shows 3 times as large stays sharp. `surface.object` is a `THREE.Group` with its origin at the top left of the border box, y down, 1 unit = 1 CSS px. The picture reaches outside the box for shadows and for transformed children.
+- `surface.update()` returns true when it painted. It reads only when the DOM changed since the last call (it reads the mutation records of the frame). It paints only the tiles (128 canvas px squares) that the change reaches. A partial paint gives the same bytes as a full paint. A write to a property is not a mutation (`checked`, `value`, `scrollTop`): call `ui.invalidate()` after it. `surface.repaint()` makes the next update paint the whole canvas.
+- `ui.animate(t)` puts every CSS animation of the frame at song time `t` (seconds): the clock of the animations is the song clock, from 0. Give an animation that must start at a time of the song that time as its `animation-delay`. Call it on each frame after the scene sets the state, before `update()`. An interface with a CSS animation and no `animate()` call throws. A CSS transition jumps to its end at once: a frame must not depend on the frame before it.
+- `surface.box(selector)` gives the box of a descendant in px from the top left of the surface (a target for a cursor).
+- `surface.material.uniforms.display`: 1 (the default) puts the colours on the screen as the style sheet gives them (the inverse of the tone shoulder of the engine). Set 0 for an interface that stands in a lit HDR picture. Return `NO_FILM_POST` when the interface must be exact.
+- `pixelCamera()`: an orthographic camera of the logical frame, x right, y down, 1 unit = 1 px.
+
+A surface stays clean when the scene turns, scales or tilts it. The texture keeps premultiplied alpha, so the GPU filters it with no dark or light fringe. It has mipmaps and anisotropic filtering, and a margin of 8 transparent canvas px, so the edge of the picture is filtered and not the hard edge of the quad. Each update that paints gives the surface a new GL texture (allocated, uploaded and mipmapped from scratch). On D3D11 ANGLE the mipmaps of a texture that was uploaded again kept a trace of the frames before (1 level in far, minified texels), so a frame depended on the order of the renders.
+
+What the painter draws: background colours, linear and radial gradients, `url()` images (an SVG too) with size, position and repeat, `background-clip` (`border-box`, `padding-box`, `content-box`), borders with a colour for each side, `solid`, `dashed` and `dotted` borders (spaced as Chrome spaces them), corner radii, outer and inset box shadows, outlines, opacity, `transform` (2D) on descendants, clipping and scrolled content (`scrollTop`) of `overflow`, text with the font of the frame (colour, letter spacing, text shadow, underline, text transform, `white-space`, wrapped lines, `text-overflow: ellipsis`), `<img>` (`image-rendering: pixelated` draws it with no filter), the value of a text field, a fieldset with its legend, and `::before` / `::after` with strings and `attr()`.
+
+Crisp text: `-webkit-font-smoothing: none` on an element draws its text with hard pixel edges. The glyphs are drawn at 1 canvas px per CSS px, each px on or off, then scaled up with no filter, as the type of a period interface. A px with half cover or more is on. A thin upright stroke that falls between two px (the stem of an "i", "l" or "n") keeps 1 px: the px of most cover in its row (see `binarize` in `dompaint.ts`). A text shadow with a blur on crisp text throws.
+
+Rules:
+
+- **The state comes from `t`.** Interface code that keeps a state of its own from earlier events breaks this. Set every text, class and attribute from the time on each frame.
+- **Motion is in three.** Move the `object` of a surface. A DOM change makes a new read and a new paint. The motion blur of the export renders many sub-frames: a DOM that changes in each sub-frame pays for each one.
+- **A property that the painter does not have throws** with the element and the value: `filter`, `backdrop-filter`, `clip-path`, `mask-image`, `mix-blend-mode`, a 3D `transform`, `transform` on the element of a surface (move its object), the properties `translate`, `rotate`, `scale` and `perspective`, `object-fit`, `border-image`, border styles other than `solid`, `dashed` and `dotted`, a dashed or dotted border with round corners, `background-clip: text`, repeating gradients, a visible scrollbar (set `scrollbar-width: none` and draw the bar with elements), a list marker (set `list-style: none`), `content` with counters or quotes, a native form control (`select`, `progress`, a checkbox with its native look), `<svg>`, `<canvas>`, `<video>`.
+- **`:hover`, `:focus` and `:active` do not come from the cursor of the scene.** Give the element a class or an attribute and style that.
+- **Pseudo-elements become real `<span>` elements** (`data-pve-pseudo`) with the computed style of the pseudo-element, because the browser gives no box for a pseudo-element. The interpreter makes them again after an attribute change. A selector that counts children (`:first-child`, `:empty`) sees these spans.
+- **Opacity** multiplies into each child: two children that overlap inside a transparent parent show through each other.
+- **Text against Chrome.** The words and lines are where Chrome puts them (the line box on a whole CSS px, as Chrome does). The glyphs are Canvas2D glyphs: Chrome's page text on Windows has a steeper anti-aliasing ramp (the contrast and gamma of DirectWrite), and Canvas2D has no setting for it. At 3 canvas px per CSS px about 1,900 px of the test windows differ by more than 64 levels, all on glyph edges.
+
+Cost on the reference machine (`pve bench dom`, a window of about 60 elements at `res` 2): a frame with no change 0.2 ms, a frame with a text change 9 ms on the CPU (read, the tiles of the change and the upload with mipmaps), a full paint 6 to 9 ms. Keep an element that changes often in a small surface of its own.
+
 ## Object marks and probing
 Scenes can annotate rendered objects with bounding boxes using `mark()` from `@pve/engine/marks`:
 ```ts
@@ -192,3 +247,12 @@ Metrics and cameras are bookkeeping only. They do not change the picture.
 - `--all-cams` lists every camera that drew, one series each.
 - `--metrics` lists the values that scenes report, with the step from the frame before. `-t <glob>` filters the names.
 - `--jumps` shows only the frames where a step is more than 4 times the steps round it: a cut, a pop or a jerk. A change of camera shows as `switch`. Times step one frame by default (`--step s`).
+
+## Models alone (`pve props`)
+A module names the models of a place in a `PropTable` from `@pve/engine/props`: each entry builds one new `THREE.Object3D` in world metres, with its own materials. The scene builds the place from the same table, so the board always shows the real models. The module default-exports the board:
+```ts
+import { propBoard, type PropTable } from '@pve/engine/props'
+const TABLE: PropTable = { chair: () => buildChair(), mug: () => buildMug() }
+export default propBoard(TABLE)
+```
+`pve props video/scenes/<file>.ts [model...]` renders one row per model and one tile per view: front and back three-quarter, side, from above, and a wireframe of the front. The light is a neutral studio light, the grid under the model has cells of a power of ten metres, and each tile is labelled with the model's size and triangles. `--views front,wire` picks views. The board writes its model list to `globalThis.__pveProps` for the CLI.

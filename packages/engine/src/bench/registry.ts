@@ -3,6 +3,8 @@
 import { bench as blendcam } from '../blendcam.bench';
 import { bench as chunks } from '../chunks.bench';
 import { bench as crt } from '../crt.bench';
+import { bench as dom } from '../dom.bench';
+import { bench as dompaint } from '../dompaint.bench';
 import { bench as engine } from '../engine.bench';
 import { bench as frost } from '../frost.bench';
 import { bench as gl } from '../gl.bench';
@@ -26,7 +28,7 @@ import { bench as type } from '../type.bench';
 import { bench as ui } from '../ui.bench';
 import type { EffectBench } from './types';
 
-export const BENCH: readonly EffectBench[] = [...post, ...engine, ...tiles, ...readback, ...lines, ...gl, ...stroke, ...type, ...glslCommon, ...hud, ...storyboard, ...jpeg, ...physics, ...lit, ...litview, ...textlayer, ...track, ...ui, ...frost, ...blendcam, ...mosh, ...textmode, ...chunks, ...crt];
+export const BENCH: readonly EffectBench[] = [...post, ...engine, ...tiles, ...readback, ...lines, ...gl, ...stroke, ...type, ...glslCommon, ...hud, ...storyboard, ...jpeg, ...physics, ...lit, ...litview, ...textlayer, ...track, ...ui, ...frost, ...blendcam, ...mosh, ...textmode, ...chunks, ...crt, ...dom, ...dompaint];
 
-/** Engine modules that do no GPU or draw work: they need no bench file. */
-export const NON_EFFECT_MODULES = ['audio', 'lyrics', 'marks', 'memo', 'options', 'palette', 'scale', 'scene', 'skew', 'util'] as const;
+/** Engine modules that do no GPU or draw work in a frame of a video: they need no bench file. `props` draws only the model board of `pve props`. */
+export const NON_EFFECT_MODULES = ['audio', 'domcss', 'domread', 'lyrics', 'marks', 'memo', 'options', 'palette', 'props', 'scale', 'scene', 'skew', 'util'] as const;

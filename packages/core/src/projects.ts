@@ -8,8 +8,11 @@ export const REPO = path.resolve(import.meta.dirname, '../../..');
 /** projects/ of this repository. */
 export const PROJECTS = path.join(REPO, 'projects');
 export const VIDEO_FILE = 'video/video.json';
-/** A project id is a folder name: letters, digits, `_` and `-`. */
-export const PROJECT_ID_RE = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
+/**
+ * A project id is a folder name: letters, digits, `_` and `-`. A leading `_` marks a scratch project (`projects/_<name>/`):
+ * git ignores it and the typecheck leaves it out, so experiments never break the gate of the other projects.
+ */
+export const PROJECT_ID_RE = /^_?[A-Za-z0-9][A-Za-z0-9_-]*$/;
 
 /** Ids of the folders in projects/ that have the file `needs` (the edit by default), sorted. */
 export function listProjects(needs = VIDEO_FILE): string[] {
